@@ -1,0 +1,33 @@
+%% 18_1
+%tic;lc_DynamicBC_clustermatrix(2,'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\DynamicFC18_1_screened',...
+   % 'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\allState2_18');toc
+
+%tic;lc_DynamicBC_clustermatrix(4,'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\DynamicFC18_1_screened',...
+  %  'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\allState4_18');toc
+
+tic;lc_DynamicBC_clustermatrix(5,'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\DynamicFC18_1_screened',...
+    'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\allState5_18');toc
+
+tic;lc_DynamicBC_clustermatrix(6,'D:\LI_Chao_important_do_not_delete\Data\Code_Python\DynamicFC18_1_screened',...
+    'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\allState6_18');toc
+
+tic;lc_DynamicBC_clustermatrix(8,'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\DynamicFC18_1_screened',...
+    'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\allState8_18');toc
+
+%% 20_1
+tic;lc_DynamicBC_clustermatrix(2,'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\DynamicFC20_1_screened',...
+    'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\allState2_20');toc
+
+tic;lc_DynamicBC_clustermatrix(4,'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\DynamicFC20_1_screened',...
+    'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\allState4_20');toc
+
+tic;lc_DynamicBC_clustermatrix(5,'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\DynamicFC20_1_screened',...
+    'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\allState5_20');toc
+
+tic;lc_DynamicBC_clustermatrix(6,'D:\LI_Chao_important_do_not_delete\Data\Code_Python\DynamicFC18_1_screened',...
+    'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\allState6_20');toc
+
+tic;lc_DynamicBC_clustermatrix(8,'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\DynamicFC20_1_screened',...
+    'D:\LI_Chao_important_do_not_delete\Data\workstation_20180829_dynamicFC\allState8_20');toc
+%%
+fprintf('\n=================All Done!===================\n');
