@@ -7,11 +7,11 @@ function lc_circleplot(net_path,mask_path,how_disp,which_group)
 %   which_group:显示哪一个组
 %%
 if nargin<1
-    net_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state1\results\tvalue_posthoc.mat';
-    mask_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state1\results\shared_1and2and3.mat';
+    net_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\tvalue_posthoc_fdr.mat';
+    mask_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\shared_2and3_fdr.mat';
     how_disp='all';% or 'only_neg'
     if_binary=1; %二值化处理，正值为1，负值为-1
-    which_group=1;
+    which_group=2;
     
     % 网络index路径，用于重构功能网络（按照网络的顺序）
     net_index_path='D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\netIndex.mat';

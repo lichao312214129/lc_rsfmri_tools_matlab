@@ -10,22 +10,26 @@ function  [fvalue_ancova,pvalue_ancova,h_ancova_fdr]=lc_ancova_for_FCmatrix(mask
 %% All inputs
 
 if nargin <1
-    % fc
-    path_sz='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\state1_SZ';
-    path_bd='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\state1_BD';
-    path_mdd='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\state1_MDD';
-    path_hc='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\state1_HC';
+    % input
+    path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
+    state=4;
+    
+    %%
+    path_sz=fullfile(path,['state',num2str(state),'\state',num2str(state),'_SZ']);
+    path_bd=fullfile(path,['state',num2str(state),'\state',num2str(state),'_BD']);
+    path_mdd=fullfile(path,['state',num2str(state),'\state',num2str(state),'_MDD']);
+    path_hc=fullfile(path,['state',num2str(state),'\state',num2str(state),'_HC']);
     
     suffix='*.mat';
     n_row=114;%矩阵有几行
     n_col=114;%矩阵有几列
 
     % cov
-    path_sz_cov='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\cov\state1_cov_SZ.xlsx';
-    path_bd_cov='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\cov\state1_cov_BD.xlsx';
-    path_mdd_cov='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\cov\state1_cov_MDD.xlsx';
-    path_hc_cov='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\cov\state1_cov_HC.xlsx';
-        
+    path_sz_cov=fullfile(path,['state',num2str(state),'\cov','\state',num2str(state),'_cov_SZ.xlsx']);
+    path_bd_cov=fullfile(path,['state',num2str(state),'\cov','\state',num2str(state),'_cov_BD.xlsx']);
+    path_mdd_cov=fullfile(path,['state',num2str(state),'\cov','\state',num2str(state),'_cov_MDD.xlsx']);
+    path_hc_cov=fullfile(path,['state',num2str(state),'\cov','\state',num2str(state),'_cov_HC.xlsx']);
+    
     % mask
     mask=ones(114,114);
     mask(triu(mask)==1)=0;
@@ -37,7 +41,7 @@ if nargin <1
 
     % save 
     if_save=1;
-    save_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result';
+    save_path=fullfile(path,['state',num2str(state),'\result']);
 end
 
 % create folder to save results
@@ -89,7 +93,7 @@ DependentFiles={fc_sz,fc_bd,fc_mdd,fc_hc};
 if strcmp(correction_method,'fdr')
     results=multcomp_fdr_bh(pvalue_ancova,'alpha', fdr_threshold);
 else
-    results=multcomp_bonferroni(P,'alpha', fdr_threshold);
+    results=multcomp_bonferroni(pvalue_ancova,'alpha', fdr_threshold);
 end
 h_corrected=results.corrected_h;
 
@@ -101,7 +105,7 @@ F1=zeros(size(mask));
 F1(mask)=fvalue_ancova;
 fvalue_ancova=F1;
 
-P1=zeros(size(mask));
+P1=ones(size(mask));
 P1(mask)=pvalue_ancova;
 pvalue_ancova=P1;
 

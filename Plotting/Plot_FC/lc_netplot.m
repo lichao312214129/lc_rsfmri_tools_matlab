@@ -8,9 +8,9 @@ function lc_netplot(net_path,if_add_mask,mask_path,how_disp,if_binary,which_grou
 %%
 %%
 if nargin<1
-    net_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state1\mean_state1_HC_Avg.txt';
-    if_add_mask=0;
-    mask_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state1\results\shared_1and2and3.mat';
+    net_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\tvalue_posthoc_fdr.mat';
+    mask_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\h_posthoc_fdr.mat';
+    if_add_mask=1;
     how_disp='all';% or 'only_neg'
     if_binary=0; %二值化处理，正值为1，负值为-1
     which_group=1;
@@ -20,7 +20,11 @@ if nargin<1
 end
 
 % net
-net=importdata(net_path);
+if isa(net_path, 'char')
+    net=importdata(net_path);
+else 
+    net=net_path;
+end
 
 % 显示正或者负
 if strcmp(how_disp,'only_pos')
@@ -47,11 +51,15 @@ end
 
 % mask
 if if_add_mask
-    mask=importdata(mask_path);
+    if isa(mask_path, 'char')
+       mask=importdata(mask_path);
+    else
+        mask=mask_path;
+    end
     
     % 筛选mask（哪一组的mask）
     if numel(size(mask))==3
-        mask=squeeze(mask(1,:,:));
+        mask=squeeze(mask(which_group,:,:));
     end
     
     % 求mask内的网络

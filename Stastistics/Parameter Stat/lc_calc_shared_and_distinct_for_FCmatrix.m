@@ -7,10 +7,16 @@ function [shared_1and2and3,shared_1and2,shared_1and3,shared_2and3,...
 %   H_mat: 经过post-hoc 双样本t检验+FDR校正后的H矩阵（H==1,表示无统计学意义）
 %%
 if nargin<1
-    h_posthoc_fdr='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\fullTransitionMatrix1\results\h_posthoc_fdr.mat';
-    h_mat=importdata(h_posthoc_fdr);
+    % input
+    path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
+    state=4;
+    correction_method='fdr';
+    
+    %
+    h_posthoc_corrected=fullfile(path,['state',num2str(state),'\result','\h_posthoc_',correction_method,'.mat']);
+    h_mat=importdata(h_posthoc_corrected);
     if_save=1;
-    save_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\fullTransitionMatrix1\results';
+    save_path=fullfile(path,['state',num2str(state),'\result']);
 end
 % 求共同及特异的异常连接（本研究有3种疾病，因此共同包括3个以及2个疾病的共同）
 sum_h_mat=squeeze(sum(h_mat));
@@ -20,14 +26,14 @@ shared_1and2and3=sum_h_mat==3; %3者共同
 
 % save
 if if_save
-    save(fullfile(save_path,'shared_1and2and3.mat'),'shared_1and2and3');
-    save(fullfile(save_path,'shared_1and2.mat'),'shared_1and2');
-    save(fullfile(save_path,'shared_1and3.mat'),'shared_1and3');
-    save(fullfile(save_path,'shared_2and3.mat'),'shared_2and3');
+    save(fullfile(save_path,['shared_1and2and3_',correction_method,'.mat']),'shared_1and2and3');
+    save(fullfile(save_path,['shared_1and2_',correction_method,'.mat']),'shared_1and2');
+    save(fullfile(save_path,['shared_1and3_',correction_method,'.mat']),'shared_1and3');
+    save(fullfile(save_path,['shared_2and3_',correction_method,'.mat']),'shared_2and3');
     
-    save(fullfile(save_path,'distinct_1.mat'),'distinct_1');
-    save(fullfile(save_path,'distinct_2.mat'),'distinct_2');
-    save(fullfile(save_path,'distinct_3.mat'),'distinct_3');
+    save(fullfile(save_path,['distinct_1_',correction_method,'.mat']),'distinct_1');
+    save(fullfile(save_path,['distinct_2_',correction_method,'.mat']),'distinct_2');
+    save(fullfile(save_path,['distinct_3_',correction_method,'.mat']),'distinct_3');
 end
 end
 

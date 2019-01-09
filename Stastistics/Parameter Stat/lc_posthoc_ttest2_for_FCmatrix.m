@@ -12,27 +12,32 @@ function  [h_posthoc_fdr,pvalue_posthoc,tvalue_posthoc]=lc_posthoc_ttest2_for_FC
 
 %% all input
 if nargin<1
-    % fc
-    path_sz='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\fullTransitionMatrix1\SZ';
-    path_bd='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\fullTransitionMatrix1\BD';
-    path_mdd='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\fullTransitionMatrix1\MDD';
-    path_hc='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\fullTransitionMatrix1\HC';
-    suffix='*.mat';
-    n_row=4;%矩阵有几行
-    n_col=4;%矩阵有几列
+    % input
+    path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
+    state=4;
     
-    % mask
-    add_mask=1;
-    mask=importdata('D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\fullTransitionMatrix1\results\h_ancova_fdr.mat');
-    mask=mask==1;
+    % fc
+    path_sz=fullfile(path,['state',num2str(state),'\state',num2str(state),'_SZ']);
+    path_bd=fullfile(path,['state',num2str(state),'\state',num2str(state),'_BD']);
+    path_mdd=fullfile(path,['state',num2str(state),'\state',num2str(state),'_MDD']);
+    path_hc=fullfile(path,['state',num2str(state),'\state',num2str(state),'_HC']);
+    
+    suffix='*.mat';
+    n_row=114;%矩阵有几行
+    n_col=114;%矩阵有几列
     
     % correction
     fdr_threshold=0.05;
     correction_method='fdr';
     
+    % mask
+    add_mask=1;
+    mask=importdata(fullfile(path,['state',num2str(state),'\result','\h_ancova_',correction_method,'.mat']));
+    mask=mask==1;
+    
     % save
     if_save=1;
-    save_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\fullTransitionMatrix1\results';
+    save_path=fullfile(path,['state',num2str(state),'\result']);
 end
 
 %% load fc and cov
@@ -86,9 +91,9 @@ tvalue_posthoc=mat1D_to_mat3D(tvalue_posthoc,mask);
 % save
 if if_save
     disp('save results...');
-    save (fullfile(save_path,'h_posthoc_fdr.mat'),'h_posthoc_fdr');
-    save (fullfile(save_path,'tvalue_posthoc.mat'),'tvalue_posthoc');
-    save (fullfile(save_path,'pvalue_posthoc.mat'),'pvalue_posthoc');
+    save (fullfile(save_path,['h_posthoc_',correction_method,'.mat']),'h_posthoc_fdr');
+    save (fullfile(save_path,['tvalue_posthoc_',correction_method,'.mat']),'tvalue_posthoc');
+    save (fullfile(save_path,['pvalue_posthoc_',correction_method,'.mat']),'pvalue_posthoc');
     disp('saved results');
 end
 
