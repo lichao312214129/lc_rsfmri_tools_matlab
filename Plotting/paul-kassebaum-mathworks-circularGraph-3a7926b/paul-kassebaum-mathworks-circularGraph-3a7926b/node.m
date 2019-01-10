@@ -18,7 +18,7 @@ classdef node < handle
     TextLabel;    % Text graphics object
     NodeMarker;   % Line that makes the node visible
     Marker = '.'; % Marker symbol when the node is 'on'
-    markersize=3;
+    markersize=10;
   end
   
   properties (Access = private, Constant)

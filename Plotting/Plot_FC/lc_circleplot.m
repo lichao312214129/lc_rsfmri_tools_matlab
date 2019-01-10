@@ -8,7 +8,7 @@ function lc_circleplot(net_path,mask_path,how_disp,which_group)
 %%
 if nargin<1
     net_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\tvalue_posthoc_fdr.mat';
-    mask_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\shared_2and3_fdr.mat';
+    mask_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\shared_1and2and3_fdr.mat';
     how_disp='all';% or 'only_neg'
     if_binary=1; %二值化处理，正值为1，负值为-1
     which_group=2;
@@ -79,6 +79,8 @@ end
 
 % Create custom colormap
 color=jet(7); % lines，hsv
+color(color==1)=color(color==1)-0.3;
+color(color==0)=color(color==0)+0.2;
 color(2,:)=[1 0 1];
 color1=color(7,:);
 color(7,:)=[0.67 0 0.8];
