@@ -1,0 +1,87 @@
+一， 主程序命名为：radar_lee.m. 
+为了绘制出两条折线，编程如下： 
+    x=[0:pi/8:2*pi]; 
+       y=[10,8.2,7.5,8.5,10,7.2,7.8,10,9,10,6.8,9.5,5,10,5.8,9,10]; 
+      z=[10,8.3,9,10,10,7.5,7.5,6,9,7,7,6.7,2.3,10,10,9,10];
+      polarplot(x,y);
+ax=gca;
+ax.Title.String = '董梦实是乖宝宝';%标题。
+ax.Title.Color = 'red';%标题颜色。
+ax.Title.FontSize=30;%标题字体大小。
+%title('My Title','Color','red');%与上面两行一样。
+ax.Color = [0.5 0.7 0.7];%雷达图背景的颜色。
+ax.LineWidth = 2;%雷达图网的粗细。
+ax.ThetaGrid = 'on';%向外的直线网格显示与否。
+ax.RGrid = 'on';%环形的网格显示与否。
+ax.GridLineStyle = '--';%网格的显示方式。
+ax.GridColor = 'k';%网格的颜色。
+ax.ThetaTickLabel = {'right','top','left','bottom','right','top','left','bottom','right','top','left','bottom'};%改变坐标的字符
+ax.ThetaLim = [0 180];%坐标轴的范围。
+ax.FontSize = 20;%字体大小
+ax.ThetaColor = 'r';%改变坐标字符颜色
+ax.RAxisLocation = 90;%R轴的位置
+ax.RTickLabel = {'one','two','three','four'};%R轴的坐标
+ax.RTickLabelRotation = 45;%R轴坐标字符旋转
+ax.RColor = 'r' ;%改变R轴坐标字符的颜色
+legend({'Line 1'},'FontSize',12);%添加legend
+hold on %两折线重叠显示 
+polar(x,z,'m') 
+
+二， 折线成功显示，但是问题也进一步显现：MATLAB默认的极坐标的显示格式是每隔30度显示一条径向线，并进行角度标注。如果不能自定义径向线的角度和名称标注，将不能借此表达雷达图的 多元参数信息。 
+
+    为此，我修改了matlab的系统函数polar（极坐标绘制函数）。 
+
+    在matlab命令窗口键入： 
+
+    >> edit polar.m 
+
+        这样就进入了polar函数。 
+
+    找到： 
+
+    % plot spokes 绘制径向线 
+    th = (1:6)*2*pi/12; 
+       cst = cos(th); snt = sin(th); 
+      cs = [-cst; cst]; 
+      sn = [-snt; snt]; 
+      line(rmax*cs,rmax*sn,'linestyle',ls,'color',tc,'linewidth',1,... 
+      'handlevisibility','off','parent',cax) 
+
+
+
+     程序中 th 表示两条径向线以30度为间隔，只要对其进行修改即可自定义分配径向线的个数与夹角。 
+
+  比如我的修改是 th = (1:8)*2*pi/16; %圆上分布16条径向射线，间隔为22.5度。 
+
+  然后，要对程序中随后出现的夹角参数进行相应修改（30改为22.5）。 
+
+三， 径向线标注的修改 
+
+    我们不光需要修改径向线的个数与夹角，还要修改其标注。将角度标注修改为雷达图中的评价标准（比如：油耗，动力，。。。）。 
+
+    修改仍需要在polar.m中进行。 
+
+    % annotate spokes in degrees 
+       rt = 1.1*rmax; 
+       for i = 1:length(th) 
+       text(rt*cst(i),rt*snt(i),int2str(i*22.5),... %int2str(i*22.5)是关键
+    'horizontalalignment','center',... 
+       'handlevisibility','off','parent',cax); 
+
+       自行定义字符向量对其进行替换即可。 
+
+四， 线的加宽 
+
+    主程序编写之后，还需对细节进行修饰。比如：标题位置，标注大小，线的宽细。。。。。 
+
+    线宽修改示例： 
+
+     set(findobj(get(gca,'Children'),'LineWidth',0.5),'LineWidth',2); 
+
+
+
+五，示例 
+
+      分别编译保存polar与主程序。 
+
+      运行主程序radar,绘图如下 

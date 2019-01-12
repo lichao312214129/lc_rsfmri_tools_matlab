@@ -1,4 +1,4 @@
-function lc_circleplot(net_path,mask_path,how_disp,if_binary,which_group,if_save,save_name,net_index_path,node_name_path)
+function lc_circleplot(net_path,mask_path,how_disp,which_group)
 % 用途：用circle的形式，画出功能连接矩阵
 % input
 %   net_path:带路径的功能连接网络文件名
@@ -73,12 +73,12 @@ node_name=node_name(index,:);
 myLabel = cell(length(re_net));
 [ind_i,ind_j,index_nozero]=find(re_net);
 for i = 1:length(myLabel)
-%     myLabel{i,1} = num2str(index(i));
+    myLabel{i,1} = num2str(index(i));
     myLabel{i,1} = '';
 end
 % for i=1:length(index_nozero)
-%     myLabel{ind_i(i)} =node_name{ind_i(i),2};
-%     myLabel{ind_j(i)} =node_name{ind_j(i),2};
+%     myLabel{ind_i(i)} =node_name{ind_i(i),3};
+%     myLabel{ind_j(i)} =node_name{ind_j(i),3};
 % end
 
 % Create custom colormap
@@ -94,7 +94,7 @@ for i=1:114
 end
 
 % plot circle
-% figure;
+figure;
 circularGraph(re_net,'Colormap',myColorMap,'Label',myLabel);
 
 % save

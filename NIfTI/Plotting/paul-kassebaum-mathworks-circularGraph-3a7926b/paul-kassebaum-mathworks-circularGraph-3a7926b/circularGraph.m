@@ -84,7 +84,7 @@ classdef circularGraph < handle
             [row,col,v] = find(adjacencyMatrix);
             
             % Calculate line widths based on values of s (stored in v).
-            minLineWidth  = 1.5;
+            minLineWidth  = 1;
             lineWidthCoef = 1.5;
             lineWidth = v./abs(max(v)); %加abs,保证正负号的一致性
             if sum(abs(lineWidth)) == numel(lineWidth) % all lines are the same width.
