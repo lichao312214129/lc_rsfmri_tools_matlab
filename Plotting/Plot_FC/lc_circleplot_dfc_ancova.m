@@ -7,10 +7,10 @@
 
 
 % input
-net_path_hc_state1='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zStatic\static_HC_Avg.mat';
-net_path_hc_state2='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zStatic\static_SZ_Avg.mat';
-net_path_hc_state3='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zStatic\static_BD_Avg.mat';
-net_path_hc_state4='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zStatic\static_MDD_Avg.mat';
+net_path_hc_state1='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\fvalue_ancova_fdr.mat';
+net_path_hc_state2='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state2\result\fvalue_ancova_fdr.mat';
+net_path_hc_state3='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state3\result\fvalue_ancova_fdr.mat';
+net_path_hc_state4='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state4\result\fvalue_ancova_fdr.mat';
 if_save=0;
 if_add_mask=0;
 % 
@@ -25,8 +25,8 @@ net_index_path='D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\netIndex
 load Mycolormap_state;
 subplot(1,4,1)
 lc_netplot(net_path_hc_state1,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
-colormap(mymap_state)
-caxis([-0.8 0.8]);
+% colormap(mymap_state)
+% caxis([-0.8 0.8]);
 % colorbar
 
 subplot(1,4,2)
@@ -52,7 +52,7 @@ colorbar
 % save
 if if_save
     set(gcf,'outerposition',get(0,'screensize'));
-    print(gcf,'-dtiff', '-r300','tt.tiff')
+    print(gcf,'-dtiff', '-r300','colormap.tiff')
     
     % save colormap
 %     ax = gca;

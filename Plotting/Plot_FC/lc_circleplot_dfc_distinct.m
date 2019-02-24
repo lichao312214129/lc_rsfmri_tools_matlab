@@ -13,7 +13,7 @@ figure
 set(gcf,'outerposition',get(0,'screensize'));
 ha = tight_subplot(3,3,[0.05 0.01],[0.01 0.01],[0.01 0.01]);
 
-% 状态1
+% 状态1（下面分别是SZ、BD和MDD；各个状态都是这个疾病顺序）
 axes(ha(1)); 
 net_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\tvalue_posthoc_fdr.mat';
 mask_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\distinct_1_fdr.mat';

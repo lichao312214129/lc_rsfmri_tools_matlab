@@ -1,4 +1,5 @@
 function varargout = lc_mask_filter(varargin)
+% 此代码用来提取/筛选.nii或者.img影像数据mask内的数值
 % LC_MASK_FILTER MATLAB code for lc_mask_filter.fig
 %      LC_MASK_FILTER, by itself, creates a new LC_MASK_FILTER or raises the existing
 %      singleton*.
@@ -51,13 +52,13 @@ function lc_mask_filter_OpeningFcn(hObject, eventdata, handles, varargin)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to lc_mask_filter (see VARARGIN)
-handles.opt={...
-    'img_path','D:\WorkStation_2018\WorkStation_2018_11_machineLearning_Psychosi_ALFF\Data\test';...
-    'img_path_name',{};...
-    'mask_data',[];...
-    'how_extract','keep_mask_in';...
-    'save_folder','D:\WorkStation_2018\WorkStation_2018_11_machineLearning_Psychosi_ALFF\Data'...
-            };
+% handles.opt={...
+%     'img_path','D:\WorkStation_2018\WorkStation_2018_11_machineLearning_Psychosi_ALFF\Data\test';...
+%     'img_path_name',{};...
+%     'mask_data',[];...
+%     'how_extract','keep_mask_in';...
+%     'save_folder','D:\WorkStation_2018\WorkStation_2018_11_machineLearning_Psychosi_ALFF\Data'...
+%             };
 % Choose default command line output for lc_mask_filter
 handles.output = hObject;
 
@@ -149,21 +150,34 @@ for i=1:length(handles.opt.img_path_name)
     
     if strcmp(handles.opt.how_extract,'保留mask内的值')
         img_filter=img.*handles.opt.mask_data;
+        %save
+        [~,name]=fileparts(handles.opt.img_path_name{i});
+        name=fullfile(handles.opt.save_folder,name);
+        y_Write(img_filter,h,name) % to nii
+        
+        img_filter_only_in_mask=img(handles.opt.mask_data);
+        save([name,'.mat'],'img_filter_only_in_mask') % to mat
         
     elseif strcmp(handles.opt.how_extract,'排除mask内的值')
         img_filter=img.*handles.opt.mask_data==0;
+        %save
+        [~,name]=fileparts(handles.opt.img_path_name{i});
+        name=fullfile(handles.opt.save_folder,name);
+        y_Write(img_filter,h,name) % to nii
+        
+        img_filter_only_out_mask=img(handles.opt.mask_data);
+        save([name,'.mat'],'img_filter_only_out_mask') % to mat
         
     elseif strcmp(handles.opt.how_extract,'提取mask内的均值')
         img_filter=img.*handles.opt.mask_data;
         img_filter=mean(img_filter(:));
-        
+        %save
+        [~,name]=fileparts(handles.opt.img_path_name{i});
+        name=fullfile(handles.opt.save_folder,name);
+        save([name,'.mat'],'img_filter') % to mat
     else
         fprintf('设定的方法为%s,本程序没有添加此功能\n','handles.opt.how_extract')
         return 
     end
-    %save
-    [~,name]=fileparts(handles.opt.img_path_name{i});
-    name=fullfile(handles.opt.save_folder,name);
-    y_Write(img_filter,h,name)
 end
 fprintf('All done!\n')
