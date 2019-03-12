@@ -46,12 +46,12 @@ ax.Color ='w';%雷达图背景的颜色。
 ax.ThetaLim = [0 360];%坐标轴的范围。
 
 % 字体
-ax.FontSize =10;%字体大小
+ax.FontSize =18;%字体大小
 ax.ThetaColor = 'k';%改变坐标字符颜色
 
 % 网格
 ax.ThetaGrid = 'on';%向外的直线网格显示与否。
-ax.RGrid = 'on';%环形的网格显示与否。
+ax.RGrid = 'off';%环形的网格显示与否。
 ax.LineWidth = 1.5;%雷达图网的粗细。
 ax.GridLineStyle = '-';%网格的显示方式。
 ax.GridColor ='k';%网格的颜色。

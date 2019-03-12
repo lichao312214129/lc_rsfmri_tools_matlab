@@ -41,7 +41,7 @@ if ~exist('opt','var') && nargin < 3
     opt.min_scale=0;
     opt.max_scale=1;
     % univariate feature filter.
-    opt.P_threshold=0.05;
+    opt.P_threshold=1;
     % RFE
     opt.learner='fitclinear';
     opt.stepmethod='percentage';

@@ -10,7 +10,7 @@ function [shared_1and2and3,shared_1and2,shared_1and3,shared_2and3,...
 if nargin<1
     % input
     path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
-    state=1;
+    state=4;
     correction_method='fdr';
 
     h_posthoc_corrected=fullfile(path,['state',num2str(state),'\result','\h_posthoc_',correction_method,'.mat']);
@@ -21,6 +21,8 @@ if nargin<1
     save_path=fullfile(path,['state',num2str(state),'\result1']);
 end
 
+% 新建结果文件夹
+mkdir(save_path)
 %% 求共同及特有的异常连接（本研究有3种疾病，因此共同包括3个以及2个疾病的共同）
 
 % 3者共同，且只选择异常方向一致的连接(mask与mask_sign的交集)

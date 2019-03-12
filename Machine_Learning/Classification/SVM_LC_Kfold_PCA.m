@@ -1,7 +1,7 @@
 function [Accuracy, Sensitivity, Specificity, PPV, NPV, Decision, AUC,...
           w_M_Brain_3D, label_ForPerformance,sorted_fileName] =...
     SVM_LC_Kfold_PCA(K)
-%此代码在heart数据集上测试成功
+%% 此代码在heart数据集上测试成功
 %input：K=K-fold cross validation,K<N
 %output：分类表现以及K-fold的平均分类权重; label_ForPerformance=随机化处理后的label，用来绘制ROC曲线
 % path=pwd;
@@ -9,7 +9,6 @@ function [Accuracy, Sensitivity, Specificity, PPV, NPV, Decision, AUC,...
 % psqiP=Scale_Patient.data(:,2);
 % psqiC=Scale_Control.data(:,2);
 % allPSQI=[psqiP;psqiC];
-%%
 %%
 % if nargin<2
 %     p='D:\WorkStation_2018\WorkStation_2018-05_MVPA_insomnia_FCS\Degree\Results_Degree\Two-sample_t_test\ROISignals\量表\Scale_Patient.mat';
@@ -19,7 +18,10 @@ function [Accuracy, Sensitivity, Specificity, PPV, NPV, Decision, AUC,...
 %     allPSQI=[Scale_Patient.data(:,3);Scale_Control.data(:,2)];
 % end
 if nargin<1
+    mask_path='J:\20190308\DATA\REST\MASK\Group_mask.nii';
     K=5;
+%     save_path=pwd;
+    save_path='J:\20190308\DATA\REST';
 end
 %% 将图像转为data,并产生label
 [fileName_P,path,data_patients ] = lc_Img2Data;
@@ -29,10 +31,14 @@ data=cat(4,data_patients,data_controls);%data
 [~,~,~,n_controls]=size(data_controls);
 label=[ones(n_patients,1);zeros(n_controls,1)];%label
 %% inmask
+[mask_3d,header]=y_Read(mask_path);
+mask_3d=mask_3d~=0;
+mask=reshape(mask_3d,[],1);
 N=n_patients+n_controls;
 data=reshape(data,[dim1*dim2*dim3,N]);%行方向为特征方向，每一列为一个样本，每一行为一个特征
-implicitmask = sum(data~=0,2)>=size(data,2)-10;%内部mask,逐行累加
-data_inmask=data(implicitmask,:);%内部mask内的data
+% implicitmask = sum(data~=0,2)>=size(data,2)-10;%内部mask,逐行累加
+% data_inmask=data(implicitmask,:);%内部mask内的data
+data_inmask=data(mask,:);
 data_inmask=data_inmask';
 data_inmask_p=data_inmask(label==1,:);
 data_inmask_c=data_inmask(label==0,:);
@@ -52,7 +58,7 @@ AUC=zeros(K,1);
 Decision=cell(K,1);
 PPV=zeros(K,1); 
 NPV=zeros(K,1);
-w_Brain=zeros(K,sum(implicitmask));
+w_Brain=zeros(K,sum(mask));
 label_ForPerformance=cell(1,K);
 w_M_Brain=zeros(1,dim1*dim2*dim3);
 Predict=NaN(N,1);
@@ -78,7 +84,7 @@ switch K<N
         %         parfor_progress(K);
         for i=1:K
 %             waitbar(i/K,h,sprintf('%2.0f%%', i/K*100)) ;
-            fprintf('%d/%d\n',i,K)
+            
             %% 将数据分成训练样本和测试样本（分别从患者和对照组中抽取，目的是为了数据平衡）
             % patients data
             Test_index_p = (indices_p == i); 
@@ -124,11 +130,10 @@ switch K<N
             NPV(i)=npv;
             [AUC(i)]=AUC_LC(test_label,dec_values(:,2));
             %%  空间判别模式
-%             w_Brain_Component = model.Beta;
-%             w_Brain(i,:) = w_Brain_Component' * COEFF';
-            %             if ~randi([0 4])
-            %                 parfor_progress;%进度条
-            %             end
+            w_Brain_Component = model.Beta;
+            w_Brain(i,:) = w_Brain_Component' * COEFF';
+
+        fprintf('%d/%d\n',i,K)
         end
     case 0 %equal to leave one out cross validation, LOOCV
         for i=1:K
@@ -167,7 +172,7 @@ switch K<N
 end
 %% 平均的空间判别模式
 W_mean=mean(w_Brain);%取所有LOOVC的w_brain的平均值
-w_M_Brain(implicitmask)=W_mean;
+w_M_Brain(mask)=W_mean;
 w_M_Brain_3D=reshape(w_M_Brain,dim1,dim2,dim3);
 %% 整理分类性能
 Accuracy(isnan(Accuracy))=0; Sensitivity(isnan(Sensitivity))=0; Specificity(isnan(Specificity))=0;
@@ -205,28 +210,23 @@ if K==N
     t.Position = [50 0 300 300];
 end
 %% 保存分类权重图并保存结果
-%gray matter mask
-[file_name,path_source1,~]= uigetfile( ...
-    {'*.img;*.nii;','All Image Files';...
-    '*.*','All Files' },...
-    '请选择mask（单选）', ...
-    'MultiSelect', 'off');
-img_strut_temp=load_nii([path_source1,char(file_name)]);
-mask_graymatter=img_strut_temp.img~=0;
-w_M_Brain_3D(~mask_graymatter)=0;
+% gray matter mask
+% [file_name,path_source1,~]= uigetfile( ...
+%     {'*.img;*.nii;','All Image Files';...
+%     '*.*','All Files' },...
+%     '请选择mask（单选）', ...
+%     'MultiSelect', 'off');
+% img_strut_temp=load_nii([path_source1,char(file_name)]);
+% mask_graymatter=img_strut_temp.img~=0;
+w_M_Brain_3D(~mask_3d)=0;
 % save nii
 data=datestr(now,30);
-lc_Data2Img(w_M_Brain_3D,['w_M_Brain_3D_',data,'.nii']);
+y_Write(w_M_Brain_3D,header,['w_M_Brain_3D_',data,'.nii']);
 %save results
-%目录
-loc= find(path=='\');
-outdir=path(1:loc(length(find(path=='\'))-2)-1);%path的上一层目录
-save([outdir filesep 'Results_MVPA_',data,'.mat'],...
+save([save_path filesep 'Results_MVPA_',data,'.mat'],...
     'Accuracy', 'Sensitivity', 'Specificity',...
     'PPV', 'NPV', 'Decision', 'AUC', 'w_M_Brain_3D', 'label_ForPerformance','sorted_fileName');
-%save mean performances as .tif figure
-cd (outdir)
-print(gcf,'-dtiff','-r600',['Mean Performances',data])
+print(gcf,'-dtiff','-r600',[fullfile(save_path,'Mean Performances'),data])
 end
 
 
