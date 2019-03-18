@@ -1,6 +1,6 @@
 function lc_fetchSubjStateFC(IDX,k,dFCPath,subj_name,out_path)
 % 根据kmeans后的IDX以及所有被试的动态连接矩阵（nNode*nNode*nWindow*nSubj）
-% 来求得每个人的各个状态的连接矩阵（状态内所有窗的平均）
+% 来求得每个人的各个状态的连接矩阵（状态内所有窗的中位数median/平均数mean,默认中位数）
 % 可能某些被试没有某个状态【DOI:10.1002/hbm.23430】
 % input
 % IDX:kmeans后的index
@@ -61,13 +61,13 @@ ind_end=num_window:num_window:nRow;
 tic;
 for ithSubj=1:numOfSubj
     fprintf('%d/%d\n',ithSubj,numOfSubj);
-    calc_avg(IDX,ithSubj,ind_start,ind_end,dFCFile,subj_name,out_path);
+    calc_median_or_mean(IDX,ithSubj,ind_start,ind_end,dFCFile,subj_name,out_path);
 end
 toc;
 fprintf('============Done!============\n');
 end
 
-function state_fc=calc_avg(IDX,ithSubj,ind_start,ind_end,dFCFile,subj_name,out_path)
+function state_fc=calc_median_or_mean(IDX,ithSubj,ind_start,ind_end,dFCFile,subj_name,out_path)
 
 idx_current_subj=IDX(ind_start(ithSubj):ind_end(ithSubj));
 unique_idx=unique(idx_current_subj);
@@ -76,7 +76,8 @@ dFC=importdata(dFCFile{ithSubj});%  载入当前被试
 for i=1:length(unique_idx)
     % 求匹配当前状态的窗口的功能连接的平均值
     ith_state=unique_idx(i);
-    state_fc=mean(dFC(:,:,idx_current_subj==ith_state),3);
+    state_fc=median(dFC(:,:,idx_current_subj==ith_state),3);
+%     state_fc=mean(dFC(:,:,idx_current_subj==ith_state),3);
     % 将当前结果保存到当前被试的当前状态文件夹下面
     outpath=fullfile(out_path,['state',num2str(ith_state)],subj_name{ithSubj});
     my_save(outpath,state_fc)
