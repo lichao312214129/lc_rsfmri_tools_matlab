@@ -47,11 +47,10 @@ fprintf('kmeans clustering...\n');
 allMatrix(isinf(allMatrix))=1;
 allMatrix(isnan(allMatrix))=0;
 allMatrix=reshape(allMatrix,nFeature,nWindow*nSubj)';
-[IDX,C,sumd,D] = kmeans(allMatrix,k,'distance',CluMet);
+% [IDX,C,sumd,D] = kmeans(allMatrix,k,'distance',CluMet);
 % 随机多次质心，样本量大将会非常耗时
-% opts = statset('Display','final');
-% [Idx,C,sumD,~] = kmeans(allMatrix,k,'Distance',distanceMethod,...
-%     'Replicates',5,'Options',opts);
+opts = statset('Display','final');
+[IDX,C,sumd,D] = kmeans(allMatrix,k,'Distance',CluMet,'Replicates',100,'Options',opts);
 % save_dir = fullfile(output,['mat_',CluMet,'_Kmeans_',num2str(k)]);
 % mkdir(save_dir);
 for i = 1:k
@@ -66,6 +65,9 @@ for i = 1:k
 end
 % save IDX
 save(fullfile(output,'IDX.mat'),'IDX');
+save(fullfile(output,'C.mat'),'C');
+save(fullfile(output,'sumd.mat'),'sumd');
+save(fullfile(output,'D.mat'),'D');
 fprintf('============Done!============\n');
 %%
 % for isubj = 1:inums-1

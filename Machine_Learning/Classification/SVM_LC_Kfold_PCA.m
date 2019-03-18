@@ -18,10 +18,10 @@ function [Accuracy, Sensitivity, Specificity, PPV, NPV, Decision, AUC,...
 %     allPSQI=[Scale_Patient.data(:,3);Scale_Control.data(:,2)];
 % end
 if nargin<1
-    mask_path='J:\20190308\DATA\REST\MASK\Group_mask.nii';
+    mask_path='G:\Softer_DataProcessing\spm12\spm12\tpm\Reslice3_TPM_greaterThan0.2.nii';
     K=5;
 %     save_path=pwd;
-    save_path='J:\20190308\DATA\REST';
+    save_path='J:\Data_Code\晓薇姐';
 end
 %% 将图像转为data,并产生label
 [fileName_P,path,data_patients ] = lc_Img2Data;
