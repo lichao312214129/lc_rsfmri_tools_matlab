@@ -75,16 +75,17 @@ net_index=importdata(net_index_path);
 
 % 节点名字,按照网络重新组织节点名字
 [~,node_name]=xlsread(node_name_path);
-node_name=node_name(index,:);
+node_name=node_name(index,3);
 
 
 % Create custom node labels
 myLabel = cell(length(re_net));
 [ind_i,ind_j,index_nozero]=find(re_net);
 for i = 1:length(myLabel)
-%     myLabel{i,1} = num2str(index(i));
-    myLabel{i,1} = '';
+    myLabel{i,1} = num2str(index(i));
+%     myLabel{i,1} = '';
 end
+% myLabel=node_name;
 % for i=1:length(index_nozero)
 %     myLabel{ind_i(i)} =node_name{ind_i(i),2};
 %     myLabel{ind_j(i)} =node_name{ind_j(i),2};

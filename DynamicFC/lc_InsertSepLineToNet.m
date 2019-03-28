@@ -6,7 +6,7 @@ function lc_InsertSepLineToNet(reorgNet)
 
 %% input
 %     sepIndex=2*[0,5,10,17,28,30,44,57];% Yeo17 net atals
-sepIndex=importdata('D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\sepIndex.mat');
+sepIndex=importdata('I:\workstation\dynamicFC\Data\Network_and_plot_para\sepIndex.mat');
 if size(reorgNet,1)~=size(reorgNet,2)
     error('≤ª «∂‘≥∆æÿ’Û');
 end
