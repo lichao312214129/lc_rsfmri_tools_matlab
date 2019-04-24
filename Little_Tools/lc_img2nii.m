@@ -13,13 +13,13 @@ if nargin < 3
 end
 
 if nargin < 2
-    %in_path='F:\Data\test';
-    %out_path='F:\Data';
-	in_path=uigetdir('img文件夹');
+    %in_path='F:\黎超\dynamicFC\Code\lc_rsfmri_tools_matlab-master\Dcm2nii\dcm2nii_LC\test';
+    %out_path='F:\黎超\dynamicFC\Code\lc_rsfmri_tools_matlab-master\Dcm2nii\dcm2nii_LC';
+	in_path=uigetdir(pwd,'img文件夹');
 end
 
 if nargin < 1
-	out_path=uigetdir('结果保持文件夹');
+	out_path=uigetdir(pwd,'结果保持文件夹');
 end
 
 try
