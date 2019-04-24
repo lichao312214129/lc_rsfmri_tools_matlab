@@ -1,16 +1,27 @@
-function lc_img2nii(in_path,out_path)
+function lc_img2nii(out_path,in_path,out_suffix,in_suffix)
 % transform .img files to .nii
 %%
 % read all files
 disp('====== runing ======');
-if nargin==0
-    in_path='F:\Data\test';
-    out_path='F:\Data';
-%     in_path=uigetdir('img文件夹');
-%     out_path=uigetdir('结果保持文件夹');
+
+if nargin < 4
     in_suffix='.img';
+end
+
+if nargin < 3
     out_suffix='.nii';
 end
+
+if nargin < 2
+    %in_path='F:\Data\test';
+    %out_path='F:\Data';
+	in_path=uigetdir('img文件夹');
+end
+
+if nargin < 1
+	out_path=uigetdir('结果保持文件夹');
+end
+
 try
     all_file=dir(fullfile(in_path,['*',in_suffix]));
 catch
