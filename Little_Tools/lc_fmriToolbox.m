@@ -28,11 +28,11 @@ function varargout = lc_fmriToolbox(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @lc_fmriToolbox_OpeningFcn, ...
-                   'gui_OutputFcn',  @lc_fmriToolbox_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @lc_fmriToolbox_OpeningFcn, ...
+    'gui_OutputFcn',  @lc_fmriToolbox_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -68,7 +68,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = lc_fmriToolbox_OutputFcn(hObject, eventdata, handles) 
+function varargout = lc_fmriToolbox_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -126,7 +126,7 @@ function how_stand_Callback(hObject, eventdata, handles)
 opt_cell=get(handles.how_stand, 'String');
 opt_value=get(handles.how_stand, 'Value');
 % fprintf(opt_cell{opt_value});
-handles.opt.how_extract=opt_cell{opt_value};
+handles.opt.how_stand=opt_cell{opt_value};
 % Update handles structure
 guidata(hObject, handles)
 % how_stand
@@ -143,44 +143,55 @@ function Run_Callback(hObject, eventdata, handles)
 len_img = length(handles.opt.img_path_name);
 for i=1:len_img
     fprintf('%d/%d\n',i,len_img)
-    [img,h]=y_Read(handles.opt.img_path_name{i});
-    
+    %     [img,h]=y_Read(handles.opt.img_path_name{i});
+    img_strut = load_nii(handles.opt.img_path_name{i});
+    img = img_strut.img;
     if strcmp(handles.opt.how_stand,'Z标准化')
         if handles.opt.mask_data
-         img_inmask=img.*handles.opt.mask_data;
+            img_inmask=img.*handles.opt.mask_data;
         else
-           img_inmask=img; 
+            img_inmask=img;
         end
-         mean_inmask=mean(img_inmask(:));
-         mystd=std(img_inmask(:));
-         zvalues=(img_inmask-mean_inmask)/mystd;
-         zvalues(~handles.opt.mask_data)=0;
+        mean_inmask=mean(img_inmask(:));
+        mystd=std(img_inmask(:));
+        zvalues=(img_inmask-mean_inmask)/mystd;
+        if handles.opt.mask_data  % make sure out mask data is zeros
+            zvalues(~handles.opt.mask_data)=0;
+        end
         %save
-        [~,name]=fileparts(handles.opt.img_path_name{i});
-        name=fullfile(handles.opt.save_folder,name);
-        y_Write(zvalues,h,name) % to nii
+        [~,name,suffix]=fileparts(handles.opt.img_path_name{i});
+        name=fullfile(handles.opt.save_folder,strcat('z_', name, suffix));
+        %         y_Write(zvalues,h,name)
+        img_strut.img = zvalues;
+        save_nii(img_strut,name);
         
     elseif strcmp(handles.opt.how_stand,'归一化([-1,1])')
         svalues=zeros(size(img));
         if handles.opt.mask_data
             svalues(handles.opt.mask_data)=mapminmax(img(handles.opt.mask_data), -1, 1);
+            svalues(~ handles.opt.mask_data) = 0;  % make sure out mask data is zeros
         else
-            svalues=mapminmax(img, -1, 1);
+            svalues = mapminmax(img(:), -1, 1);
+            svalues = reshape(svalues, size(img)); 
         end
         %save
-        [~,name]=fileparts(handles.opt.img_path_name{i});
-        name=fullfile(handles.opt.save_folder,name);
-        y_Write(svalues,h,name) % to nii
+        [~, name, suffix]=fileparts(handles.opt.img_path_name{i});
+        name=fullfile(handles.opt.save_folder,strcat('scale_', name, suffix));
+        %         y_Write(svalues,h,name)
+        img_strut.img = svalues;
+        save_nii(img_strut,name);
         
     elseif strcmp(handles.opt.how_stand,'Fisher-Z transformation')
         fisherzvalue=0.5*log((1+img)./(1-img));
-        if handles.opt.mask_data
+        if handles.opt.mask_data  % make sure out mask data is zeros
             fisherzvalue(~handles.opt.mask_data)=0;
         end
         %save
-        [~,name]=fileparts(handles.opt.img_path_name{i});
-        name=fullfile(handles.opt.save_folder,name);
-        y_Write(fisherzvalue,h,name) % to nii
+        [~, name, suffix]=fileparts(handles.opt.img_path_name{i});
+        name=fullfile(handles.opt.save_folder,strcat('fisherz_', name, suffix));
+        %         y_Write(fisherzvalue,h,name)
+        img_strut.img = fisherzvalue;
+        save_nii(img_strut,name);
         
     elseif strcmp(handles.opt.how_stand,'除均值化（除以均值）')
         if handles.opt.mask_data
@@ -190,11 +201,12 @@ for i=1:len_img
         end
         mean_inmask=mean(img_inmask(:));
         divmean_values=img_inmask/mean_inmask;
-        divmean_values(~handles.opt.mask_data)=0;
         %save
-        [~,name]=fileparts(handles.opt.img_path_name{i});
-        name=fullfile(handles.opt.save_folder,name);
-        y_Write(divmean_values,h,name) % to nii
+        [~,name,suffix]=fileparts(handles.opt.img_path_name{i});
+        name=fullfile(handles.opt.save_folder,strcat('divmean_', name, suffix));
+        %         y_Write(divmean_values,h,name);
+        img_strut.img = divmean_values;
+        save_nii(img_strut,name);
         
     elseif strcmp(handles.opt.how_stand,'去均值化（减去均值）')
         if handles.opt.mask_data
@@ -204,14 +216,19 @@ for i=1:len_img
         end
         mean_inmask=mean(img_inmask(:));
         demean_values=img_inmask-mean_inmask;
-        demean_values(~handles.opt.mask_data)=0;
+        if handles.opt.mask_data   % make sure out mask data is zeross
+            demean_values(~handles.opt.mask_data)=0;
+        end
         %save
-        [~,name]=fileparts(handles.opt.img_path_name{i});
-        name=fullfile(handles.opt.save_folder,name);
-        y_Write(demean_values,h,name) % to nii
+        [~,name,suffix]=fileparts(handles.opt.img_path_name{i});
+        name=fullfile(handles.opt.save_folder,strcat('demean_', name,suffix));
+        %         y_Write(demean_values,h,name)
+        img_strut.img = demean_values;
+        save_nii(img_strut,name);
+        
     else
-        fprintf('设定的方法为%s,本程序没有添加此功能\n','handles.opt.how_extract')
-        return 
+        fprintf('设定的方法为%s,本程序没有添加此功能\n',handles.opt.how_stand)
+        return
     end
 end
 fprintf('All done!\n')
