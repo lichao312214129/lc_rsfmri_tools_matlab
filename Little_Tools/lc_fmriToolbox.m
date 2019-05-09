@@ -123,8 +123,8 @@ function how_stand_Callback(hObject, eventdata, handles)
 % hObject    handle to how_stand (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-opt_cell=get(handles.how_stand, 'String')
-opt_value=get(handles.how_stand, 'Value')
+opt_cell=get(handles.how_stand, 'String');
+opt_value=get(handles.how_stand, 'Value');
 % fprintf(opt_cell{opt_value});
 handles.opt.how_extract=opt_cell{opt_value};
 % Update handles structure
@@ -140,19 +140,20 @@ function Run_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % handles.opt
-for i=1:length(handles.opt.img_path_name)
-    fprintf('%d/%d\n',i,length(handles.opt.img_path_name))
+len_img = length(handles.opt.img_path_name);
+for i=1:len_img
+    fprintf('%d/%d\n',i,len_img)
     [img,h]=y_Read(handles.opt.img_path_name{i});
     
     if strcmp(handles.opt.how_stand,'Z标准化')
         if handles.opt.mask_data
-         img_filter=img.*handles.opt.mask_data;
+         img_inmask=img.*handles.opt.mask_data;
         else
-           img_filter=img; 
+           img_inmask=img; 
         end
-         mymean=mean(img_filter(:));
-         mystd=std(img_filter(:));
-         zvalues=(img_filter-mymean)/mystd;
+         mean_inmask=mean(img_inmask(:));
+         mystd=std(img_inmask(:));
+         zvalues=(img_inmask-mean_inmask)/mystd;
          zvalues(~handles.opt.mask_data)=0;
         %save
         [~,name]=fileparts(handles.opt.img_path_name{i});
@@ -179,7 +180,35 @@ for i=1:length(handles.opt.img_path_name)
         %save
         [~,name]=fileparts(handles.opt.img_path_name{i});
         name=fullfile(handles.opt.save_folder,name);
-         y_Write(fisherzvalue,h,name) % to nii
+        y_Write(fisherzvalue,h,name) % to nii
+        
+    elseif strcmp(handles.opt.how_stand,'除均值化（除以均值）')
+        if handles.opt.mask_data
+            img_inmask=img.*handles.opt.mask_data;
+        else
+            img_inmask=img;
+        end
+        mean_inmask=mean(img_inmask(:));
+        divmean_values=img_inmask/mean_inmask;
+        divmean_values(~handles.opt.mask_data)=0;
+        %save
+        [~,name]=fileparts(handles.opt.img_path_name{i});
+        name=fullfile(handles.opt.save_folder,name);
+        y_Write(divmean_values,h,name) % to nii
+        
+    elseif strcmp(handles.opt.how_stand,'去均值化（减去均值）')
+        if handles.opt.mask_data
+            img_inmask=img.*handles.opt.mask_data;
+        else
+            img_inmask=img;
+        end
+        mean_inmask=mean(img_inmask(:));
+        demean_values=img_inmask-mean_inmask;
+        demean_values(~handles.opt.mask_data)=0;
+        %save
+        [~,name]=fileparts(handles.opt.img_path_name{i});
+        name=fullfile(handles.opt.save_folder,name);
+        y_Write(demean_values,h,name) % to nii
     else
         fprintf('设定的方法为%s,本程序没有添加此功能\n','handles.opt.how_extract')
         return 
