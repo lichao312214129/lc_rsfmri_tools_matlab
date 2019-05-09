@@ -3,13 +3,13 @@ function lc_fetchSubjStateFC(IDX,k,dFCPath,subj_name,out_path)
 % 来求得每个人的各个状态的连接矩阵（状态内所有窗的中位数median/平均数mean,默认中位数）
 % 可能某些被试没有某个状态【DOI:10.1002/hbm.23430】
 % input
-% IDX:kmeans后的index
-% k:类数
-% dFCPath:动态功能连接矩阵所在文件夹（nNode*nNode*nWindow*nSubj）
-% subjName:所有被试的名字，顺序要一致
-% outPath:结果保存路径
+    % IDX:kmeans后的index
+    % k:类数
+    % dFCPath:动态功能连接矩阵所在文件夹（nNode*nNode*nWindow*nSubj）
+    % subjName:所有被试的名字，顺序要一致
+    % outPath:结果保存路径
 % output
-% 每个被试个体，每个状态的连接矩阵
+    % 每个被试个体，每个状态的连接矩阵
 %%
 if nargin<1
     IDX_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\IDX.mat';
