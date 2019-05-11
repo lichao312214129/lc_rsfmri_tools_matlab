@@ -1,70 +1,60 @@
-function lc_fetchSubjStateFC(IDX,k,dFCPath,subj_name,out_path)
-% 根据kmeans后的IDX以及所有被试的动态连接矩阵（nNode*nNode*nWindow*nSubj）
+function lc_fetchSubjStateFC(idx,k,dir_of_dFC,subj_name,out_dir)
+% 根据kmeans后的idx以及所有被试的动态连接矩阵（nNode*nNode*nWindow*nSubj）
 % 来求得每个人的各个状态的连接矩阵（状态内所有窗的中位数median/平均数mean,默认中位数）
 % 可能某些被试没有某个状态【DOI:10.1002/hbm.23430】
 % input
-    % IDX:kmeans后的index
+    % idx: kmeans后的index
     % k:类数
-    % dFCPath:动态功能连接矩阵所在文件夹（nNode*nNode*nWindow*nSubj）
-    % subjName:所有被试的名字，顺序要一致
-    % outPath:结果保存路径
+    % dir_of_dFC: 动态功能连接矩阵所在文件夹（nNode*nNode*nWindow*nSubj）
+    % subj_name: 所有被试的名字，顺序要一致
+    % out_dir: 结果保存路径
 % output
     % 每个被试个体，每个状态的连接矩阵
-%%
-if nargin<1
-    IDX_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\IDX.mat';
-    k=4;
-    dFCPath='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\DynamicFC_length17_step1_screened';
-    subj_name='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\covariances\subjName.mat';
-    out_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
+%% input
+if nargin < 1
+    idx_path = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\IDX.mat';
+    k = 4;
+    dir_of_dFC = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\DynamicFC_length17_step1_screened';
+    subj_name = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\covariances\subjName.mat';
+    out_dir = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
     
-    IDX=importdata(IDX_path);
-    subj_name=importdata(subj_name);
+    idx = importdata(idx_path);
+    subj_name = importdata(subj_name);
 end
 %%
-% 新建保存结果的文件夹
+% make results' directory
 for i=1:k
-    if ~exist(fullfile(out_path,['state',num2str(i)]),'dir')
-        mkdir(fullfile(out_path,['state',num2str(i)]));
+    if ~exist(fullfile(out_dir,['state',num2str(i)]),'dir')
+        mkdir(fullfile(out_dir,['state',num2str(i)]));
     end
 end
 
-% 按照顺序加载被试的名字
-% subj_name=importdata(subj_name);
-numOfSubj=length(subj_name);
-
 % 判断输入IDX\subj_name是否正确，并自动计算窗口数目
-[nRow,~]=size(IDX);
-if fix(nRow/numOfSubj)~=nRow/numOfSubj
-    fprintf('输入的窗口数目*被试数目不等于IDX！\n');
+n_subj = length(subj_name);
+[n_row,~] = size(idx);
+if fix(n_row/n_subj) ~= n_row/n_subj
+    fprintf('输入的窗口数目*被试数目不等于idx！\n');
     return
 else
-    num_window=nRow/numOfSubj;
+    num_window = n_row/n_subj;
 end
 
 % 加载被试的动态功能连接矩阵
-dFCFile=dir(fullfile([dFCPath,'\*.mat']));
+dFCFile=dir(fullfile([dir_of_dFC,'\*.mat']));
 dFCName={dFCFile.name}';
-dFCFile=fullfile(dFCPath,dFCName);
+dFCFile=fullfile(dir_of_dFC,dFCName);
 
-% 逐个被试，求各个状态的平均连接
-numOfSubj=length(subj_name);
-ind_start=1:num_window:nRow;
-ind_end=num_window:num_window:nRow;
+% get each subject's median network
+n_subj = length(subj_name);
+ind_start = 1:num_window:n_row;
+ind_end = num_window:num_window:n_row;
 
-% try
-% p = parpool('local',1);
-% catch
-%     disp('已开启多CPU')
-% end
-
-tic;
-for ithSubj=1:numOfSubj
-    fprintf('%d/%d\n',ithSubj,numOfSubj);
-    calc_median_or_mean(IDX,ithSubj,ind_start,ind_end,dFCFile,subj_name,out_path);
+for ithSubj=1:n_subj
+    fprintf('%d/%d\n',ithSubj,n_subj);
+    calc_median_or_mean(idx,ithSubj,ind_start,ind_end,dFCFile,subj_name,out_dir);
 end
-toc;
-fprintf('============Done!============\n');
+
+fprintf('============All Done!============\n');
 end
 
 function state_fc=calc_median_or_mean(IDX,ithSubj,ind_start,ind_end,dFCFile,subj_name,out_path)
