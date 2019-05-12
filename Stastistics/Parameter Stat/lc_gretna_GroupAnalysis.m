@@ -1,4 +1,4 @@
-function [b_OLS_metric, t_OLS_metric, TF_ForContrast_metric, r_OLS_metric] =lc_gretna_GroupAnalysis(DependentMatrix, Predictor, Contrast, TF_Flag)
+function [b_OLS_metric, t_OLS_metric, TF_ForContrast_metric, r_OLS_metric] =my_gretna_GroupAnalysis(DependentMatrix, Predictor, Contrast, TF_Flag)
 % function y_GroupAnalysis_Image(DependentDir,Predictor,OutputName,MaskFile)
 % Perform regression analysis 
 % Input:

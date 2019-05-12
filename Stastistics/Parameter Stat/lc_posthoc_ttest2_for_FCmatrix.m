@@ -1,4 +1,4 @@
-function  [h_posthoc_fdr,pvalue_posthoc,tvalue_posthoc]=lc_posthoc_ttest2_for_FCmatrix(mask,fdr_threshold)
+function  [h_posthoc_fdr,pvalue_posthoc,tvalue_posthoc]=lc_posthoc_ttest2_for_FCmatrix()
 % 对ROI wise的static/dynamic FC 进行统计分析(post-hoc ttest2+组间水平的FDR校正)
 % 注意：我们只将病人组与正常对照组进行两两比较，病人组之间没有比较。
 % input：
@@ -11,76 +11,52 @@ function  [h_posthoc_fdr,pvalue_posthoc,tvalue_posthoc]=lc_posthoc_ttest2_for_FC
 %   T: ...T值
 
 %% all input
-if nargin<1
-    % input
-    path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
-    state=4;
-    
-    % fc
-    path_sz=fullfile(path,['state',num2str(state),'\state',num2str(state),'_SZ']);
-    path_bd=fullfile(path,['state',num2str(state),'\state',num2str(state),'_BD']);
-    path_mdd=fullfile(path,['state',num2str(state),'\state',num2str(state),'_MDD']);
-    path_hc=fullfile(path,['state',num2str(state),'\state',num2str(state),'_HC']);
-    
-    suffix='*.mat';
-    n_row=114;%矩阵有几行
-    n_col=114;%矩阵有几列
-    
-    % correction
-    fdr_threshold=0.05;
-    correction_method='fdr';
-    
-    % mask
-    add_mask=1;
-    mask=importdata(fullfile(path,['state',num2str(state),'\result','\h_ancova_',correction_method,'.mat']));
-    mask=mask==1;
-    
-    % save
-    if_save=1;
-    save_path=fullfile(path,['state',num2str(state),'\result']);
-end
+% =========================================================================
+% origin matrix
+root_dir = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
+dir_1 = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
+dir_2 = fullfile(root_dir,['state',num2str(state),'\state',num2str(state),'_BD']);
+dir_3 = fullfile(root_dir,['state',num2str(state),'\state',num2str(state),'_MDD']);
+dir_hc = fullfile(root_dir,['state',num2str(state),'\state',num2str(state),'_HC']);
+suffix = '*.mat';
+n_row = 114;
+n_col = 114;
+dir_of_all_origin_mat = {dir_1, dir_2, dir_3, dir_hc};
+
+% t-test parameters
+contrast = [1 1 1 0];  % 正常组在最后
+
+% correction
+correction_threshold = 0.05;
+correction_method = 'fdr';
+
+% mask
+mask='path\to\your\ancova\h_ancova_correction_method.mat';  
+mask=mask==1;
+
+% save
+if_save=1;
+save_path=fullfile(path,['state',num2str(state),'\result']);
+% =========================================================================
 
 %% load fc and cov
 % load fc
 fprintf('Loading FC...\n');
-fc_sz=load_FCmatrix(path_sz,suffix,n_row,n_col);
-fc_bd=load_FCmatrix(path_bd,suffix,n_row,n_col);
-fc_mdd=load_FCmatrix(path_mdd,suffix,n_row,n_col);
-fc_hc=load_FCmatrix(path_hc,suffix,n_row,n_col);
-fprintf('Loaded FC\n');
-
-% 加载协变量
-% post-hoc 不需要加协变量
-
-%% 准备数据
-% 提取Mask内的连接,提取之后，被试矩阵将会是1D的形式
-if add_mask
-    fc_sz=fc_sz(:,mask);
-    fc_bd=fc_bd(:,mask);
-    fc_mdd=fc_mdd(:,mask);
-    fc_hc=fc_hc(:,mask);
+n_group = length(dir_of_all_origin_mat);
+dependent_cell = {};
+for i = 1 : n_group
+    fc = load_FCmatrix(dir_of_all_origin_mat{i},suffix,n_row,n_col);
+    fc = prepare_data(fc,mask);  % prepare data
+    dependent_cell = cat (1, dependent_cell, fc);
 end
-
-% Inf/NaN to 1 and 0
-fc_sz(isinf(fc_sz))=1;
-fc_bd(isinf(fc_bd))=1;
-fc_mdd(isinf(fc_mdd))=1;
-fc_hc(isinf(fc_hc))=1;
-
-fc_sz(isnan(fc_sz))=0;
-fc_bd(isnan(fc_bd))=0;
-fc_mdd(isnan(fc_mdd))=0;
-fc_hc(isnan(fc_hc))=0;
+fprintf('Loaded FC\n');
 
 %% post-hoc ttest2
 disp('performing post-hoc ttest2 for all dependent variables...')
-DependentFiles={fc_sz,fc_bd,fc_mdd,fc_hc};
-contrast=[1 1 1 0];%正常组在最后
-[h_posthoc_without_fdr,pvalue_posthoc,tvalue_posthoc]=lc_ttest2(DependentFiles,contrast);
+[h_posthoc_without_fdr, pvalue_posthoc,tvalue_posthoc]=lc_ttest2(dependent_cell,contrast);
 
-%% 组间水平的fdr correction：
-%% 此时的FDR校正的对象应该是所有组的某个特征，而不是某个组的所有特征
-[h_posthoc_fdr]= post_hoc_fdr(pvalue_posthoc,fdr_threshold,correction_method);
+%% 组间水平的fdr correction,此时的FDR校正的对象应该是所有组的某个特征，而不是某个组的所有特征
+[h_posthoc_fdr] = post_hoc_fdr(pvalue_posthoc,correction_threshold,correction_method);
 
 %% let h_fdr and p_fdr back to 2D matrix
 % note. 统一都取上三角（不包括对角线）
@@ -101,28 +77,39 @@ fprintf('==================================\n');
 fprintf('Completed\n');
 end
 
-function all_subj_fc=load_FCmatrix(path,suffix,n_row,n_col)
-% 加载path中所有被试的FC
-subj=dir(fullfile(path,suffix));
-subj={subj.name}';
-subj_path=fullfile(path,subj);
+function all_subj_fc = load_FCmatrix(path, suffix, n_row, n_col)
+% load all matrix in given path
+subj = dir(fullfile(path,suffix));
+subj = {subj.name}';
+subj_path = fullfile(path,subj);
 
-n_subj=length(subj);
-all_subj_fc=zeros(n_subj,n_row,n_col);
-for i =1:n_subj
-    all_subj_fc(i,:,:)=importdata(subj_path{i});
+n_subj = length(subj);
+all_subj_fc = zeros(n_subj,n_row,n_col);
+for i = 1 : n_subj
+    all_subj_fc(i,:,:) = importdata(subj_path{i});
 end
 end
 
-function [H,P,T]=lc_ttest2(DependentFiles,contrast)
+function fc_mat_prepared = prepare_data(fc_mat,mask)
+% prepare data
+
+% extract connectvity in ID_Mask. The result is 1D vector for each subject
+fc_mat_prepared = fc_mat(:,mask);
+
+% change Inf/NaN to 1/0
+fc_mat_prepared(isinf(fc_mat_prepared)) = 1;
+fc_mat_prepared(isnan(fc_mat_prepared)) = 0;
+end
+
+function [H,P,T]=lc_ttest2(dependent_cell,contrast)
 % 仅仅将病人组与正常对照两两对比
 % 假设总共有4组，正常人组在第四组，则：
 % contrast=[1 1 1 0]
-n_g=sum(contrast);
-patients_groups_ind=find(contrast==1);
+n_g = sum(contrast);
+patients_groups_ind = find(contrast==1);
 
-% 预分配
-fc=(DependentFiles{1});
+% preallocate
+fc=(dependent_cell{1});
 n_features=size(fc,2);
 H=zeros(n_g,n_features);
 P=ones(n_g,n_features);
@@ -130,7 +117,7 @@ T=zeros(n_g,n_features);
 disp('ttest2...')
 for i=1:n_g
     ind=patients_groups_ind(i);
-    [h,p,~,s] = ttest2(DependentFiles{ind}, DependentFiles{contrast==0});
+    [h,p,~,s] = ttest2(dependent_cell{ind}, dependent_cell{contrast==0});
     t=s.tstat;
     H(i,:)=h;
     P(i,:)=p;
@@ -139,16 +126,18 @@ end
 disp('ttest2 done')
 end
 
-function [h_fdr]= post_hoc_fdr(P,fdr_threshold,correction_method)
+function [h_fdr] = post_hoc_fdr(P,correction_threshold, correction_method)
 % P的维度=n_group*n_features
 % 对象：所有组的某个特征，迭代直到所有特征校正结束
 [n_g,n_f]=size(P);
 h_fdr=zeros(n_g,n_f);
 for i=1:n_f
     if strcmp(correction_method,'fdr')
-        results=multcomp_fdr_bh(P(:,i),'alpha', fdr_threshold);
+        results=multcomp_fdr_bh(P(:,i),'alpha', correction_threshold);
+    elseif strcmp(correction_method,'fwd')
+        results=multcomp_bonferroni(P(:,i),'alpha', correction_threshold);
     else
-        results=multcomp_bonferroni(P(:,i),'alpha', fdr_threshold);
+        fprintf('Please indicate the correct correction method!\n');
     end
     h_fdr(:,i)=results.corrected_h;
 end
