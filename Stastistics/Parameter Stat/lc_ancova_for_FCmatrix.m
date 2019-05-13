@@ -1,4 +1,10 @@
-function  [fvalue_ancova, pvalue_ancova, h_ancova_corrected] = lc_ancova_for_FCmatrix(mask, correction_threshold)
+function  [fvalue_ancova, pvalue_ancova, h_ancova_corrected] = ...
+           lc_ancova_for_FCmatrix(...
+                                    dir_of_all_origin_mat,... 
+                                    path_of_all_cov_files,...
+                                    correction_threshold,...
+                                    mask,...
+                                    is_save)
 % 对ROI wise的static/dynamic FC 进行统计分析(ancova+fdr)
 % input：
 %   ZFC_*：ROI wise的静态和动态功能连接矩阵,size=N*N,N为ROI个数
@@ -9,44 +15,56 @@ function  [fvalue_ancova, pvalue_ancova, h_ancova_corrected] = lc_ancova_for_FCm
 
 %% All inputs
 % input
-if nargin < 1
-    
-    % origin matrix
-    root_dir = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
-    dir_sz = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
-    dir_bd = fullfile(root_dir,['state',num2str(state),'\state',num2str(state),'_BD']);
-    dir_mdd = fullfile(root_dir,['state',num2str(state),'\state',num2str(state),'_MDD']);
-    dir_hc = fullfile(root_dir,['state',num2str(state),'\state',num2str(state),'_HC']);
-    suffix = '*.mat';
-    n_row = 114;
-    n_col = 114;
-    dir_of_all_origin_mat = {dir_sz, dir_bd, dir_mdd, dir_hc};
-    
-    % covariance directory
-    dir_sz_cov = fullfile(root_dir,['state',num2str(state),'\cov','\state',num2str(state),'_cov_SZ.xlsx']);
-    dir_bd_cov = fullfile(root_dir,['state',num2str(state),'\cov','\state',num2str(state),'_cov_BD.xlsx']);
-    dir_mdd_cov = fullfile(root_dir,['state',num2str(state),'\cov','\state',num2str(state),'_cov_MDD.xlsx']);
-    dir_hc_cov = fullfile(root_dir,['state',num2str(state),'\cov','\state',num2str(state),'_cov_HC.xlsx']);
-    dir_of_all_cov = {dir_sz_cov, dir_bd_cov, dir_mdd_cov, dir_hc_cov};
-    
-    % mask
+% save parameters
+if nargin < 5
+    is_save = 1;
+    save_path =  uigetdir(pwd,'select saving folder');;
+    % make folder to save results
+    if ~exist(save_path,'dir')
+        mkdir(save_path);
+    end
+end
+
+% mask
+if nargin < 4
+    n_node = str2double(input('Input how many nodes:','s'));
+    n_row =n_node;
+    n_col = n_node;
     mask = ones(n_row, n_col);
     mask(triu(mask) == 1) = 0;
     mask = mask == 1;
-    
-    % correction
-    correction_threshold = 0.05;
-    correction_method = 'fdr';
-    
-    % save parameters
-    is_save = 1;
-    save_path = fullfile(root_dir,['state', num2str(4), '\result']);
-    
 end
 
-% make folder to save results
-if ~exist(save_path,'dir')
-    mkdir(save_path);
+% correction
+if nargin < 3
+    correction_threshold = 0.05;
+    correction_method = 'fdr';
+end
+
+% covariance directory
+if nargin < 2
+    n_groups = str2double(input('Input how many groups:','s'));
+    path_of_all_cov_files = {};
+    for i = 1 : n_groups
+        [file_name, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of cov files',pwd, ...
+                                        'MultiSelect', 'off');  % In order to keep order, mutlselect is off
+        if ~ file_name
+            fprintf('The first covariance not be selected!\n');
+            return
+        end
+        path_of_all_cov_files = cat(1, path_of_all_cov_files, fullfile(path, file_name));
+    end
+end
+
+% origin matrix
+if nargin < 1
+    dir_of_all_origin_mat = {};
+    for i = 1 : n_groups
+        directory = uigetdir(pwd,'select directory of .mat files');
+        dir_of_all_origin_mat = cat(1, dir_of_all_origin_mat, directory);
+    end
+
+    suffix = '*.mat';
 end
 
 %% load fc and cov
@@ -66,7 +84,7 @@ fprintf('Loaded FC\n');
 fprintf('Loading covariance...\n');
 covariates = {};
 for i = 1 : n_group
-    cov = load_cov(dir_of_all_cov{i});
+    cov = load_cov(path_of_all_cov_files{i});
     covariates = cat (1, covariates, cov);
 end
 fprintf('Loaded covariance\n');
@@ -99,7 +117,7 @@ pvalue_ancova = P_tmp;
 %% save
 if is_save
     disp('save results...');
-    save (fullfile(save_path,['h_ancova_',correction_method,'.mat']),'h_ancova_fdr');
+    save (fullfile(save_path,['h_ancova_',correction_method,'.mat']),'h_ancova_corrected');
     save (fullfile(save_path,['fvalue_ancova_',correction_method,'.mat']),'fvalue_ancova');
     save (fullfile(save_path,['pvalue_ancova_',correction_method,'.mat']),'pvalue_ancova');
     disp('saved results');
