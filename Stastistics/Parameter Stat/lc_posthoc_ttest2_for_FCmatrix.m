@@ -55,7 +55,7 @@ n_group = length(dir_of_all_origin_mat);
 dependent_cell = {};
 for i = 1 : n_group
     fc = load_FCmatrix(dir_of_all_origin_mat{i},suffix,n_row,n_col);
-    fc = prepare_data(fc,mask);  % prepare data
+    fc = lc_prepare_data(fc,mask);  % prepare data
     dependent_cell = cat (1, dependent_cell, fc);
 end
 fprintf('Loaded FC\n');
