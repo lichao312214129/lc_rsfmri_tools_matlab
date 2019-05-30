@@ -17,7 +17,7 @@ if nargin<1
     save_name='state4_distinct_3';
     
     % 网络index路径，用于重构功能网络（按照网络的顺序）
-    net_index_path='D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\netIndex.mat';
+    net_index_path='F:\黎超\Workstation_dynamic_fc\Data\Network_and_plot_para\netIndex.mat';
     % 节点名字
     node_name_path='D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\17network_label.xlsx';
     
@@ -44,7 +44,7 @@ end
 
 
 % 显示哪一组
-if numel(size(net))>1
+if numel(size(net))>2
     net=squeeze(net(which_group,:,:));
 end
 

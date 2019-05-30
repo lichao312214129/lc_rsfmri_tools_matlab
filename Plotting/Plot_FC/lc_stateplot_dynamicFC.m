@@ -11,22 +11,22 @@ plot_circle=0;
 %%
 if plot_net
     % input
-    net_path_hc_state1='I:\workstation\dynamicFC\Data\Dynamic\state4\state4_HC_Avg.mat';
-    net_path_hc_state2='I:\workstation\dynamicFC\Data\Dynamic\state4\state4_SZ_Avg.mat';
-    net_path_hc_state3='I:\workstation\dynamicFC\Data\Dynamic\state4\state4_BD_Avg.mat';
-    net_path_hc_state4='I:\workstation\dynamicFC\Data\Dynamic\state4\state4_MDD_Avg.mat';
+    net_path_hc_state1='F:\黎超\Workstation_dynamic_fc\Data\Dynamic\state1\state1_HC_Avg.txt';
+    net_path_sz_state1='F:\黎超\Workstation_dynamic_fc\Data\Dynamic\state1\state1_SZ_Avg.txt';
+    net_path_bd_state1='F:\黎超\Workstation_dynamic_fc\Data\Dynamic\state1\state1_BD_Avg.txt';
+    net_path_mdd_state1='F:\黎超\Workstation_dynamic_fc\Data\Dynamic\state1\state1_MDD_Avg.txt';
     if_save=0;
     if_add_mask=0;
     %
     
-    mask_path='I:\workstation\dynamicFC\Data\Dynamic\state1\result1\shared_1and2and3.mat';
+    mask_path='F:\黎超\Workstation_dynamic_fc\Data\Dynamic\state1\result1\shared_1and2and3_fdr.mat';
     how_disp='all';% or 'only_neg'
     if_binary=0; %二值化处理，正值为1，负值为-1
     which_group=1;
-    net_index_path='I:\workstation\dynamicFC\Data\Network_and_plot_para\netIndex.mat';
+    net_index_path='F:\黎超\Workstation_dynamic_fc\Data\Network_and_plot_para\netIndex.mat';
     
     % plot
-    load I:\workstation\dynamicFC\Data\Network_and_plot_para\Mycolormap_state;
+    load F:\黎超\Code\lc_rsfmri_tools_matlab\Plotting\Plot_FC\Mycolormap_state;
     subplot(1,4,1)
     lc_netplot(net_path_hc_state1,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
     colormap(mymap_state)
@@ -34,20 +34,20 @@ if plot_net
     % colorbar
     
     subplot(1,4,2)
-    lc_netplot(net_path_hc_state2,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
+    lc_netplot(net_path_sz_state1,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
     colormap(mymap_state)
     caxis([-0.8 0.8])
     % colorbar
     %
     subplot(1,4,3)
-    lc_netplot(net_path_hc_state3,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
+    lc_netplot(net_path_bd_state1,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
     colormap(mymap_state)
     caxis([-0.8 0.8])
     % colorbar
     
     
     subplot(1,4,4)
-    lc_netplot(net_path_hc_state4,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
+    lc_netplot(net_path_mdd_state1,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
     colormap(mymap_state)
     caxis([-0.8 0.8])
 %     colorbar
@@ -59,6 +59,7 @@ if plot_net
         print(gcf,'-dtiff', '-r300','tt.tiff')
     end
 end
+
 %% 画各个状态组间对比后的网络
 if plot_circle
     % t值和p值的文件
