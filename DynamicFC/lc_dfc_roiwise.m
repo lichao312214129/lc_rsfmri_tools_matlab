@@ -1,4 +1,4 @@
-function lc_DynamicFC_InterROI_LC(result_dir, all_subj_dir, window_step, window_length, opt)
+function lc_dfc_roiwise(result_dir, all_subj_dir, window_step, window_length, opt)
 % 计算一组被试的ROI wise的动态功能连接和了静态功能连接
 % input：
 %   time_series_of_all_node：一组被试的时间序列矩阵，每一个被试的数据size为：T*N，T为时间点个数，N为ROI的个数
@@ -11,17 +11,17 @@ function lc_DynamicFC_InterROI_LC(result_dir, all_subj_dir, window_step, window_
 tic
 %% 
 
-if nargin<5
-    opt.if_calc_dynamic=0;
-    opt.if_calc_static=1;
+if nargin < 5
+    opt.if_calc_dynamic = 0;
+    opt.if_calc_static = 1;
 end
 
-if nargin<4
-    window_length=17;
+if nargin < 4
+    window_length = 17;
 end
 
-if nargin<3
-    window_step=1;
+if nargin < 3
+    window_step = 1;
 end
 
 % 获得所有被试mat的路径

@@ -1,27 +1,53 @@
-function lc_DynamicBC_clustermatrix(k,subj_dir, out_dir, clustering_method)
-% 对动态功能连接矩阵进行聚类
-% 请务必引用DynamicBC
-% 此代码以及被我修改：
-% 1：只是用上三角矩阵（不包括对角线）
-% 2：只使用组水平的聚类结果，从而导致某些被试缺乏某些状态，但是很多研究是如此
+function lc_cluster_for_dfc(subj_path,k,clustering_method, out_dir)
+% cluster for dynamic fc matrix
+% output:
+    % meta informations: idx, C, sumd, D
+    % median network for each state
+    
+% NOTE:
+    % 1：Only use upper triangular matrix as features (not include diagonal)
+    % 2：Only use results from group level. So not every subject has all the states.
 
-%%
-% input
-k=5;
-subj_folder = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\DynamicFC_length17_step1_screened';
-out_dir = 'D:\WorkStation_2018\WorkStation_2018_08_Doctor_DynamicFC_Psychosis\Data\zDynamic\state_test';
-clustering_method = 'cityblock';
-%% load all subject's matrix
-subj_dir = dir(fullfile(subj_folder,'*.mat'));
+%% input
+if nargin < 4
+    out_dir = uigetdir(pwd, 'Select the folder containing results');
+end
 
-% *save subjects's_name, so that we can align subject's order with index_of_state.
-subj_name = {subj_dir.name}';
-mkdir(out_dir);
-save(fullfile(out_dir,'subj_name.mat'),'subj_name');
+if nargin < 3
+    clustering_method = 'cityblock';
+end
 
-% pre-allocating space to speed up
-n_subj = size(subj_dir,1);
-file_name = fullfile(subj_dir,subj_dir(1).name);
+if nargin < 2
+    k = str2double(input('Enter the K you want to cluster:', 's'));
+end
+
+if nargin < 1
+    subj_folder = uigetdir(pwd, 'Select the folder containing subjects'' network');
+    subj_path = dir(fullfile(subj_folder,'*.mat'));  
+    % TODO: expand the .mat file to other file like txt
+end
+
+%%  *save subjects's_name, 
+% so that we can align subject's order with index_of_state.
+%(Required!)
+subj_name = {subj_path.name}';
+if ~exist(out_dir, 'dir')
+    mkdir(out_dir);
+end
+
+timenow = strrep(num2str(fix(clock)),' ','');
+savename = strcat('ordered_subjname_', timenow, '.txt');
+savefullname = fullfile(out_dir,savename);
+fid = fopen(savefullname,'wt');
+n_subj = length(subj_name);
+for i = 1:n_subj
+    fprintf(fid,'%s\n',subj_name{i});
+end
+fclose(fid);
+
+%% pre-allocating space to speed up
+n_subj = size(subj_path,1);
+file_name = fullfile(subj_path,subj_path(1).name);
 dynamic_mats = importdata(file_name);
 n_node = size(dynamic_mats,1);
 n_window = length(dynamic_mats);
@@ -30,11 +56,11 @@ n_feature = sum(mask_of_up_mat(:));
 mat_of_one_state = zeros(n_feature, n_window);
 all_mat = zeros(n_feature, n_window, n_subj);
 
+%% load all subjects matrix
 for i = 1:n_subj
     fprintf('load %dth dynamic matrix to all matrix\n',i);
-    % if isfile(fullfile(subjdir,subFold(i+2).name))
-    file_name=fullfile(subj_dir,subj_dir(i).name);
-    dynamic_mats=importdata(file_name);
+    file_name = fullfile(subj_path, subj_path(i).name);
+    dynamic_mats = importdata(file_name);
     
     % only extract the upper triangular matrix, and not include the diagonal
     for imat = 1:n_window
@@ -47,10 +73,8 @@ for i = 1:n_subj
 end
 fprintf('======loaded all mat!======\n')
 
-
 %% kmeans
 fprintf('This process will take a while!\nWaiting for kmeans clustering...\n');
-
 % prepare data
 all_mat(isinf(all_mat)) = 1;
 all_mat(isnan(all_mat)) = 0;
@@ -64,11 +88,9 @@ all_mat = reshape(all_mat,n_feature,n_window*n_subj)';
 opts = statset('Display', 'final');
 [idx, C, sumd, D] = kmeans(all_mat, k, 'Distance', clustering_method,...
                                'Replicates', 100, 'Options', opts);
-fprintf('***kmeans clustering finished!***\n')
-
+fprintf('Congratulations! the kmeans clustering finished finally!\n')
 
 %% save
-
 % saving meta info
 fprintf('saving meta info...\n');
 save(fullfile(out_dir,'idx.mat'),'idx');
@@ -88,6 +110,5 @@ for i = 1 : k
     square_median_mat(eye(n_node) == 1) = 1;
     save(fullfile(out_dir,['cluster_',num2str(i), '.mat']), 'square_median_mat');
 end
-
 fprintf('============All Done!============\n');
 end

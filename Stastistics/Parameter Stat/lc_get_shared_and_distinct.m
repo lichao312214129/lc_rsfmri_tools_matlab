@@ -1,6 +1,6 @@
 function [shared_1and2and3,shared_1and2,shared_1and3,shared_2and3,...
           distinct_1,distinct_2,distinct_3]=...
-                lc_calc_shared_and_distinct_for_FCmatrix(h_mat,t_mat)
+                lc_get_shared_and_distinct(h_mat,t_mat)
 % 经过post-hoc之后，找到病人组（对于正常组来说）共同（且异常方向一致）以及每种疾病特有的（不包括异常方向特有）异常连接
 % SZ & BD & MDD、SZ & BD not MDD、SZ & MDD not BD、BD & MDD not SZ、SZ、BD、MDD
 % input
@@ -9,16 +9,16 @@ function [shared_1and2and3,shared_1and2,shared_1and3,shared_2and3,...
 %%
 if nargin<1
     % input
-    path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
+    rootpath='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
     state=4;
     correction_method='fdr';
 
-    h_posthoc_corrected=fullfile(path,['state',num2str(state),'\result','\h_posthoc_',correction_method,'.mat']);
-    t_posthoc_corrected=fullfile(path,['state',num2str(state),'\result','\tvalue_posthoc_',correction_method,'.mat']);
+    h_posthoc_corrected=fullfile(rootpath,['state',num2str(state),'\result','\h_posthoc_',correction_method,'.mat']);
+    t_posthoc_corrected=fullfile(rootpath,['state',num2str(state),'\result','\tvalue_posthoc_',correction_method,'.mat']);
     h_mat=importdata(h_posthoc_corrected);
     t_mat=importdata(t_posthoc_corrected);
     if_save=1;
-    save_path=fullfile(path,['state',num2str(state),'\result1']);
+    save_path=fullfile(rootpath,['state',num2str(state),'\result1']);
 end
 
 % 新建结果文件夹

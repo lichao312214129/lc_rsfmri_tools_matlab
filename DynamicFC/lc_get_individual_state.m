@@ -1,15 +1,16 @@
-function lc_fetchSubjStateFC(idx,k,dir_of_dFC,subj_name,out_dir)
-% 根据kmeans后的idx以及所有被试的动态连接矩阵（nNode*nNode*nWindow*nSubj）
-% 来求得每个人的各个状态的连接矩阵（状态内所有窗的中位数median/平均数mean,默认中位数）
-% 可能某些被试没有某个状态【DOI:10.1002/hbm.23430】
+function lc_get_individual_state(idx,k,dir_of_dFC,subj_name,out_dir)
+% Fetch each subject's median network for each state according idex from kmeans cluster methods
+% Each subject's dynamic FC data is nNode*nNode*nWindow tensor
+% NOTE: not all subjects have all state
 % input
-    % idx: kmeans后的index
-    % k:类数
-    % dir_of_dFC: 动态功能连接矩阵所在文件夹（nNode*nNode*nWindow*nSubj）
-    % subj_name: 所有被试的名字，顺序要一致
-    % out_dir: 结果保存路径
+    % idx: index from kmeans cluster method
+    % k
+    % dir_of_dFC: folder containing the dFC（nNode*nNode*nWindow*nSubj）
+    % ordered_subjname: ordered subject names
+    % out_dir: save folder
 % output
-    % 每个被试个体，每个状态的连接矩阵
+    % each network for each state for each subject
+    
 %% input
 if nargin < 1
     idx_path = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\IDX.mat';
@@ -21,6 +22,7 @@ if nargin < 1
     idx = importdata(idx_path);
     subj_name = importdata(subj_name);
 end
+
 %%
 % make results' directory
 for i=1:k
