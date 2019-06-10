@@ -37,9 +37,10 @@ nii = load_nii(nii_file);
 niidata = nii.img;
 n_frame = size(niidata, 3);
 for i = 1:n_frame
-    savename = fullfile(dcm_folder, strcat('file',num2str(i), '.dcm'));
+    savename = fullfile(dcm_folder, strcat(num2str(i), '.IMA'));
     dataset = double(niidata(:,:,i));
     dicomwrite(dataset, savename);
 end
+disp('All Done!');
 end
 
