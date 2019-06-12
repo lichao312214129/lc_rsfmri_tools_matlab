@@ -6,7 +6,7 @@ function lc_InsertSepLineToNet(net,sepIndex)
 %% input
 if nargin < 2
     %     sepIndex=2*[0,5,10,17,28,30,44,57];% Yeo17 net atals
-    sepIndex=importdata('F:\Àè³¬\Workstation_dynamic_fc\Data\Network_and_plot_para\sepIndex.mat');
+    sepIndex=importdata('D:\WorkStation_2018\Workstation_dynamic_FC_V2\Data\Network_and_plot_para\sepIndex.mat');
 end
 
 if size(net,1)~=size(net,2)
@@ -15,6 +15,7 @@ end
 
 %%
 % figure
+figure;
 imagesc(net)
 % insert separate line
 lc_line(sepIndex,length(net))

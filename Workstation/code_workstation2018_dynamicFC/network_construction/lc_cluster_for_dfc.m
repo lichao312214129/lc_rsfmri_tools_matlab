@@ -99,6 +99,7 @@ save(fullfile(out_dir,'sumd.mat'),'sumd');
 save(fullfile(out_dir,'D.mat'),'D');
 
 % Save the median network of each state of the whole group
+% OR directly save the 'C'
 fprintf('Getting and saving the median network of each state of the whole group...\n')
 for i = 1 : k
     ind = idx==i;

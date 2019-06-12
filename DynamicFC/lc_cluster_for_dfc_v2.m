@@ -1,4 +1,4 @@
-function lc_cluster_for_dfc(subj_path,k,clustering_method, out_dir)
+function lc_cluster_for_dfc_v2(subj_path,k,clustering_method, out_dir)
 % cluster for dynamic fc matrix
 % output:
     % meta informations: idx, C, sumd, D
@@ -85,9 +85,14 @@ all_mat = reshape(all_mat,n_feature,n_window*n_subj)';
 % Randomly repeat clustering using new initial cluster centroid .
 % Large sample size will be very time-consuming.
 % Please use a high-performance computer, and wait patiently.
-opts = statset('Display', 'final');
+pool = parpool;                      % Invokes workers
+stream = RandStream('mlfg6331_64');  % Random number stream
+options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
+tic; 
 [idx, C, sumd, D] = kmeans(all_mat, k, 'Distance', clustering_method,...
-                               'Replicates', 100, 'Options', opts);
+                               'Replicates', 100, 'Options', options,...
+                               'Start', 'plus');
+toc; 
 fprintf('Congratulations! the kmeans clustering finished finally!\n')
 
 %% save
@@ -99,7 +104,6 @@ save(fullfile(out_dir,'sumd.mat'),'sumd');
 save(fullfile(out_dir,'D.mat'),'D');
 
 % Save the median network of each state of the whole group
-% OR directly save the 'C'
 fprintf('Getting and saving the median network of each state of the whole group...\n')
 for i = 1 : k
     ind = idx==i;

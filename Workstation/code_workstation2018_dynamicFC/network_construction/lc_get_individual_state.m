@@ -9,15 +9,15 @@ function lc_get_individual_state(idx,k,dir_of_dFC,subj_name,out_dir)
     % ordered_subjname: ordered subject names
     % out_dir: save folder
 % output
-    % each network for each state for each subject
+    % each network of each state for each subject
     
 %% input
 if nargin < 1
-    idx_path = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\IDX.mat';
-    k = 4;
-    dir_of_dFC = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\DynamicFC_length17_step1_screened';
-    subj_name = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\covariances\subjName.mat';
-    out_dir = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
+    idx_path = 'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\zDynamic\state\allState17_5\IDX.mat';
+    k = 5;
+    dir_of_dFC = 'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\zDynamic\DynamicFC_length17_step1_screened';
+    subj_name = 'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\zDynamic\state\covariances\subjName.mat';
+    out_dir = 'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\zDynamic\state\allState17_5\state5_all';
     
     idx = importdata(idx_path);
     subj_name = importdata(subj_name);
