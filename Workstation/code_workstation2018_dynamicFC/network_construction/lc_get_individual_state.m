@@ -66,7 +66,7 @@ unique_idx=unique(idx_current_subj);
 % 当前被试的所有状态
 dFC=importdata(dFCFile{ithSubj});%  载入当前被试
 for i=1:length(unique_idx)
-    % 求匹配当前状态的窗口的功能连接的平均值
+    % 求匹配当前状态的窗口的中位数
     ith_state=unique_idx(i);
     state_fc=median(dFC(:,:,idx_current_subj==ith_state),3);
 %     state_fc=mean(dFC(:,:,idx_current_subj==ith_state),3);

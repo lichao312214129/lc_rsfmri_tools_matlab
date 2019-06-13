@@ -5,7 +5,7 @@ function lc_get_individual_state(idx,k,dir_of_dFC,subj_name,out_dir)
 % input
     % idx: index from kmeans cluster method
     % k
-    % dir_of_dFC: folder containing the dFC£¨nNode*nNode*nWindow*nSubj£©
+    % dir_of_dFC: folder containing the dFCï¼ˆnNode*nNode*nWindow*nSubjï¼‰
     % ordered_subjname: ordered subject names
     % out_dir: save folder
 % output
@@ -31,17 +31,17 @@ for i=1:k
     end
 end
 
-% ÅĞ¶ÏÊäÈëIDX\subj_nameÊÇ·ñÕıÈ·£¬²¢×Ô¶¯¼ÆËã´°¿ÚÊıÄ¿
+% åˆ¤æ–­è¾“å…¥IDX\subj_nameæ˜¯å¦æ­£ç¡®ï¼Œå¹¶è‡ªåŠ¨è®¡ç®—çª—å£æ•°ç›®
 n_subj = length(subj_name);
 [n_row,~] = size(idx);
 if fix(n_row/n_subj) ~= n_row/n_subj
-    fprintf('ÊäÈëµÄ´°¿ÚÊıÄ¿*±»ÊÔÊıÄ¿²»µÈÓÚidx£¡\n');
+    fprintf('è¾“å…¥çš„çª—å£æ•°ç›®*è¢«è¯•æ•°ç›®ä¸ç­‰äºidxï¼\n');
     return
 else
     num_window = n_row/n_subj;
 end
 
-% ¼ÓÔØ±»ÊÔµÄ¶¯Ì¬¹¦ÄÜÁ¬½Ó¾ØÕó
+% åŠ è½½è¢«è¯•çš„åŠ¨æ€åŠŸèƒ½è¿æ¥çŸ©é˜µ
 dFCFile=dir(fullfile([dir_of_dFC,'\*.mat']));
 dFCName={dFCFile.name}';
 dFCFile=fullfile(dir_of_dFC,dFCName);
@@ -63,14 +63,14 @@ function state_fc=calc_median_or_mean(IDX,ithSubj,ind_start,ind_end,dFCFile,subj
 
 idx_current_subj=IDX(ind_start(ithSubj):ind_end(ithSubj));
 unique_idx=unique(idx_current_subj);
-% µ±Ç°±»ÊÔµÄËùÓĞ×´Ì¬
-dFC=importdata(dFCFile{ithSubj});%  ÔØÈëµ±Ç°±»ÊÔ
+% å½“å‰è¢«è¯•çš„æ‰€æœ‰çŠ¶æ€
+dFC=importdata(dFCFile{ithSubj});%  è½½å…¥å½“å‰è¢«è¯•
 for i=1:length(unique_idx)
-    % ÇóÆ¥Åäµ±Ç°×´Ì¬µÄ´°¿ÚµÄ¹¦ÄÜÁ¬½ÓµÄÖĞÎ»Êı
+    % æ±‚åŒ¹é…å½“å‰çŠ¶æ€çš„çª—å£çš„åŠŸèƒ½è¿æ¥çš„ä¸­ä½æ•°
     ith_state=unique_idx(i);
     state_fc=median(dFC(:,:,idx_current_subj==ith_state),3);
 %     state_fc=mean(dFC(:,:,idx_current_subj==ith_state),3);
-    % ½«µ±Ç°½á¹û±£´æµ½µ±Ç°±»ÊÔµÄµ±Ç°×´Ì¬ÎÄ¼ş¼ĞÏÂÃæ
+    % å°†å½“å‰ç»“æœä¿å­˜åˆ°å½“å‰è¢«è¯•çš„å½“å‰çŠ¶æ€æ–‡ä»¶å¤¹ä¸‹é¢
     outpath=fullfile(out_path,['state',num2str(ith_state)],subj_name{ithSubj});
     my_save(outpath,state_fc)
 end
