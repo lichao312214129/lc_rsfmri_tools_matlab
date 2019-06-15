@@ -1,17 +1,17 @@
 function  [fvalue_ancova,pvalue_ancova,h_ancova_fdr] = lc_ancova_for_matrix_used_for_my_study(mask,fdr_threshold)
-% 对ROI wise的static/dynamic FC 进行统计分析(ancova+fdr)
+% Statistical analyses for static/dynamic FC (ancova+fdr)
 % input：
-%   ZFC_*：ROI wise的静态和动态功能连接矩阵,size=N*N,N为ROI个数
-%   ID_Mask：感兴趣ROI的id,缺省则对所有的连接进行统计
+%   ZFC_*：ROI wise FC matrix, size=N*N,where N is number of ROI.
+%   ID_Mask：if only perform analyses on a sub-group ROI, then giving the mask to filter ROI; default is 'ALL'.
 % output：
-%   h:静态或者动态功能连接统计分析的显著情况
-%   p：静态或者动态功能连接统计分析的p值
+%   h: hypothesis matrix, h==1 denotes reach significant level.
+%   p：p values matrix.
 
 %% All inputs
 % input
 if nargin < 1
-    path = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
-    state = 4;
+    path = 'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\zDynamic\state\allState17_5\state5_all';
+    state = 5;
 
     path_sz = fullfile(path,['state',num2str(state),'\state',num2str(state),'_SZ']);
     path_bd = fullfile(path,['state',num2str(state),'\state',num2str(state),'_BD']);
@@ -19,8 +19,8 @@ if nargin < 1
     path_hc = fullfile(path,['state',num2str(state),'\state',num2str(state),'_HC']);
     
     suffix = '*.mat';
-    n_row = 114;%矩阵有几行
-    n_col = 114;%矩阵有几列
+    n_row = 114;  % how many rows
+    n_col = 114;  % how many colnumns
     
     % cov
     path_sz_cov = fullfile(path,['state',num2str(state),'\cov','\state',num2str(state),'_cov_SZ.xlsx']);
@@ -124,7 +124,7 @@ fprintf('Completed\n');
 end
 
 function all_subj_fc = load_FCmatrix(path, suffix, n_row, n_col)
-% 加载path中所有被试的FC
+% load all FC matrix
 subj = dir(fullfile(path,suffix));
 subj = {subj.name}';
 subj_path = fullfile(path,subj);

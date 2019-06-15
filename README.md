@@ -1,6 +1,6 @@
 # Resting-state fmri tools on matlab
-> Author: Li Chao  
-> Email: *lichao19870617@163.com* **OR** *lichao19870617@gmail.com*  
+> Author: BLIND  
+> Email: *BLIND* **OR** *BLIND*  
 ***
 <font color=k size=5>**Paper-specific Codes**</font> 
   
