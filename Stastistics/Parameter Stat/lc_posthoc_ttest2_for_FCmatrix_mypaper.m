@@ -13,7 +13,7 @@ function  [h_posthoc_fdr,pvalue_posthoc,tvalue_posthoc]=lc_posthoc_ttest2_for_FC
 %% all input
 if nargin<1
     % input
-    path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
+    path = 'D:\WorkStation_2018\Workstation_dynamic_FC_V2\Data\Dynamic';
     state=4;
     
     % fc
@@ -37,7 +37,7 @@ if nargin<1
     
     % save
     if_save=1;
-    save_path=fullfile(path,['state',num2str(state),'\result']);
+    save_path=fullfile(path,['state',num2str(state),'\result1']);
 end
 
 %% load fc and cov

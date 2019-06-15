@@ -10,7 +10,7 @@ function  [fvalue_ancova,pvalue_ancova,h_ancova_fdr] = lc_ancova_for_matrix_used
 %% All inputs
 % input
 if nargin < 1
-    path = 'D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
+    path = 'D:\WorkStation_2018\Workstation_dynamic_FC_V2\Data\Dynamic';
     state = 4;
 
     path_sz = fullfile(path,['state',num2str(state),'\state',num2str(state),'_SZ']);
@@ -40,7 +40,7 @@ if nargin < 1
     
     % save
     is_save=1;
-    save_path=fullfile(path,['state',num2str(state),'\result']);
+    save_path=fullfile(path,['state',num2str(state),'\result1']);
 end
 
 % create folder to save results
