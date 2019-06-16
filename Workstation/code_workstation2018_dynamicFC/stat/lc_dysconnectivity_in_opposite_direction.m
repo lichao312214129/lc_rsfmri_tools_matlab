@@ -4,6 +4,7 @@
 h1 = 'D:\WorkStation_2018\Workstation_dynamic_FC_V2\Data\Dynamic\state1\result1\h_posthoc_fdr.mat';
 h2 = 'D:\WorkStation_2018\Workstation_dynamic_FC_V2\Data\Dynamic\state2\result1\h_posthoc_fdr.mat';
 h4 = 'D:\WorkStation_2018\Workstation_dynamic_FC_V2\Data\Dynamic\state4\result1\h_posthoc_fdr.mat';
+
 t1 = 'D:\WorkStation_2018\Workstation_dynamic_FC_V2\Data\Dynamic\state1\result1\tvalue_posthoc_fdr.mat';
 t2 = 'D:\WorkStation_2018\Workstation_dynamic_FC_V2\Data\Dynamic\state2\result1\tvalue_posthoc_fdr.mat';
 t4 = 'D:\WorkStation_2018\Workstation_dynamic_FC_V2\Data\Dynamic\state4\result1\tvalue_posthoc_fdr.mat';
@@ -54,9 +55,9 @@ t_sz_s1(h_sz_s1==0)=0;
 t_bd_s1(h_bd_s1==0)=0;
 t_mdd_s1(h_mdd_s1==0)=0;
 % loc and quantity
-c_szvsbd_s1 = sign(t_sz_s1.*t_bd_s1);
-[szvsbd_i_s1, szvsbd_j_s1] = find(c_szvsbd_s1==-1);
-c_szvsbd_s1 = sum(c_szvsbd_s1(:)==-1);
+szvsbd_s1 = sign(t_sz_s1.*t_bd_s1);
+[szvsbd_i_s1, szvsbd_j_s1] = find(szvsbd_s1==-1);
+c_szvsbd_s1 = sum(szvsbd_s1(:)==-1);
 
 % S2
 % filter
@@ -78,3 +79,9 @@ c_szvsbd_s4 = sign(t_sz_s4.*t_bd_s4);
 [szvsbd_i_s4, szvsbd_j_s4] = find(c_szvsbd_s4==-1);
 c_szvsbd_s4 = sum(c_szvsbd_s4(:)==-1);
 
+imagesc(szvsbd_s1)
+
+net_path=szvsbd_s1;
+lc_netplot(net_path,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
+colormap(mymap_state)
+caxis([-0.8 0.8]);
