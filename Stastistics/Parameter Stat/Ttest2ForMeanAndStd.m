@@ -9,4 +9,3 @@ t = numerator / denominator;
 p = 1-tcdf(abs(t), df);  % single tail:right
 p=2*p;  % two-tail
 end
-

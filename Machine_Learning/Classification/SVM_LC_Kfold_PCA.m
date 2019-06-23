@@ -21,7 +21,7 @@ if nargin<1
     mask_path='G:\Softer_DataProcessing\spm12\spm12\tpm\Reslice3_TPM_greaterThan0.2.nii';
     K=5;
 %     save_path=pwd;
-    save_path='J:\Data_Code\晓薇姐';
+    save_path='D:\WorkStation_2018\Workstation_Old\WorkStation_2018-05_MVPA_insomnia_FCS\Degree\degree_gray_matter\Zdegree';
 end
 %% 将图像转为data,并产生label
 [fileName_P,path,data_patients ] = lc_Img2Data;
