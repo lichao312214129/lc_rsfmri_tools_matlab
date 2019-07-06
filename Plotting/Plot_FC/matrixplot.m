@@ -57,7 +57,7 @@ function matrixplot(data,varargin)
 %         0.3,0.6,1,0.5,-0.3
 %         0.8,-0.7,0.5,1,0.7
 %        -0.5,0.2,-0.3,0.7,1];
-%   matrixplot(x);
+%   matrixplot(x, 'FigShap','d');
 %   matrixplot(x,'DisplayOpt','off','FigStyle','Tril','FigShap','d');
 %   matrixplot(x,'FillStyle','nofill','TextColor','Auto');
 %   matrixplot(x,'TextColor',[0.7,0.7,0.7],'FigShap','d','FigSize','Auto','ColorBar','on');

@@ -1,4 +1,4 @@
-function myScatterLine(x,y,opt)
+function lc_scatterplot(x,y,opt)
 % usage:做带有95%CI的散点图
 % input：
 %    x:自变量
@@ -50,7 +50,7 @@ figScatter=plot(x2,y2);
 xlabel(opt.xlabel,'FontSize',8);
 ylabel(opt.ylabel,'FontSize',8);
 %=====================
-axis([min(x)-mean(x)/10, max(x)+max(x)/10, min(y)-min(y)/10, max(y)+max(y)/10]);
+axis([min(x)-mean(x)/10, max(x)+max(x)/10, min(y)-1, max(y)+max(y)/10]);
 % set(figScatter,XLim,[-0.1,20])
 figScatter.Marker=opt.scatterMarker;
 figScatter.LineWidth=opt.LineWidth_scatter;
