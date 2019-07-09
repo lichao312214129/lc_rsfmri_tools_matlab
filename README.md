@@ -6,10 +6,7 @@
 <font color=Black size=7>**Paper-specific Codes**</font> 
   
 <font size=3>**1. Shared and Distinct Dysfunction in Dynamic Connectivity across Schizophrenia, Bipolar Disorder and Major Depressive Disorder**</font>   
-**NOTE.** Codes are in ["*lc\\_rsfmri\\_tools\\_matlab\\Workstation\\code\\_workstation2018\_dynamicFC*"](https://github.com/lichao312214129/lc_rsfmri_tools_matlab/tree/master/Workstation/code_workstation2018_dynamicFC).   
-
-<font size=3>**Shared and Distinct Dysfunction in Dynamic Connectivity across Schizophrenia, Bipolar Disorder and Major Depressive Disorder**</font>   
-**NOTE.**Codes are in "*lc\_rsfmri\_tools\_matlab\\Workstation\\code\_workstation2018\_dynamicFC*".   
+**NOTE.** Codes are in ["*lc\\_rsfmri\\_tools\\_matlab\\Workstation\\code\\_workstation2018\_dynamicFC*"](https://github.com/lichao312214129/lc_rsfmri_tools_matlab/tree/master/Workstation/code_workstation2018_dynamicFC).     
 
 - "**network\_construction**" is used to construct the dynamic and static networks, kmeans clustering and obtain each subject's median network of each state.
 
