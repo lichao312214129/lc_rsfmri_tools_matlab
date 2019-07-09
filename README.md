@@ -3,7 +3,7 @@
 
 > Email: lichao19870617@163.com **OR** *lichao19870617@gmail.com
 ***
-<font color=Black size=5>**Paper-specific Codes**</font> 
+<font color=Black size=6>**Paper-specific Codes**</font> 
   
 <font color=#FF7F50 size=3>**Dynamic functional connectivity in SZ, BD and MDD**</font>   
 **NOTE.** Codes are in "**lc\_rsfmri\_tools\_matlab\\Workstation\\code\_workstation2018\_dynamicFC**".   
