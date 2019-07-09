@@ -1,12 +1,12 @@
-<font color=k size=6>**Resting-state fmri tools on matlab**</font>
-> Author: Chao Li 
-> Email: lichao19870617@163.com **OR** *lichao19870617@gmail.com
+<font color=k size=8>**Resting-state fmri tools on matlab**</font>
+> Author: Chao Li  
+
+> Email: *lichao19870617@163.com* **OR** *lichao19870617@gmail.com*
 ***
 <font color=Black size=5>**Paper-specific Codes**</font> 
   
-<font color=#FF7F50 size=3>**Dynamic functional connectivity in SZ, BD and MDD**</font>   
-**NOTE.** Codes are in "**lc\_rsfmri\_tools\_matlab\\Workstation\\code\_workstation2018\_dynamicFC**".   
-Download codes: *git clone https://github.com/lichao312214129/lc\_rsfmri\_tools\_matlab.git* OR directly clone from https://github.com/lichao312214129/lc\_rsfmri\_tools\_matlab
+<font size=3>**1. Shared and Distinct Dysfunction in Dynamic Connectivity across Schizophrenia, Bipolar Disorder and Major Depressive Disorder**</font>   
+**NOTE.** Codes are in ["*lc\\_rsfmri\\_tools\\_matlab\\Workstation\\code\\_workstation2018\_dynamicFC*"](https://github.com/lichao312214129/lc_rsfmri_tools_matlab/tree/master/Workstation/code_workstation2018_dynamicFC).   
 
 - "**network\_construction**" is used to construct the dynamic and static networks, kmeans clustering and obtain each subject's median network of each state.
 
