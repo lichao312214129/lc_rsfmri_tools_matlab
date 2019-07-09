@@ -1,5 +1,6 @@
 <font color=k size=6>**Resting-state fmri tools on matlab**</font>
-> Author: Chao Li 
+> Author: Chao Li  
+
 > Email: lichao19870617@163.com **OR** *lichao19870617@gmail.com
 ***
 <font color=Black size=5>**Paper-specific Codes**</font> 
