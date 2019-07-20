@@ -10,13 +10,19 @@ function  [fvalue_ancova,pvalue_ancova,h_ancova_fdr] = lc_ancova_for_matrix_used
 %% All inputs
 % input
 if nargin < 1
-    path = 'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\zDynamic\state\allState17_5\state5_all';
-    state = 5;
+    path = 'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\zStatic';
+    state = 4;
 
-    path_sz = fullfile(path,['state',num2str(state),'\state',num2str(state),'_SZ']);
-    path_bd = fullfile(path,['state',num2str(state),'\state',num2str(state),'_BD']);
-    path_mdd = fullfile(path,['state',num2str(state),'\state',num2str(state),'_MDD']);
-    path_hc = fullfile(path,['state',num2str(state),'\state',num2str(state),'_HC']);
+%     path_sz = fullfile(path,['state',num2str(state),'\state',num2str(state),'_SZ']);
+%     path_bd = fullfile(path,['state',num2str(state),'\state',num2str(state),'_BD']);
+%     path_mdd = fullfile(path,['state',num2str(state),'\state',num2str(state),'_MDD']);
+%     path_hc = fullfile(path,['state',num2str(state),'\state',num2str(state),'_HC']);
+    
+    
+    path_sz = fullfile(path,'_SZ');
+    path_bd = fullfile(path,'_BD');
+    path_mdd = fullfile(path,'_MDD');
+    path_hc = fullfile(path,'_HC');
     
     suffix = '*.mat';
     n_row = 114;  % how many rows
