@@ -142,42 +142,63 @@ function Run_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % handles.opt
-for i=1:length(handles.opt.img_path_name)
-    fprintf('%d/%d\n',i,length(handles.opt.img_path_name))
-    
-    % mask filter
-    [img,h]=y_Read(handles.opt.img_path_name{i});
-    
-    if strcmp(handles.opt.how_extract,'保留mask内的值')
+n_subj = length(handles.opt.img_path_name);
+if strcmp(handles.opt.how_extract,'保留mask内的值')
+    for i=1:n_subj
+        fprintf('%d/%d\n',i,length(handles.opt.img_path_name))
+        % mask filter
+        [img,h]=y_Read(handles.opt.img_path_name{i});
         img_filter=img.*handles.opt.mask_data;
         %save
         [~,name]=fileparts(handles.opt.img_path_name{i});
         name=fullfile(handles.opt.save_folder,name);
         y_Write(img_filter,h,name) % to nii
-        
+
         img_filter_only_in_mask=img(handles.opt.mask_data);
         save([name,'.mat'],'img_filter_only_in_mask') % to mat
-        
-    elseif strcmp(handles.opt.how_extract,'排除mask内的值')
+    end
+
+elseif strcmp(handles.opt.how_extract,'排除mask内的值')
+    for i=1:n_subj
+        fprintf('%d/%d\n',i,length(handles.opt.img_path_name))
+        % mask filter
+        [img,h]=y_Read(handles.opt.img_path_name{i});
         img_filter=img.*handles.opt.mask_data==0;
         %save
         [~,name]=fileparts(handles.opt.img_path_name{i});
         name=fullfile(handles.opt.save_folder,name);
         y_Write(img_filter,h,name) % to nii
-        
+
         img_filter_only_out_mask=img(handles.opt.mask_data);
         save([name,'.mat'],'img_filter_only_out_mask') % to mat
-        
-    elseif strcmp(handles.opt.how_extract,'提取mask内的均值')
+    end
+
+elseif strcmp(handles.opt.how_extract,'提取mask内的均值')
+    mean_img_filter = NaN(n_subj, 1);
+    all_signals_file = fullfile(handles.opt.save_folder,'ROISignals.csv');
+    all_signals_name = fullfile(handles.opt.save_folder,'ordered_name.csv');
+    for i=1:n_subj
+        fprintf('%d/%d\n',i,length(handles.opt.img_path_name))
+        % mask filter
+        [img,h]=y_Read(handles.opt.img_path_name{i});
         img_filter=img.*handles.opt.mask_data;
         img_filter=mean(img_filter(:));
-        %save
+        
+        % save
         [~,name]=fileparts(handles.opt.img_path_name{i});
         name=fullfile(handles.opt.save_folder,name);
         save([name,'.mat'],'img_filter') % to mat
-    else
-        fprintf('设定的方法为%s,本程序没有添加此功能\n','handles.opt.how_extract')
-        return 
+        % save all signals to one csv
+        f = fopen(all_signals_file,'a+');
+        fprintf(f, '%f\n', img_filter);
+        fclose(f);
+        % save ordered name
+        f = fopen(all_signals_name,'a+');
+        fprintf(f, '%s\n', name);
+        fclose(f);
     end
+else
+    fprintf('设定的方法为%s,本程序没有添加此功能\n','handles.opt.how_extract')
+    return 
 end
 fprintf('All done!\n')
