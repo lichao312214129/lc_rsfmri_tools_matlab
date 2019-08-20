@@ -1,18 +1,21 @@
-function lc_dfc_roiwise(result_dir, all_subj_dir, window_step, window_length, opt)
-% 计算一组被试的ROI wise的动态功能连接和了静态功能连接
+function lc_dfc_roiwise(all_subjects_files, result_dir, window_step, window_length, opt)
+%  Used to calculate  roi-wise dynamic fc using sliding-window method for
+%  on group of subjects
 % input：
-%   time_series_of_all_node：一组被试的时间序列矩阵，每一个被试的数据size为：T*N，T为时间点个数，N为ROI的个数
-%   window_step,window_length：步长和宽
-%   opt:options
+%   all_subjects_files: all subjects' files (wich abslute path) 
+% result_dir:
+%     directiory for saving results
+% window_step: sliding-window step
+% window_length: sliding-window length
 % output
-%   ZFC_dynamic 文件夹下为每个被试的动态功能连接（Fisher R to Z
-% 变换过），size=N*N*W，N为ROI个数，W为slide window 个数
-%   ZFC_static 文件夹下为每个被试的静态功能连接（Fisher R to Z 变换过）
+%   zDynamicFC： dynamic FC matrix with Fisher r-to-z transformed; size=N*N*W, N is the number of ROIs, W is the number of sliding-window
+%   zStaticFC： static FC matrix with Fisher r-to-z transformed; size=N*N, N is the number of ROIs
+%   varOfZDynamicFC: variance of dynamic FC
+%% input
 tic
-%% 
 
 if nargin < 5
-    opt.if_calc_dynamic = 0;
+    opt.if_calc_dynamic = 1;
     opt.if_calc_static = 1;
 end
 
@@ -24,36 +27,39 @@ if nargin < 3
     window_step = 1;
 end
 
-% 获得所有被试mat的路径
-if nargin<2
-    all_subj_dir=uigetdir(pwd, 'select directory that containing all subjects'' data');
-    all_subj_dir=dir(all_subj_dir);
-    folder={all_subj_dir.folder};
-    name={all_subj_dir.name};
-    all_subj_dir=cell(length(name),1);
-    for i =1:length(name)
-        all_subj_dir{i}=fullfile(folder{i},name{i});
-    end
-     all_subj_dir= all_subj_dir(3:end);
-end
-
-% 结果目录
-if nargin<1
+% results directory
+if nargin < 2
     result_dir=uigetdir(pwd, 'select directory that saving results');
 end
 
-mkdir(fullfile(result_dir,'zStaticFC'));
-mkdir(fullfile(result_dir,'zDynamicFC'));
-result_dir_of_dynamic=fullfile(result_dir,'zDynamicFC');
-result_dir_of_static=fullfile(result_dir,'zStaticFC');
+% get all subjects' file name
+if nargin < 1
+    all_subjects_files=uigetdir(pwd, 'select directory that containing all subjects'' data');
+    all_subjects_files=dir(all_subjects_files);
+    folder={all_subjects_files.folder};
+    name={all_subjects_files.name};
+    all_subjects_files=cell(length(name),1);
+    for i =1:length(name)
+        all_subjects_files{i}=fullfile(folder{i},name{i});
+    end
+     all_subjects_files= all_subjects_files(3:end);
+end
 
+result_dir_of_static = fullfile(result_dir,strcat('zStaticFC_WindowLength',num2str(window_length),'_WindowStep',num2str(window_step)));
+result_dir_of_dynamic = fullfile(result_dir,strcat('zDynamicFC_WindowLength',num2str(window_length),'_WindowStep',num2str(window_step)));
+if ~exist(result_dir_of_static, 'dir')
+    mkdir(result_dir_of_static);
+end
+if ~exist(result_dir_of_dynamic, 'dir')
+    mkdir(result_dir_of_dynamic);
+end
 %% calculate both the static and dynamic Inter-ROI FC
 fprintf('==================================\n');
 fprintf(' Calculating dynamic FC\n');
-nSubj=length(all_subj_dir);
+nSubj=length(all_subjects_files);
 for s=1:nSubj
-    fprintf('正在计算第%d/%d个被试...\n',s,nSubj);
-    data_dir=all_subj_dir{s};
+    fprintf('Calculating %d/%d subject...\n',s,nSubj);
+    data_dir=all_subjects_files{s};
     time_series_of_all_node=importdata(data_dir);
     
     if opt.if_calc_dynamic==1 && opt.if_calc_static==1
@@ -67,7 +73,7 @@ for s=1:nSubj
         [zDynamicFC,~]=DynamicFC_interROI_oneSubj(time_series_of_all_node,window_step,window_length);
         % save
         [~,name,format]=fileparts(data_dir);
-        save([result_dir_of_dynamic,filesep,name,format],'zDynamicFC');
+        save([result_dir_of_static,filesep,name,format],'zDynamicFC');
 
     elseif opt.if_calc_dynamic==0 && opt.if_calc_static==1
         [~,zStaticFC]=DynamicFC_interROI_oneSubj(time_series_of_all_node,window_step,window_length);
@@ -85,16 +91,18 @@ fprintf('Dynamic FC calculating completed!\n');
 toc
 end
 
-function [zDynamicFC,zStaticFC]=...
-            DynamicFC_interROI_oneSubj(time_series_of_all_node,window_step,window_length)
-% 计算一个被试ROI wise的动态功能连接和静态功能连接
+function [zDynamicFC,zStaticFC]=DynamicFC_interROI_oneSubj(time_series_of_all_node,window_step,window_length)
+%  Used to calculate  roi-wise dynamic fc using sliding-window method for
+%  on subject
 % input：
-%   一个被试的时间序列矩阵time_series_of_all_node，size为：T*N，T为时间点个数，N为ROI的个数
+%   time_series_of_all_node: size=T-by-N, T is number of timepoints, N is
+%   number of ROIs
+% window_step: sliding-window step
+% window_length: sliding-window length
 % output
-%   zDynamicFC： 文件夹下为的动态功能连接（Fisher R to Z
-%   变换过），size=N*N*W，N为ROI个数，W为slide window 个数
-%   zStaticFC： 文件夹下为静态功能连接（Fisher R to Z 变换过）
-%   stdOfZDynamicFC: 动态FC的标准差
+%   zDynamicFC： dynamic FC matrix with Fisher r-to-z transformed; size=N*N*W, N is the number of ROIs, W is the number of sliding-window
+%   zStaticFC： static FC matrix with Fisher r-to-z transformed; size=N*N, N is the number of ROIs
+%   varOfZDynamicFC: variance of dynamic FC
 %%
 %计算dynamic FC窗口个数
 % window_end=window_length;
@@ -110,19 +118,19 @@ nWindow=ceil((volume - window_length + 1) / window_step);
 nRegion=size(time_series_of_all_node,2);
 % static FC
 staticR=corrcoef(time_series_of_all_node);
-zStaticFC=0.5*log((1+staticR)./(1-staticR));%Fisher R-to-Z transformation
+zStaticFC=atanh(staticR);  % Fisher R-to-Z
 % dynamic FC
 window_star=1;
-window_end=window_length;  % 重置,初始化
+window_end=window_length;  % re-innitiation
 count=1;
 zDynamicFC=zeros(nRegion,nRegion,nWindow);
 while window_end <= volume
     windowedTimecourse=time_series_of_all_node(window_star:window_end,:);
     dynamicR=corrcoef(windowedTimecourse);
-    zDynamicFC(:,:,count)=0.5*log((1+dynamicR)./(1-dynamicR));  % Fisher R-to-Z transformation
+    zDynamicFC(:,:,count)=atanh(dynamicR);  % Fisher R-to-Z transformation
     window_star=window_star+window_step;
     window_end=window_end+window_step;
     count=count+1;
 end
-% stdOfZDynamicFC=std(zDynamicFC,0,3);%求在滑动窗方向的标准差。
+% varOfZDynamicFC=std(zDynamicFC,0,3);%求在滑动窗方向的标准差。
 end
