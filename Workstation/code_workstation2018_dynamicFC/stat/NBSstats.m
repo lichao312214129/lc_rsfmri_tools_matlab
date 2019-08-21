@@ -16,7 +16,7 @@ function [n_cnt,con_mat,pval]=NBSstats(varargin)
 %   memory. 
 %
 %   A STATS structure contains the following fields:
-%       STATS.thresh:     Primary test statistic threshold    
+%       STATS.thresh:     Primary test statistic threshold   
 %       STATS.alpha:      Corrected significance (user specified), network 
 %                         components not satisfying alpha signficance are 
 %                         not reported
