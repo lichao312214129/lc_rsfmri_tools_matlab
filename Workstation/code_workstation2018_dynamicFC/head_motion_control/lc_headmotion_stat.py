@@ -7,11 +7,11 @@ import numpy as np
 import scipy.stats as stats
 
 
-headmotion_info = r'D:\WorkStation_2018\Workstation_dynamic_FC_V3\Data\ID_Scale_Headmotion\headmovement.xlsx'
-id_hc = r'D:\WorkStation_2018\Workstation_dynamic_FC_V3\Data\ID_Scale_Headmotion\id_hc_final.xlsx'
-id_sz = r'D:\WorkStation_2018\Workstation_dynamic_FC_V3\Data\ID_Scale_Headmotion\id_sz_final.xlsx'
-id_bd = r'D:\WorkStation_2018\Workstation_dynamic_FC_V3\Data\ID_Scale_Headmotion\id_bd_final.xlsx'
-id_mdd = r'D:\WorkStation_2018\Workstation_dynamic_FC_V3\Data\ID_Scale_Headmotion\id_mdd_final.xlsx'
+headmotion_info = r'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\headmovement.xlsx'
+id_hc = r'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\id_hc_final.xlsx'
+id_sz = r'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\id_sz_final.xlsx'
+id_bd = r'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\id_bd_final.xlsx'
+id_mdd = r'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\id_mdd_final.xlsx'
 
 # headmotion information
 headmotion_info = pd.read_excel(headmotion_info)
@@ -77,10 +77,9 @@ f, p = stats.f_oneway(headmotion_info_hc['meanFD'], headmotion_info_sz['meanFD']
 						headmotion_info_bd['meanFD'], headmotion_info_mdd['meanFD'])
 print(f'f={f}\np={p}')
 
-badFD_hc = headmotion_info_hc['meanFD'] > 0.2
-badFD_sz = headmotion_info_sz['meanFD'] > 0.2
-badFD_bd = headmotion_info_bd['meanFD'] > 0.2
-badFD_mdd = headmotion_info_mdd['meanFD'] > 0.2
+f, p = stats.f_oneway(headmotion_info_hc['proportion_of_bad_timepoints'], headmotion_info_sz['proportion_of_bad_timepoints'],
+						headmotion_info_bd['proportion_of_bad_timepoints'], headmotion_info_mdd['proportion_of_bad_timepoints'])
+print(f'f={f}\np={p}')
 
 f, p = stats.f_oneway(max_rigidbody_translation_hc, max_rigidbody_translation_sz, 
 						max_rigidbody_translation_bd, max_rigidbody_translation_mdd)

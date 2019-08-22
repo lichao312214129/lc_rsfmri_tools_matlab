@@ -4,7 +4,6 @@ Created on Wed Aug 21 09:05:21 2019
 According to subjects' ID, extracting clinical data, such as age, sex, medication information, HAMA and so on.
 @author: lenovo
 """
-import os
 import sys
 sys.path.append(r'D:\My_Codes\LC_Machine_Learning\lc_rsfmri_tools\lc_rsfmri_tools_python\Statistics')
 import pandas as pd
@@ -15,10 +14,10 @@ from lc_chisqure import lc_chisqure
 
 # input
 demographicdata_all = r'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Scales\大表_add_drugInfo.xlsx'
-id_hc = r'D:\WorkStation_2018\Workstation_dynamic_FC_V3\Data\ID_Scale_Headmotion\id_hc_final.xlsx'
-id_sz = r'D:\WorkStation_2018\Workstation_dynamic_FC_V3\Data\ID_Scale_Headmotion\id_sz_final.xlsx'
-id_bd = r'D:\WorkStation_2018\Workstation_dynamic_FC_V3\Data\ID_Scale_Headmotion\id_bd_final.xlsx'
-id_mdd = r'D:\WorkStation_2018\Workstation_dynamic_FC_V3\Data\ID_Scale_Headmotion\id_mdd_final.xlsx'
+id_hc = r'D:\WorkStation_2018\Workstation_dynamicFC_V3\Data\ID_Scale_Headmotion\id_hc_final.xlsx'
+id_sz = r'D:\WorkStation_2018\Workstation_dynamicFC_V3\Data\ID_Scale_Headmotion\id_sz_final.xlsx'
+id_bd = r'D:\WorkStation_2018\Workstation_dynamicFC_V3\Data\ID_Scale_Headmotion\id_bd_final.xlsx'
+id_mdd = r'D:\WorkStation_2018\Workstation_dynamicFC_V3\Data\ID_Scale_Headmotion\id_mdd_final.xlsx'
 
 # load_demographic data and ID of each group
 demographicdata_all = pd.read_excel(demographicdata_all)
@@ -110,6 +109,13 @@ print(lc_chisqure(obs, tt))
 obs = [firstepisode_num_sz, firstepisode_num_bd, firstepisode_num_mdd]
 print(lc_chisqure(obs, tt))
 
+# duration
+duration_sz = demographicdata_sz['病程月']
+duration_bd = demographicdata_bd['病程月']
+duration_mdd = demographicdata_mdd['病程月']
+f, p = stats.f_oneway( duration_sz, duration_bd, duration_mdd)
+print(f'f={f}\np={p}')
+
 # medication, excluded HCs
 obs = [medication_num_sz, medication_num_bd, medication_num_mdd]
 print(lc_chisqure(obs, tt))
@@ -129,14 +135,6 @@ print(lc_chisqure(obs, [150,100,150]))
 # antianxiety
 obs = [antianxiety_num_sz, antianxiety_num_bd, antianxiety_num_mdd]
 print(lc_chisqure(obs, [150,100,150]))
-
-# duration
-duration_hc = demographicdata_hc['病程月'].dropna()
-duration_sz = demographicdata_sz['病程月'].dropna()
-duration_bd = demographicdata_bd['病程月'].dropna()
-duration_mdd = demographicdata_mdd['病程月'].dropna()
-f, p = stats.f_oneway(duration_hc, duration_sz, duration_bd, duration_mdd)
-print(f'f={f}\np={p}')
 
 # HAMD
 hamd_hc = demographicdata_hc['HAMD-17_Total'].dropna()
@@ -210,3 +208,13 @@ npe_mdd = demographicdata_mdd['NPE,Nonperseverative_Errors'].dropna()
 f, p = stats.f_oneway(npe_hc, npe_sz, npe_bd, npe_mdd)
 print(f'f={f}\np={p}')
 
+
+from sklearn import metrics
+from sklearn.cluster import KMeans
+import numpy as np
+
+datas = np.vstack([np.random.randn(100,50)-1, np.random.randn(100,50)+1])
+kmeans_model = KMeans(n_clusters=2, random_state=1).fit(datas)
+labels = kmeans_model.labels_
+a = metrics.silhouette_score(datas, labels, metric='euclidean')
+print(a)
