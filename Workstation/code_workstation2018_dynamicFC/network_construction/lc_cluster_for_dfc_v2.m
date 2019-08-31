@@ -24,8 +24,7 @@ function lc_cluster_for_dfc_v2(subj_path, krange, distance_measure, nReplicates,
     % median network for each state
     
 % NOTE:
-    % 1£ºOnly use upper triangular matrix as features (not include diagonal)
-    % 2£ºOnly use results from group level. So not every subject has all the states.
+    %
 % Author: Li Chao
 % Email:lichao19870617@gmail.com OR lichao19870617@163.com
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -82,7 +81,7 @@ whole_mat = zeros(n_feature, n_window, n_subj);
 
 % load dynamic fc
 for i = 1:n_subj
-    fprintf('load %dth dynamic matrix\n',i);
+    fprintf('Loading %dth dynamic matrix...\n',i);
     file_name = fullfile(subj_folder, subj_path(i).name);
     dynamic_mats = importdata(file_name);
     % only extract the upper triangular matrix, and not include the diagonal
@@ -93,13 +92,14 @@ for i = 1:n_subj
     end
     whole_mat(:,:,i) = mat_of_one_sub;
 end
-fprintf('======loaded all mat!======\n')
+fprintf('======Loaded all mat!======\n')
 
 % prepare data
 whole_mat(isinf(whole_mat)) = 1;
 whole_mat(isnan(whole_mat)) = 0;
 
 % find local maxima, and reshape all_mat at the same time.
+fprintf('Finding local maxima in functional connectivity variance...\n',i);
 count = 0; 
 for i = 1:n_subj
     mat = whole_mat(:,:,i)';  % n_window*n_features
@@ -111,7 +111,7 @@ localmaxima_mat = zeros(count, n_feature);
 whole_mat_reshaped = zeros(n_subj*n_window,n_feature);  % for clustering whole dfc
 startpoint = 1;
 for i = 1:n_subj
-    fprintf('Finding %dth local maxima...\n',i);
+    fprintf('\tFinding %dth local maxima...\n',i);
     mat = whole_mat(:,:,i)';  % n_window*n_features
     whole_mat_reshaped(i*n_window-n_window+1:i*n_window,:) = mat;
     variance = squeeze(var(mat,0,2));
@@ -136,7 +136,6 @@ fprintf('======Found all subjects'' local maxima!======\n')
 % The search window of k from 2 to N.
 % TODO: expant to other criterion such as elbow criterion etc.
 % [ratio, centroid] = lc_kmeans_identifyK_elbowcriterion(localmaxima_mat,krange, distance_measure, nReplicates, 1);
-
 fprintf('Kmeans clustering to subject exemplars (local maxima)\t');
 fprintf('to find the optimal k and corresponding centroid...\n');
 try
@@ -153,7 +152,7 @@ k_optimal = eva.OptimalK;
 [~, centroid_optimal, ~, ~] = kmeans(localmaxima_mat, k_optimal, 'emptyaction','singleton','Start', 'plus','replicate',nReplicates, 'Display','off');
 toc;
 
-%% kmeans clustering to all dfc
+%% kmeans clustering to all dfc using the optimal centroid identified by using the subject exemplars
 fprintf('Clustering all dfc to %d (optimal k) clusters using centroid derived from subject exemplars)...\n', k_optimal);
 tic; 
 [idx, C, sumd, D] = kmeans(whole_mat_reshaped, k_optimal, 'Distance', distance_measure,...
@@ -162,7 +161,7 @@ tic;
 toc; 
 fprintf('Kmeans clustering to all subjects finished!\n')
 fprintf('================================================================\n')
-delete(gcp('nocreate'))
+% delete(gcp('nocreate'))  % close the parallel pool
 
 % Saving meta info
 fprintf('saving meta info...\n');
@@ -183,3 +182,32 @@ for i = 1 : k_optimal
 end
 fprintf('============All Done!============\n');
 end
+
+
+% subplot(1,2,1)
+% imagesc(importdata('cluster_1.mat'));
+% colormap(jet)
+% 
+% subplot(1,2,2)
+% imagesc(importdata('cluster_2.mat'));
+% colormap(jet)
+
+% subplot(2,4,3)
+% imagesc(importdata('cluster_3.mat'));
+% colormap(jet)
+
+% subplot(2,4,4)
+% imagesc(importdata('cluster_4.mat'));
+% colormap(jet)
+
+% subplot(2,4,5)
+% imagesc(importdata('cluster_5.mat'));
+% colormap(jet)
+
+% subplot(2,4,6)
+% imagesc(importdata('cluster_6.mat'))
+% colormap(jet)
+
+% subplot(2,4,7)
+% imagesc(importdata('cluster_7.mat'))
+% colormap(jet)
