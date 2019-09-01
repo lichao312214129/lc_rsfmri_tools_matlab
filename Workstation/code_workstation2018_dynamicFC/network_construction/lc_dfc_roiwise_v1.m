@@ -223,34 +223,99 @@ diary('off');
 fprintf('\n');
 
 
+%% ===============================Utility Functions===============================
+function [trainTC, testTC] = split_timewindows(TCwin, ntrain)
+%[Nwin, nT, nC] = size(TCwin);
+[Nwin, nT, nC] = size(TCwin);
+r = randperm(Nwin);
+trainTC = TCwin(r(1:ntrain),:,:);
+testTC = TCwin(r(ntrain+1:end),:,:);
 
-%% plot test
-load Mycolormap_state;
-if_save=0;
-if_add_mask=0;
-mask_path=ones(114)==1;
-net_path='ROISignals_00558_resting_Covremoved.mat';
-how_disp='all';% or 'only_neg'
-if_binary=0; %二值化处理，正值为1，负值为-1
-which_group=1;
-net_index_path='D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\netIndex.mat';
-lc_netplot(net_path,1,mask_path,how_disp,if_binary,which_group, net_index_path);
+trainTC = reshape(trainTC, ntrain*nT, nC);
+testTC = reshape(testTC, (Nwin-ntrain)*nT, nC);
 
-ct = 1;
-for i = 1: 5: 160
-    subplot(6,6,ct)
-    lc_netplot(FNCdyn(:,:,i),1,mask_path,how_disp,if_binary,which_group, net_index_path);
-%     imagesc(FNCdyn(:,:,i));
-    colormap(mymap_state)
-    caxis([-0.8 0.8]);
-    ct = ct +1;
+
+function mat = lc_vec2mat(dfc_2d, numroi)
+n_feature = size(dfc_2d, 1);
+mat = zeros(numroi, numroi, n_feature);
+for i = 1:n_feature
+    mat(:,:,i) = vec2mat(dfc_2d(i,:),numroi);
 end
 
 
+function mat = vec2mat(vec,numroi)
+temp = ones(numroi, numroi);
+mat = zeros(numroi, numroi);
+ind = triu(temp,1) == 1;
+mat(ind) = vec;
+mat = mat + mat';
 
 
+function [vec, ind] = lc_mat2vec(mat)
+% vec = mat2vec(mat)
+% returns the lower triangle of mat
+% mat should be square
+% Revised by Li Chao
+[n,m] = size(mat);
+if n ~=m
+    error('mat must be square!')
+end
+temp = ones(n);
+%% find the indices of the upper triangle of the matrix
+ind = triu(temp, 1) == 1;
+vec = mat(ind);
 
 
+function c = icatb_compute_sliding_window(nT, win_alpha, wsize)
+% Compute sliding window
+% Thanks to GIFT software
+nT1 = nT;
+if mod(nT, 2) ~= 0
+    nT = nT + 1;
+end
+m = nT/2;
+w = round(wsize/2);
+gw = gaussianwindow(nT, m, win_alpha);
+b = zeros(nT, 1);  b((m -w + 1):(m+w)) = 1;
+c = conv(gw, b); c = c/max(c); c = c(m+1:end-m+1);
+c = c(1:nT1);
 
 
+function w = gaussianwindow(N,x0,sigma)
+x = 0:N-1;
+w = exp(- ((x-x0).^2)/ (2 * sigma * sigma))';
 
+
+function L = cov_likelihood(obs_cov, theta)
+% L = cov_likelihood(obs_cov, sigma)
+% INPUT:
+% obs_cov is the observed covariance matrix
+% theta is the model precision matrix (inverse covariance matrix)
+% theta can be [N x N x p], where p lambdas were used
+% OUTPUT:
+% L is the negative log-likelihood of observing the data under the model
+% which we would like to minimize
+nmodels = size(theta,3);
+L = zeros(1,nmodels);
+for ii = 1:nmodels
+    % log likelihood
+    theta_ii = squeeze(theta(:,:,ii));
+    L(ii) = -log(det(theta_ii)) + trace(theta_ii*obs_cov);
+end
+
+
+function [wList, thetaList] = computeGlasso(tc, initial_lambdas, useMEX)
+% Compute graphical lasso
+if (useMEX == 1)
+    [wList, thetaList] = GraphicalLassoPath(tc, initial_lambdas);
+else
+    tol = 1e-4;
+    maxIter = 1e4;
+    S = icatb_cov(tc);
+    thetaList = zeros(size(S, 1), size(S, 2), length(initial_lambdas));
+    wList = thetaList;
+    
+    for nL = 1:size(wList, 3)
+        [thetaList(:, :, nL), wList(:, :, nL)] = icatb_graphicalLasso(S, initial_lambdas(nL), maxIter, tol);
+    end
+end

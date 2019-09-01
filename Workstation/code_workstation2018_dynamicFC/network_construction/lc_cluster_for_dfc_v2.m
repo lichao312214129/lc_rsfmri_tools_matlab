@@ -1,17 +1,19 @@
 function lc_cluster_for_dfc_v2(subj_path, krange, distance_measure, nReplicates, out_dir)
-% cluster for dynamic fc matrix.
-% Initial clustering was performed on a subset of windows, consisting of local maxima in
-% functional connectivity variance, as subject exemplars to decrease the redundancy 
-% between windows and computational demands (Allen et al., 2014).
-
-% K-means clustering was performed to all exemplars and repeated N times
-% with random initial cluster centroid positions to escape local minima. 
-% The optimal number of clusters was estimated using the elbow criterion, 
-% calculating as the ratio of within-cluster distance to between-cluster distance
+% PURPOSE: Cluster for dynamic fc matrix.
+% HOW:
+% 	1: Initial clustering was performed on a subset of windows, consisting of local maxima in
+% 	functional connectivity variance, as subject exemplars to decrease the redundancy 
+% 	between windows and computational demands (Allen et al., 2014).
+% 	The K-means clustering was performed to all exemplars and repeated N (nReplicates) times
+% 	with random initial cluster centroid positions to escape local minima. 
+% 	The optimal number of clusters was estimated using methods: gap, silhoutte (used in our paper), bic, aic and dunns 
+% 	(implemented using icatb_optimal_clusters.m function in GIFT software)
+% 	2: These sets of initial group centroids using the optimal number of clusters were used as starting points
+%	to cluster all data into the optimal number of clusters.
 
 % How to get subjects exemplars?
-% First, wo compute variance of dynamic connectivity across all pairs at each window. 
-% Second, we select windows corresponding to local maxima in this variance time course.
+% 	First, wo compute variance of dynamic connectivity across all pairs at each window. 
+% 	Second, we select windows corresponding to local maxima in this variance time course.
 
 % input :
 %   subj_path: subject's dFC files' path (matlab .mat or .txt file type with dimension of n_node*n_node*n_window)
@@ -23,8 +25,7 @@ function lc_cluster_for_dfc_v2(subj_path, krange, distance_measure, nReplicates,
     % meta informations: idx, C, sumd, D
     % median network for each state
     
-% NOTE:
-    %
+% NOTE: We tend to use icatb_optimal_clusters.m function in GIFT software to identify the optimal number of clusters
 % Author: Li Chao
 % Email:lichao19870617@gmail.com OR lichao19870617@163.com
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -99,7 +100,7 @@ whole_mat(isinf(whole_mat)) = 1;
 whole_mat(isnan(whole_mat)) = 0;
 
 % find local maxima, and reshape all_mat at the same time.
-fprintf('Finding local maxima in functional connectivity variance...\n',i);
+fprintf('Finding local maxima in functional connectivity variance...\n');
 count = 0; 
 for i = 1:n_subj
     mat = whole_mat(:,:,i)';  % n_window*n_features
@@ -136,23 +137,36 @@ fprintf('======Found all subjects'' local maxima!======\n')
 % The search window of k from 2 to N.
 % TODO: expant to other criterion such as elbow criterion etc.
 % [ratio, centroid] = lc_kmeans_identifyK_elbowcriterion(localmaxima_mat,krange, distance_measure, nReplicates, 1);
-fprintf('Kmeans clustering to subject exemplars (local maxima)\t');
+fprintf('Kmeans clustering to subject exemplars (local maxima in FC variance)\n');
 fprintf('to find the optimal k and corresponding centroid...\n');
+
+% First I try to use icatb_optimal_clusters.m function in GIFT software to identify the optimal clusters number
+% If no icatb_optimal_clusters to use, we use the default MATLAB fuction evalclusters.m.
 try
-    pool = parpool; 
+	disp('Use icatb_optimal_clusters.m function');
+    stream = RandStream('mlfg6331_64');
+	options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
+	eva = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'silhoutte');
+	k_optimal = eva{1}.K;
 catch
-    fprintf('Already opened parpool\n');
+    disp('Use MATLAB default function');
+	try
+	    pool = parpool; 
+	catch
+	    fprintf('Already opened parpool\n');
+	end
+	stream = RandStream('mlfg6331_64');
+	options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
+	tic;
+	myKmeans = @(X,K)(kmeans(X, K, 'emptyaction','singleton','Start', 'plus','replicate',nReplicates, 'Options', options,'Display','final'));
+	eva = evalclusters(localmaxima_mat, myKmeans, 'silhouette','klist',krange,'Distance', distance_measure);
+	k_optimal = eva.OptimalK;
 end
-stream = RandStream('mlfg6331_64');  % Random number stream
-options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
-tic;
-myKmeans = @(X,K)(kmeans(X, K, 'emptyaction','singleton','Start', 'plus','replicate',nReplicates, 'Options', options,'Display','final'));
-eva = evalclusters(localmaxima_mat, myKmeans, 'silhouette','klist',krange,'Distance', distance_measure);
-k_optimal = eva.OptimalK;
+
 [~, centroid_optimal, ~, ~] = kmeans(localmaxima_mat, k_optimal, 'emptyaction','singleton','Start', 'plus','replicate',nReplicates, 'Display','off');
 toc;
 
-%% kmeans clustering to all dfc using the optimal centroid identified by using the subject exemplars
+%% kmeans clustering to all dfc using the optimal centroid identified by using the subject exemplars to the optimal number of clusters
 fprintf('Clustering all dfc to %d (optimal k) clusters using centroid derived from subject exemplars)...\n', k_optimal);
 tic; 
 [idx, C, sumd, D] = kmeans(whole_mat_reshaped, k_optimal, 'Distance', distance_measure,...
