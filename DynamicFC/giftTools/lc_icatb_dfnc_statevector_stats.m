@@ -1,31 +1,30 @@
-function [F, TM, MDT, NT] = lc_icatb_dfnc_statevector_stats(a, k)
-% 从gift复制而来，一定要引用
+function [F, TM, MDT, NT] = lc_icatb_dfnc_statevector_stats(idx, k)
+% Copy from gift.
 % input：
-%     a:一个被试的所有窗对应的状态,比如[1 3 5 3 2 4]
-%     k: 状态个数
+%   idx:state index, e.g., [1 1 1 3 3 5 3 2 4]
+%   k: number of states
 % 
 %%
-
-Nwin = length(a);
+Nwin = length(idx);
 
 %% Fraction of time spent in each state
 F = zeros(1,k);
 for jj = 1:k
-    F(jj) = (sum(a == jj))/Nwin;
+    F(jj) = (sum(idx == jj))/Nwin;
 end
 
 %% Number of Transitions
-NT = sum(abs(diff(a)) > 0);
+NT = sum(abs(diff(idx)) > 0);
 
 %% Mean dwell time in each state
 MDT = zeros(1,k);
 for jj = 1:k
-    start_t = find(diff(a==jj) == 1);
-    end_t = find(diff(a==jj) == -1);
-    if a(1)==jj
+    start_t = find(diff(idx==jj) == 1);
+    end_t = find(diff(idx==jj) == -1);
+    if idx(1)==jj
         start_t = [0; start_t];
     end
-    if a(end) == jj
+    if idx(end) == jj
         end_t = [end_t; Nwin];
     end
     MDT(jj) = mean(end_t-start_t);
@@ -37,12 +36,12 @@ end
 %% Full Transition Matrix
 TM = zeros(k,k);
 for t = 2:Nwin
-    TM(a(t-1),a(t)) =  TM(a(t-1),a(t)) + 1;
+    TM(idx(t-1),idx(t)) =  TM(idx(t-1),idx(t)) + 1;
 end
 
 for jj = 1:k
     if sum(TM(jj,:)>0)
-        TM(jj,:) = TM(jj,:)/sum(a(1:Nwin-1) == jj);
+        TM(jj,:) = TM(jj,:)/sum(idx(1:Nwin-1) == jj);
     else
         TM(jj,jj) = 1;
     end

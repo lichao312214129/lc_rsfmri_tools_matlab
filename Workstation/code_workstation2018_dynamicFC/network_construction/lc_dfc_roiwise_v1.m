@@ -1,70 +1,89 @@
-function input_params = lc_icatb_run_dfnc(input_params)
-% Run dfnc
-% Modified from GIFT
-% Cite GIFT
+function input_params = lc_dfc_roiwise_v1(input_params)
+% Modified from GIFT. Uses must cite the GIFT software.
+% Used to calculate roi-wise dynamic fc using sliding-window method.
+% input:
+%   all_subjects_files: all subjects' files (wich abslute path)
+% 	result_dir: directiory for saving results
+% 	TR = 2;
+% 	volume = 190;
+% 	numroi = 114;
+%   window_step: sliding-window step
+%   window_length: sliding-window length
+%   window_type: e.g., Gaussian window
+%   window_alpha: Gaussian window alpha, e.g., 3TRs
+% 	% Default and other parameters
+% 	numOfSess = 1;
+% 	doDespike = 'no';
+% 	tc_filter = 0;
+% 	method = 'L1';
+% 	num_repetitions = 10;
+% 	prefix = '';
+% output
+%   zDynamicFC: dynamic FC matrix with Fisher r-to-z transformed; size=N*N*W, 
+% 	N is the number of ROIs, W is the number of sliding-window
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %% input
+% Interactive
 if nargin < 1
     input_params.ini = 1;
 end
 
 if ~isfield(input_params, 'all_subjects_files')
-    input_params.all_subjects_files =uigetdir(pwd, 'select directory that containing all subjects'' data');
-    input_params.all_subjects_files =dir(input_params.all_subjects_files);
-    folder={input_params.all_subjects_files.folder};
-    name={input_params.all_subjects_files.name};
-    input_params.all_subjects_files =cell(length(name),1);
+    all_subjects_files =uigetdir(pwd, 'select directory that containing all subjects'' data');
+    all_subjects_files =dir(all_subjects_files);
+    folder={all_subjects_files.folder};
+    name={all_subjects_files.name}';
+    name = name(3:end);
+    all_subjects_files =cell(length(name),1);
     for i =1:length(name)
-        input_params.all_subjects_files {i}=fullfile(folder{i},name{i});
+        all_subjects_files {i}=fullfile(folder{i},name{i});
     end
-    input_params.all_subjects_files = input_params.all_subjects_files (3:end);
+else
+    all_subjects_files = input_params.all_subjects_files;
 end
 
 if ~ isfield(input_params, 'result_dir')
-    input_params.result_dir = uigetdir(pwd, 'select directory that saving results');
+    result_dir = uigetdir(pwd, 'select directory that saving results');
+else
+    result_dir = input_params.result_dir;
 end
 
-% Default and other parameters
+% Case-sensitive. Only for my paper currently.
+% TODO: Interactive
 TR = 2;
-numOfSess = 1;
 volume = 190;
 numroi = 114;
+window_alpha = 3;
+window_length = 17;
+window_step = 1;
+
+% Default and other parameters
+numOfSess = 1;
 doDespike = 'no';
 tc_filter = 0;
-method = 'none';
+method = 'L1';
 num_repetitions = 10;
-input_params.window_type = 'gaussian';
-input_params.window_alpha = 3;
-input_params.window_length = 17;
-input_params.window_step = 1;
-input_params.prefix = '';
-input_params.num_repetitions = num_repetitions;
-input_params.calc_dynamic = 1;
-input_params.calc_static = 1;
+prefix = '';
 
 % make result directory
-result_dir_of_static = fullfile(input_params.result_dir, strcat('zStaticFC_WindowLength',num2str(input_params.window_length),'_WindowStep',num2str(input_params.window_step)));
-result_dir_of_dynamic = fullfile(input_params.result_dir, strcat('zDynamicFC_WindowLength',num2str(input_params.window_length),'_WindowStep',num2str(input_params.window_step)));
-if ~exist(result_dir_of_static, 'dir')
-    mkdir(result_dir_of_static);
-end
+result_dir_of_dynamic = fullfile(result_dir, strcat('zDynamicFC_WindowLength',num2str(window_length),'_WindowStep',num2str(window_step)));
 if ~exist(result_dir_of_dynamic, 'dir')
     mkdir(result_dir_of_dynamic);
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% ---------------------------Run-----------------------------------
 % Load timeseries
 tic;
-numOfSub = length(input_params.all_subjects_files);
+numOfSub = length(all_subjects_files);
 tc = zeros(numOfSub, numOfSess, volume, numroi);
 for i = 1:numOfSub
-   tc(i, 1,:,:) = importdata(input_params.all_subjects_files{i});
+   tc(i, 1,:,:) = importdata(all_subjects_files{i});
 end
 
 % Make sliding window
-c = icatb_compute_sliding_window(volume, input_params.window_alpha, input_params.window_length);
+c = icatb_compute_sliding_window(volume, window_alpha, window_length);
 A = repmat(c, 1, numroi);
-Nwin = volume - input_params.window_length;
+Nwin = volume - window_length;
 
 %initial_lambdas = (0.1:.03:1);
 initial_lambdas = (0.1:.03:.40);
@@ -79,7 +98,7 @@ for nSub = 1:numOfSub
         
         dataSetCount = dataSetCount + 1;
         
-        results_file = [input_params.prefix, '_sub_', icatb_returnFileIndex(nSub), '_sess_', icatb_returnFileIndex(nSess), '_results.mat'];
+        results_file = [prefix, name{nSub}];
         
         FNCdyn = zeros(Nwin, numroi*(numroi - 1)/2);
         Lambdas = zeros(num_repetitions, length(initial_lambdas));
@@ -112,7 +131,7 @@ for nSub = 1:numOfSub
         % Apply circular shift to timecourses
         tcwin = zeros(Nwin, volume, numroi);
         for ii = 1:Nwin
-            Ashift = circshift(A, round(-volume/2) + round(input_params.window_length/2) + ii);
+            Ashift = circshift(A, round(-volume/2) + round(window_length/2) + ii);
             tcwin(ii, :, :) = squeeze(tc(nSub, nSess, :, :)).*Ashift;
         end
         
@@ -156,16 +175,17 @@ for nSub = 1:numOfSub
                 a = icatb_corrcov(wList);
                 a = a - eye(numroi);
                 FNCdyn(ii, :) = lc_mat2vec(a);
-                InvC = -thetaList;
-                r = (InvC ./ repmat(sqrt(abs(diag(InvC))), 1, numroi)) ./ repmat(sqrt(abs(diag(InvC)))', numroi, 1);
-                r = r + eye(numroi);
-                Pdyn(ii, :) = mat2vec(r);
+                % InvC = -thetaList;
+                % r = (InvC ./ repmat(sqrt(abs(diag(InvC))), 1, numroi)) ./ repmat(sqrt(abs(diag(InvC)))', numroi, 1);
+                % r = r + eye(numroi);
+                % Pdyn(ii, :) = lc_mat2vec(r);
             end
             
             FNCdyn = atanh(FNCdyn);
             FNCdyn = lc_vec2mat(FNCdyn,numroi);
             disp(['.... saving file ', results_file]);
-            icatb_save(fullfile(input_params.result_dir, results_file), 'Pdyn', 'Lambdas', 'FNCdyn');
+            % icatb_save(fullfile(result_dir_of_dynamic, results_file), 'Pdyn', 'Lambdas', 'FNCdyn');
+            icatb_save(fullfile(result_dir_of_dynamic, results_file), 'FNCdyn');  % Discard saving Pdyn and Lambdas
             
         elseif strcmpi(method, 'none')
             % No L1
@@ -177,7 +197,7 @@ for nSub = 1:numOfSub
             FNCdyn = lc_vec2mat(FNCdyn,numroi);
             
             disp(['.... saving file ', results_file]);
-            save(fullfile(input_params.result_dir, results_file), 'FNCdyn');
+            save(fullfile(result_dir_of_dynamic, results_file), 'FNCdyn');
         end
         
         outFiles{dataSetCount} = results_file;
@@ -189,10 +209,11 @@ for nSub = 1:numOfSub
 end
 % End of loop over subjects
 
-input_params.best_lambda = best_lambda;
-input_params.outputFiles = outFiles;
-fileN = fullfile(input_params.result_dir, [input_params.prefix, '.mat']);
+dfc_info.best_lambda = best_lambda;
+dfc_info.outputFiles = outFiles;
+fileN = fullfile(result_dir_of_dynamic, [prefix,'dfc_info', '.mat']);
 disp(['Saving parameter file ', fileN, ' ...']);
+save(fileN,'dfc_info')
 totalTime = toc;
 
 fprintf('\n');
@@ -201,6 +222,29 @@ disp(['Total time taken to complete the analysis is ', num2str(totalTime/60), ' 
 diary('off');
 fprintf('\n');
 
+
+
+%% plot test
+load Mycolormap_state;
+if_save=0;
+if_add_mask=0;
+mask_path=ones(114)==1;
+net_path='ROISignals_00558_resting_Covremoved.mat';
+how_disp='all';% or 'only_neg'
+if_binary=0; %二值化处理，正值为1，负值为-1
+which_group=1;
+net_index_path='D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\netIndex.mat';
+lc_netplot(net_path,1,mask_path,how_disp,if_binary,which_group, net_index_path);
+
+ct = 1;
+for i = 1: 5: 160
+    subplot(6,6,ct)
+    lc_netplot(FNCdyn(:,:,i),1,mask_path,how_disp,if_binary,which_group, net_index_path);
+%     imagesc(FNCdyn(:,:,i));
+    colormap(mymap_state)
+    caxis([-0.8 0.8]);
+    ct = ct +1;
+end
 
 
 

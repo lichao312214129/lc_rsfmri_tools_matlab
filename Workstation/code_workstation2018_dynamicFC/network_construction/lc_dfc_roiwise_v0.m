@@ -1,9 +1,9 @@
-function lc_dfc_roiwise(input_params)
-%  Used to calculate  roi-wise dynamic fc using sliding-window method for
-%  on group of subjects
+function lc_dfc_roiwise_base_roiwise_v0(input_params)
+%  Used to calculate  roi-wise dynamic fc using sliding-window method for one group of subjects
+%  This is similar to DPABI software, but not GIFT software.
 % input:
 %   all_subjects_files: all subjects' files (wich abslute path)
-% result_dir:
+%   result_dir:
 %   directiory for saving results
 %   input_params.window_step: sliding-window step
 %   input_params.window_length: sliding-window length
@@ -52,7 +52,7 @@ if ~ isfield(input_params, 'window_step')
 end
 
 if ~ isfield(input_params, 'calc_dynamic')
-    % TODO: Revise lc_dfc.m
+    % TODO: Revise lc_dfc_roiwise_base.m
     input_params.calc_dynamic = 1;
     input_params.calc_static = 1;
 end
@@ -76,20 +76,20 @@ for s=1:nSubj
     time_series_of_all_node=importdata(data_dir);
     
     if input_params.calc_dynamic==1 && input_params.calc_static==1
-        [zDynamicFC,zStaticFC]=lc_dfc(time_series_of_all_node,input_params.window_step,input_params.window_length, input_params.window_type, input_params.window_alpha);
+        [zDynamicFC,zStaticFC]=lc_dfc_roiwise_base(time_series_of_all_node,input_params.window_step,input_params.window_length, input_params.window_type, input_params.window_alpha);
         % save
         [~,name,format]=fileparts(data_dir);
         save([result_dir_of_dynamic,filesep,name,format],'zDynamicFC');
         save([result_dir_of_static,filesep,name,format],'zStaticFC');
         
     elseif input_params.calc_dynamic==1 && input_params.calc_static==0
-        [zDynamicFC,~]=lc_dfc(time_series_of_all_node,input_params.window_step,input_params.window_length, input_params.window_type, input_params.window_alpha);
+        [zDynamicFC,~]=lc_dfc_roiwise_base(time_series_of_all_node,input_params.window_step,input_params.window_length, input_params.window_type, input_params.window_alpha);
         % save
         [~,name,format]=fileparts(data_dir);
         save([result_dir_of_static,filesep,name,format],'zDynamicFC');
         
     elseif input_params.calc_dynamic==0 && input_params.calc_static==1
-        [~,zStaticFC]=lc_dfc(time_series_of_all_node,input_params.window_step,input_params.window_length, input_params.window_type, input_params.window_alpha);
+        [~,zStaticFC]=lc_dfc_roiwise_base(time_series_of_all_node,input_params.window_step,input_params.window_length, input_params.window_type, input_params.window_alpha);
         % save
         [~,name,format]=fileparts(data_dir);
         save([result_dir_of_static,filesep,name,format],'zStaticFC');

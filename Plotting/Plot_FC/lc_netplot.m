@@ -1,5 +1,5 @@
 function lc_netplot(net_path,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
-% 用途：用matrix的形式，画出功能连接矩阵
+% Use: plot matrix with sorted according to network order
 % input
 %   net_path:带路径的功能连接网络文件名
 %   mask: 带路径的mask文件名
@@ -11,10 +11,8 @@ if nargin<1
     mask_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\h_posthoc_fdr.mat';
     if_add_mask=1;
     how_disp='all'; % or 'only_neg'
-    if_binary=0; %浜屽?煎寲澶勭悊锛屾鍊间负1锛岃礋鍊间负-1
+    if_binary=0; 
     which_group=1;
-    
-    % 缃戠粶index璺緞锛岀敤浜庨噸鏋勫姛鑳界綉缁滐紙鎸夌収缃戠粶鐨勯『搴忥級
     net_index_path='D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\netIndex.mat';
 end
 
@@ -39,7 +37,8 @@ end
 
 % when matrix is 3D, show which (the 3ith dimension)
 if numel(size(net))==3
-    net=squeeze(net(which_group,:,:));
+%     net=squeeze(net(which_group,:,:));
+    net=squeeze(net(:,:,which_group));
 end
 
 % transfer the weighted matrix to binary
