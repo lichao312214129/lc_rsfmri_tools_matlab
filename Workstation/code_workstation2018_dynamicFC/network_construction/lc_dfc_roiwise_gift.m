@@ -1,10 +1,10 @@
-function input_params = lc_dfc_roiwise_v1(input_params)
-% Modified from GIFT. Uses must cite the GIFT software.
+function lc_dfc_roiwise_gift(input_params)
+% Modified from GIFT. Users must cite the GIFT software.
 % Used to calculate roi-wise dynamic fc using sliding-window method.
 % input:
-%   all_subjects_files: all subjects' files (wich abslute path)
+%   all_subjects_files: all subjects' files (wich abslute path). Each subject's file indicates a group of time series with (number of time series) * (number of nodes)
 % 	result_dir: directiory for saving results
-% 	TR = 2;
+% 	TR = 2;  only used for post-processing
 % 	volume = 190;
 % 	numroi = 114;
 %   window_step: sliding-window step
@@ -21,6 +21,8 @@ function input_params = lc_dfc_roiwise_v1(input_params)
 % output
 %   zDynamicFC: dynamic FC matrix with Fisher r-to-z transformed; size=N*N*W, 
 % 	N is the number of ROIs, W is the number of sliding-window
+% Author:  Li Chao
+% Email:lichao19870617@gmail.com OR lichao19870617@163.com
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% input
 % Interactive
@@ -53,11 +55,11 @@ end
 TR = 2;
 volume = 190;
 numroi = 114;
-window_alpha = 3;
 window_length = 17;
 window_step = 1;
 
 % Default and other parameters
+window_alpha = 3;  % gaussian window alpha
 numOfSess = 1;
 doDespike = 'no';
 tc_filter = 0;

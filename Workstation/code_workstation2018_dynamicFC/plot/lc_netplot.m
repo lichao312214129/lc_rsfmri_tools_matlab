@@ -72,4 +72,6 @@ net_index=importdata(net_index_path);
 % plot: insert separate line between each network
 lc_InsertSepLineToNet(re_net)
 axis square
+C = colorbar;
+set(get(C, 'YLabel'), 'String', 'Correlation','FontSize',15);
 end

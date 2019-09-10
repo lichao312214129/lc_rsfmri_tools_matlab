@@ -1,10 +1,10 @@
-function lc_cluster_for_dfc_v2(subj_path, krange, distance_measure, nReplicates, out_dir)
+function lc_cluster_for_dfc_gift_v1(subj_path, krange, distance_measure, nreplicates, out_dir)
 % PURPOSE: Cluster for dynamic fc matrix.
 % HOW:
 % 	1: Initial clustering was performed on a subset of windows, consisting of local maxima in
 % 	functional connectivity variance, as subject exemplars to decrease the redundancy 
 % 	between windows and computational demands (Allen et al., 2014).
-% 	The K-means clustering was performed to all exemplars and repeated N (nReplicates) times
+% 	The K-means clustering was performed to all exemplars and repeated N (nreplicates) times
 % 	with random initial cluster centroid positions to escape local minima. 
 % 	The optimal number of clusters was estimated using methods: gap, silhoutte (used in our paper), bic, aic and dunns 
 % 	(implemented using icatb_optimal_clusters.m function in GIFT software)
@@ -19,23 +19,25 @@ function lc_cluster_for_dfc_v2(subj_path, krange, distance_measure, nReplicates,
 %   subj_path: subject's dFC files' path (matlab .mat or .txt file type with dimension of n_node*n_node*n_window)
 %   krange: The search window of k, such as  2:1:20;
 %   distance_measure: distance measure, such as 'cityblock', 'sqeuclidean', 'cosine', 'correlation', 'hamming'.
-%   nReplicates: repeated nReplicates times with random initial cluster centroid positions to escape local minima
+%   nreplicates: repeated nreplicates times with random initial cluster centroid positions to escape local minima
 %   out_dir: directory to save results
 % output:
-    % meta informations: idx, C, sumd, D
-    % median network for each state
+    % Saving meta informations: idx, C, sumd, D
+    % Saving median network for each state
     
 % NOTE: We tend to use icatb_optimal_clusters.m function in GIFT software to identify the optimal number of clusters
+% Thanks to GIFT software
 % Author: Li Chao
 % Email:lichao19870617@gmail.com OR lichao19870617@163.com
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+tic
 % input
 if nargin < 5
     out_dir = uigetdir(pwd, 'Select the folder containing results');
 end
 
 if nargin < 4
-    nReplicates = 10;
+    nreplicates = 10;
 end
 
 if nargin < 3
@@ -43,17 +45,17 @@ if nargin < 3
 end
 
 if nargin < 2
-    krange = str2num(input('Enter the K you want to cluster:', 's'));
+%     krange = str2num(input('Enter the K you want to cluster:', 's'));
+    krange = 2:1:10;
 end
 
 if nargin < 1
     subj_folder = uigetdir(pwd, 'Select the folder containing subjects'' network');
     subj_path = dir(fullfile(subj_folder,'*.mat'));  
-    % TODO: expand the .mat file to other file like txt
+    % TODO: expand the .mat file to other file, e.g. .txt file
 end
   
-% *Saving subjects's_name, so that we can align subject's order with index_of_state.
-% (Required!)
+% Saving subjects's_name, so that we can align subject's order with index_of_state, Required and very important!
 fprintf('Saving subject''s name according loading order...\n');
 subj_name = {subj_path.name}';
 if ~exist(out_dir, 'dir')
@@ -80,7 +82,7 @@ n_feature = sum(mask_of_up_mat(:));
 mat_of_one_sub = zeros(n_feature, n_window);
 whole_mat = zeros(n_feature, n_window, n_subj);
 
-% load dynamic fc
+% Load dfc
 for i = 1:n_subj
     fprintf('Loading %dth dynamic matrix...\n',i);
     file_name = fullfile(subj_folder, subj_path(i).name);
@@ -93,7 +95,7 @@ for i = 1:n_subj
     end
     whole_mat(:,:,i) = mat_of_one_sub;
 end
-fprintf('======Loaded all mat!======\n')
+fprintf('------------Loaded all mat!------------\n')
 
 % prepare data
 whole_mat(isinf(whole_mat)) = 1;
@@ -105,21 +107,21 @@ count = 0;
 for i = 1:n_subj
     mat = whole_mat(:,:,i)';  % n_window*n_features
     variance = squeeze(var(mat,0,2));
-    count = count + sum(islocalmax(variance));
+    count = count + sum(islocalmax_matlab(variance,true));
 end
 localmaxima_mat = zeros(count, n_feature);
 
 whole_mat_reshaped = zeros(n_subj*n_window,n_feature);  % for clustering whole dfc
 startpoint = 1;
 for i = 1:n_subj
-    fprintf('\tFinding %dth local maxima...\n',i);
+%     fprintf('\tFinding %dth local maxima...\n',i);
     mat = whole_mat(:,:,i)';  % n_window*n_features
     whole_mat_reshaped(i*n_window-n_window+1:i*n_window,:) = mat;
     variance = squeeze(var(mat,0,2));
-    maxima_loc = islocalmax(variance);
+    maxima_loc = islocalmax_matlab(variance,true);
     mat = mat(maxima_loc,:);  % n_localmaxima_window*n_features
     n_locmax_current = size(mat,1);
-    if i ==1
+    if i == 1
         startpoint = 1;
     else
         startpoint = startpoint + n_locmax_delay;
@@ -128,7 +130,7 @@ for i = 1:n_subj
     n_locmax_delay = n_locmax_current;
     localmaxima_mat(startpoint:endpoint,:) = mat;
 end
-fprintf('======Found all subjects'' local maxima!======\n')
+fprintf('------------Found all subjects'' local maxima!------------\n')
 
 %% kmeans clustering to subject exemplars (local maxima)
 % The optimal number of centroid states was estimated using the silhouette criterion.
@@ -136,20 +138,20 @@ fprintf('======Found all subjects'' local maxima!======\n')
 % Reference2: Dynamic functional connectivity changes associated with dementia in Parkinson’s disease:doi:10.1093/brain/awz192
 % The search window of k from 2 to N.
 % TODO: expant to other criterion such as elbow criterion etc.
-% [ratio, centroid] = lc_kmeans_identifyK_elbowcriterion(localmaxima_mat,krange, distance_measure, nReplicates, 1);
-fprintf('Kmeans clustering to subject exemplars (local maxima in FC variance)\n');
+% [ratio, centroid] = lc_kmeans_identifyK_elbowcriterion(localmaxima_mat,krange, distance_measure, nreplicates, 1);
+fprintf('Kmeans clustering to subject exemplars (local maxima in FC variance) ');
 fprintf('to find the optimal k and corresponding centroid...\n');
 
 % First I try to use icatb_optimal_clusters.m function in GIFT software to identify the optimal clusters number
 % If no icatb_optimal_clusters to use, we use the default MATLAB fuction evalclusters.m.
 try
-	disp('Use icatb_optimal_clusters.m function');
+	disp('Running icatb_optimal_clusters.m function...');
     stream = RandStream('mlfg6331_64');
 	options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
 	eva = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'silhoutte');
 	k_optimal = eva{1}.K;
 catch
-    disp('Use MATLAB default function');
+    disp('Running MATLAB default evalclusters.m function...');
 	try
 	    pool = parpool; 
 	catch
@@ -157,24 +159,21 @@ catch
 	end
 	stream = RandStream('mlfg6331_64');
 	options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
-	tic;
-	myKmeans = @(X,K)(kmeans(X, K, 'emptyaction','singleton','Start', 'plus','replicate',nReplicates, 'Options', options,'Display','final'));
+	myKmeans = @(X,K)(kmeans(X, K, 'emptyaction','singleton','replicate',nreplicates, 'Options', options,'Display','final'));
 	eva = evalclusters(localmaxima_mat, myKmeans, 'silhouette','klist',krange,'Distance', distance_measure);
 	k_optimal = eva.OptimalK;
 end
 
-[~, centroid_optimal, ~, ~] = kmeans(localmaxima_mat, k_optimal, 'emptyaction','singleton','Start', 'plus','replicate',nReplicates, 'Display','off');
-toc;
+fprintf('Clustering subject exemplars to %d (optimal k) clusters for getting start centroid...\n',k_optimal);
+[~, centroid_optimal, ~, ~] = kmeans(localmaxima_mat, k_optimal, 'emptyaction','singleton','replicate',nreplicates, 'Display','off');
 
 %% kmeans clustering to all dfc using the optimal centroid identified by using the subject exemplars to the optimal number of clusters
 fprintf('Clustering all dfc to %d (optimal k) clusters using centroid derived from subject exemplars)...\n', k_optimal);
-tic; 
 [idx, C, sumd, D] = kmeans(whole_mat_reshaped, k_optimal, 'Distance', distance_measure,...
                                'Replicates', 1, 'Options', options,...
                                'Start', centroid_optimal);
-toc; 
 fprintf('Kmeans clustering to all subjects finished!\n')
-fprintf('================================================================\n')
+fprintf('------------------------------------------------\n')
 % delete(gcp('nocreate'))  % close the parallel pool
 
 % Saving meta info
@@ -192,36 +191,8 @@ for i = 1 : k_optimal
     square_median_mat(mask_of_up_mat) = median_mat;
     square_median_mat = square_median_mat + square_median_mat';
     square_median_mat(eye(n_node) == 1) = 1;
-    save(fullfile(out_dir,['cluster_',num2str(i), '.mat']), 'square_median_mat');
+    save(fullfile(out_dir,['group_centroids_',num2str(i), '.mat']), 'square_median_mat');
 end
-fprintf('============All Done!============\n');
+fprintf('------------All Done!------------\n');
+toc
 end
-
-
-% subplot(1,2,1)
-% imagesc(importdata('cluster_1.mat'));
-% colormap(jet)
-% 
-% subplot(1,2,2)
-% imagesc(importdata('cluster_2.mat'));
-% colormap(jet)
-
-% subplot(2,4,3)
-% imagesc(importdata('cluster_3.mat'));
-% colormap(jet)
-
-% subplot(2,4,4)
-% imagesc(importdata('cluster_4.mat'));
-% colormap(jet)
-
-% subplot(2,4,5)
-% imagesc(importdata('cluster_5.mat'));
-% colormap(jet)
-
-% subplot(2,4,6)
-% imagesc(importdata('cluster_6.mat'))
-% colormap(jet)
-
-% subplot(2,4,7)
-% imagesc(importdata('cluster_7.mat'))
-% colormap(jet)

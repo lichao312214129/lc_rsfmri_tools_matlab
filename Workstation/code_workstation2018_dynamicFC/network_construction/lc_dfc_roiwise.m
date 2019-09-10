@@ -1,4 +1,4 @@
-function lc_dfc_roiwise_base_roiwise_v0(input_params)
+function lc_dfc_roiwise_base_roiwise(input_params)
 %  Used to calculate  roi-wise dynamic fc using sliding-window method for one group of subjects
 %  This is similar to DPABI software, but not GIFT software.
 % input:

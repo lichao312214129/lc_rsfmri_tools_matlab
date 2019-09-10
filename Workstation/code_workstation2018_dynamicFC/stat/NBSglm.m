@@ -46,6 +46,10 @@ function [test_stat,P]=NBSglm(varargin)
 %       important if spatial dependencies between each GLM are used in
 %       subsequent cluster-based inference.
 %
+% c:/WINDOWS/system32/drivers/etc
+% 127.0.0.1 registeridm.com
+% 127.0.0.1 www.registeridm.com
+% 127.0.0.1 www.internetdownloadmanager.com 
 %   azalesky@unimelb.edu.au
 
 GLM=varargin{1};
@@ -157,6 +161,11 @@ for i=1:GLM.perms+1
         mse=sum(resid.^2)/(n-p);
         se=sqrt(mse*(GLM.contrast*inv(GLM.X'*GLM.X)*GLM.contrast'));
         test_stat(i,:)=(GLM.contrast*b_perm)./se;
+        % Added by Li Chao
+        % Need Check
+        if nargout >= 2
+            P(i,:) =1-tcdf(test_stat(i,:),n-p);
+        end
     elseif strcmp(GLM.test,'ftest')
         sse=zeros(1,M);
         ssr=zeros(1,M);
@@ -166,7 +175,7 @@ for i=1:GLM.perms+1
         ssr=sum((GLM.X*b_perm-repmat(mean(y_perm),n,1)).^2);
         if isempty(ind_nuisance)
             test_stat(i,:)=(ssr/(p-1))./(sse/(n-p));
-            % added by Li Chao
+            % Added by Li Chao
             if nargout >= 2
                 P(i,:) =1-fcdf(test_stat(i,:),p-1,n-p);
             end
