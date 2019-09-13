@@ -1,7 +1,7 @@
 function lc_NBSstat(x, y, cov, perms, contrast, test_type, STATS)
 % Modified from NBS
 % Refer and thanks to NBS (NBSglm and NBSstats)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % debug
 if nargin < 1
     x = [[ones(50,1);zeros(50,1)], [zeros(50,1);ones(50,1)]];
@@ -28,8 +28,8 @@ GLM.test = test_type;
 
 % GLM 
 [test_stat,P]=NBSglm(GLM);
-sig_loc = P <= 0.05
-test_stat(P)
+sig_loc = P <= 0.05;
+test_stat(sig_loc);
 
 % NBS to test_stat (or pval)
 STATS.test_stat = test_stat;

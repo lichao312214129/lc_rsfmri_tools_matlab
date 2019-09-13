@@ -93,7 +93,6 @@ else
     resid_y=GLM.y-GLM.X(:,ind_nuisance)*b;
 end
 
-
 test_stat=zeros(GLM.perms+1,M);
 P=zeros(GLM.perms+1,M);
 for i=1:GLM.perms+1
@@ -162,9 +161,9 @@ for i=1:GLM.perms+1
         se=sqrt(mse*(GLM.contrast*inv(GLM.X'*GLM.X)*GLM.contrast'));
         test_stat(i,:)=(GLM.contrast*b_perm)./se;
         % Added by Li Chao
-        % Need Check
+        % Need Check!
         if nargout >= 2
-            P(i,:) =1-tcdf(test_stat(i,:),n-p);
+            P(i,:) =2*(1-tcdf(abs(test_stat(i,:)),n-p));  % The reason why I multiplied it by 2 is that I applied two-tailed test.
         end
     elseif strcmp(GLM.test,'ftest')
         sse=zeros(1,M);
