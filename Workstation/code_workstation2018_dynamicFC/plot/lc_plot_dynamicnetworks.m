@@ -1,36 +1,33 @@
-%% plot dynamic network for dfc
+net_path1='D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results_cluster\group_centroids_1.mat';
+net_path2='D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results_cluster\group_centroids_2.mat';
+mask_path = '';
+load MyColormap_state.mat
+net_index_path='D:\My_Codes\LC_Machine_Learning\lc_rsfmri_tools\lc_rsfmri_tools_matlab\Workstation\code_workstation2018_dynamicFC\plot\netIndex.mat';
 
-% mean fc
-% all_dfc_dir = 'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\zDynamic\DynamicFC_length17_step1_screened';
-% all_dfc = dir(fullfile(all_dfc_dir, '*.mat'));
-% all_dfc_name = {all_dfc.name}';
-% all_dfc_path = fullfile(all_dfc_dir, all_dfc_name);
-% % load all dfc
-% nsub = length(all_dfc_name);
-% mean = zeros(114, 114, 174);
-% for i = 1:nsub
-%     fprintf('%d/%d\n',i, nsub);
-% 	tmp = importdata(all_dfc_path{i});
-%     mean = mean+tmp;
-% end
-% mean_all_dfc = mean/nsub;
-% save('D:\My_Codes\LC_Machine_Learning\lc_rsfmri_tools\lc_rsfmri_tools_matlab\Workstation\code_workstation2018_dynamicFC\plot\meandfc.mat','mean_all_dfc');
 
-% save to figure
-c = 1;
-for i = 1:5:174
-    fprintf('%d/%d\n',i, nsub);
-	tmp = mean_all_dfc(:,:,i);
-    subplot(5,4,c)
-    imagesc(tmp);
-    colormap(jet)
-    axis square
-    axis off
-    c=c+1;
-end
+% identify colorbar limit
+net1 = importdata(net_path1);
+max1 = max(net1(:));
+min1 = min(net1(:));
+net2 = importdata(net_path2);
+max2 = max(net2(:));
+min2 = min(net2(:));
 
-c=var(mean,1,3);
-net_path=c;
-lc_netplot(net_path,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
-colormap(gray)
-caxis([-0.8 0.8]);
+figure
+[index1,re_net_index1,re_net1] = lc_netplot(net_path1,0,mask_path,'all',0,1, net_index_path);
+colormap(jet)
+caxis([-0.5 0.7]);
+
+netid = 6;
+net_vis1 = re_net1(re_net_index1==netid,re_net_index1==netid);
+mean(net_vis1(:));
+
+
+
+figure
+[index2,re_net_index2,re_net2] = lc_netplot(net_path2,0,mask_path,'all',0,1, net_index_path);
+colormap(jet)
+caxis([-0.5 0.7]);
+
+net_vis2 = re_net2(re_net_index2==netid,re_net_index2==netid);
+mean(net_vis2(:));

@@ -10,15 +10,13 @@ function subname_of_each_state = lc_get_individual_statemetrics_gift(idx,k,dir_o
 % output:
     % Saving all subjects' centroid networks to out_dir
     % subname_of_each_state: subjects' names of each state group used to extract covariates such as age, sex, headmotion etc.
- 
-%% input
 %% input
 if nargin < 1
     idx_path = fullfile(pwd,'idx.mat');
-    k = 4;
-    dir_of_dFC = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\Test\dfc';
-    subname = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\Test\ordered_subjname_20199211225.txt';
-    out_dir = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\Test';
+    k = 2;
+    dir_of_dFC = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\dfc_whole';
+    subname = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results_cluster\ordered_subjname_2019912151910.txt';
+    out_dir = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results_cluster\results_of_individual';
     idx = importdata(idx_path);
     all_subjname = importdata(subname);
 end
@@ -79,7 +77,7 @@ dFC=importdata(dfc_file{ithSubj});
 for i=1:length(unique_idx)
     ith_state=unique_idx(i);
     state_fc=median(dFC(:,:,idx_current_subj==ith_state),3);
-    outpath=fullfile(out_dir,['state',num2str(ith_state)],subjname);
+    outpath=fullfile(out_dir,['individual_state',num2str(ith_state)],subjname);
     save(outpath,'state_fc');
 end
 end

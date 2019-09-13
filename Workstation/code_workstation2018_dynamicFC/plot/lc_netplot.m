@@ -1,4 +1,4 @@
-function lc_netplot(net_path,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
+function [index,re_net_index,re_net] = lc_netplot(net_path,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
 % 用途：用matrix的形式，画出功能连接矩阵
 % input
 %   net_path:带路径的功能连接网络文件名
@@ -11,10 +11,9 @@ if nargin<1
     mask_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\h_posthoc_fdr.mat';
     if_add_mask=1;
     how_disp='all'; % or 'only_neg'
-    if_binary=0; %浜屽?煎寲澶勭悊锛屾鍊间负1锛岃礋鍊间负-1
+    if_binary=0;
     which_group=1;
-    
-    % 缃戠粶index璺緞锛岀敤浜庨噸鏋勫姛鑳界綉缁滐紙鎸夌収缃戠粶鐨勯『搴忥級
+  
     net_index_path='D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\netIndex.mat';
 end
 
