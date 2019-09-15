@@ -1,4 +1,4 @@
-function  lc_ancova_for_dfc(dir_of_temporal_properties, path_of_cov_files, correction_threshold, is_save)
+function  lc_posthoc_for_dfc_v0()
 % Perform Posthoc ttest2 + FDR correction for temporal properties of dynamic functional connectivity (mean dwell time, fractional windows and number of transitions).
 % input:
 % 	dir_of_temporal_properties: directory of temporal properties.
@@ -9,7 +9,6 @@ function  lc_ancova_for_dfc(dir_of_temporal_properties, path_of_cov_files, corre
 % NOTE. Make sure the order of the dependent variables matches the order of the covariances
 %% Inputs
 if nargin < 1
-    n_state = 2;
     n_row = 114;
     n_col = 114;
     % make folder to save results
@@ -68,7 +67,7 @@ end
 perms = 0;
 test_type = 'ttest';
 GLM.perms = perms;
-contrast = [-1 0 0 1];
+contrast = [0 0 1 -1];
 GLM.X = design_matrix;
 GLM.y = all_subj_fc;
 y_name = 'triu_features';
