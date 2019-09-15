@@ -12,7 +12,7 @@ function subname_of_each_state = lc_get_individual_statemetrics_gift(idx,k,dir_o
     % subname_of_each_state: subjects' names of each state group used to extract covariates such as age, sex, headmotion etc.
 %% input
 if nargin < 1
-    idx_path = fullfile(pwd,'idx.mat');
+    idx_path = fullfile('D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results_cluster','idx.mat');
     k = 2;
     dir_of_dFC = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\dfc_whole';
     subname = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results_cluster\ordered_subjname_2019912151910.txt';
@@ -68,7 +68,7 @@ idx_current_subj=idx(ind_start(ithSubj):ind_end(ithSubj));
 
 % Metrics
 [F, TM, MDT, NT] = lc_icatb_dfnc_statevector_stats(idx_current_subj, k);
-metrics_dir = fullfile(out_dir,'metrics',subjname);
+metrics_dir = fullfile(out_dir,'temporal_properties',subjname);
 save(metrics_dir, 'F', 'TM', 'MDT', 'NT');
 
 % Centroid

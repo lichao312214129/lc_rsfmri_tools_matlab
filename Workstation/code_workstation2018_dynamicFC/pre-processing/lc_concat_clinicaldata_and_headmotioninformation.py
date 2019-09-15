@@ -48,5 +48,5 @@ regfolder = [np.int64(regfolder_[0]) for regfolder_ in regfolder if len(regfolde
 headmotion_info['subjects'] = regfolder
 all_cov = pd.merge(demographicdata_all_screened, headmotion_info, left_on='folder', right_on='subjects', how='inner')
 
-all_cov = all_cov.iloc[:,[0,1,2,3,4,5]]
-all_cov.to_excel(os.path.join(out_dir,'all_covariates.xlsx'), index=False)
+all_cov = all_cov.iloc[:,[0,1,2,3,4,6]]
+all_cov.to_excel(os.path.join(out_dir,'all_covariates1.xlsx'), index=False)

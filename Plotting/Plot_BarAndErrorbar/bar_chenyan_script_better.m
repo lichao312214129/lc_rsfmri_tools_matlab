@@ -1,7 +1,7 @@
-function  bar_chenyan_script
+function  bar_chenyan_script()
 %UNTITLED 此处显示有关此函数的摘要
 %   此处显示详细说明
-x=1:8;%changed item，变量数量。
+x=1:8; %changed item，变量数量。
 Mean=[mean(data_c,1);mean(data_p_f,1);mean(data_p_s,1)]';%均值。
 h = bar(x,Mean,0.6);%画bar
 f = @(a)bsxfun(@plus,cat(1,a{:,1}),cat(1,a{:,2})).';

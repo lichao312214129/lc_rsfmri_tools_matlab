@@ -72,5 +72,5 @@ net_index=importdata(net_index_path);
 lc_InsertSepLineToNet(re_net)
 axis square
 C = colorbar;
-set(get(C, 'YLabel'), 'String', 'Correlation','FontSize',15);
+set(get(C, 'YLabel'), 'String', 'Correlations (Z)','FontSize',15);
 end

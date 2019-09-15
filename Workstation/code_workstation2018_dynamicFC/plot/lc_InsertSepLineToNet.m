@@ -25,7 +25,7 @@ end
 function lc_line(sepIndex,nNode)
 % nNode: node¸öÊý
 for i=1:length(sepIndex)
-    line([sepIndex(i)+0.5,sepIndex(i)+0.5],[-10,nNode*2],'color','w','LineWidth',0.8)
-    line([0,nNode*2],[sepIndex(i)+0.5,sepIndex(i)+0.5],'color','w','LineWidth',0.8)
+    line([sepIndex(i)+0.5,sepIndex(i)+0.5],[-10,nNode*2],'color','k','LineWidth',0.8)
+    line([0,nNode*2],[sepIndex(i)+0.5,sepIndex(i)+0.5],'color','k','LineWidth',0.8)
 end
 end
