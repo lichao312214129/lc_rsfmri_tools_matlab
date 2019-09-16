@@ -105,7 +105,7 @@ end
 
 % plot circle
 % figure;
-circularGraph(re_net,'Colormap',myColorMap,'Label',myLabel);
+circularGraph_lc(re_net,'Colormap',myColorMap,'Label',myLabel);
 
 % save
 if if_save

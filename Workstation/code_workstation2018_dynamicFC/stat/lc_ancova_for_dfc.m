@@ -9,7 +9,6 @@ function  lc_ancova_for_dfc(dir_of_temporal_properties, path_of_cov_files, corre
 % NOTE. Make sure the order of the dependent variables matches the order of the covariances
 %% Inputs
 if nargin < 1
-    n_state = 2;
     n_row = 114;
     n_col = 114;
     % make folder to save results
@@ -70,7 +69,7 @@ perms = 0;
 test_type = 'ftest';
 GLM.perms = perms;
 % GLM.X = design_matrix(:,[1 2 3 4 5 6 8]);
-contrast = [1 1 1 1 0 0 0];
+contrast = [1 1 1 1 0 0 0 ];
 GLM.X = design_matrix;
 GLM.y = all_subj_fc;
 y_name = 'triu_features';
