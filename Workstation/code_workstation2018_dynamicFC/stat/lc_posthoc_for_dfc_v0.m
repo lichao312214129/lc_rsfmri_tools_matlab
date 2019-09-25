@@ -74,7 +74,7 @@ n_f = size(all_subj_fc,2);
 
 test_stat = zeros(3,n_f);
 pvalues = zeros(3,n_f);
-GLM.contrast = [0 0 1 -1];
+% GLM.contrast = [-1 0 0 -1];
 for i =1:3
     contrast = cat(2,-1,zeros(1,3));
     contrast(i+1)=1;
@@ -114,7 +114,7 @@ H_posthoc = H_posthoc+H_posthoc';
 %% save
 if is_save
     disp('save results...');
-    save (fullfile(save_path,['dfc_posthoc_bdvshc_results_original_',correction_method,'.mat']),'y_name','Tvalues','Pvalues_posthoc','H_posthoc');
+    save (fullfile(save_path,['dfc_posthoc_bdvshc_results_',correction_method,'.mat']),'y_name','Tvalues','Pvalues_posthoc','H_posthoc');
     disp('saved results');
 end
 fprintf('--------------------------All Done!--------------------------\n');

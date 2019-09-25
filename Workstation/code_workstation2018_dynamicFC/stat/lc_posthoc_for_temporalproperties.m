@@ -1,6 +1,5 @@
-function  [fvalue_ancova, pvalue_ancova, h_ancova_corrected] = ...
-    lc_ancova_for_temporal_properties(dir_of_temporal_properties, path_of_cov_files, correction_threshold, is_save)
-% Perform ANCOVA + FDR correction for temporal properties of dynamic functional connectivity (mean dwell time, fractional windows and number of transitions).
+function  lc_posthoc_for_temporalproperties()
+% Perform posthoc ttest2s + FDR correction for temporal properties of dynamic functional connectivity (mean dwell time, fractional windows and number of transitions).
 % input:
 % 	dir_of_temporal_properties: directory of temporal properties.
 % 	path_of_cov_files: directory of of covariances
@@ -30,7 +29,7 @@ if nargin < 1
     for i =  1:4
         group_design(:,i) = ismember(group_label, i);
     end
-    design_matrix = cat(2, group_design, cov(:,[3,4,6]));
+    design_matrix = cat(2, group_design, cov(:,[3,4,5,6]));
     
     % dependent variable, Y
     directory = uigetdir(pwd,'select directory of .mat files');
@@ -53,13 +52,22 @@ if nargin < 1
 end
 
 %% ancova
-GLM.perms = 0;
-GLM.X = design_matrix;
-GLM.y = [mean_dwelltime, fractional_window,num_transitions];
-y_name = 'mean_dwelltime, fractional_window, num_transitions';
-GLM.contrast = [1 1 1 1 0 0 0 ];
-GLM.test = 'ftest';
-[test_stat,pvalues]=NBSglm(GLM);
+GLM.perms =0;
+GLM.X = design_matrix(:,[1 2 3 4]);
+GLM.y = [mean_dwelltime, fractional_window, num_transitions];
+y_name = 'mean_dwelltime, fractional_window';
+GLM.test =  'ttest';
+
+test_stat = zeros(3,5);
+pvalues = ones(3,5);
+for i =1:3
+    contrast = cat(2,-1,zeros(1,3));
+    contrast(i+1)=1;
+    GLM.contrast = contrast;
+    [test_stat(i,:),pvalues(i,:)]=NBSglm(GLM);
+end
+
+pall=[p_sz(1:end-1),p_mdd(1:end-1),p_bd(1:end-1),p_szbd(1:end-1),p_szmdd(1:end-1),p_bdmdd(1:end-1)];
 %% Multiple comparison correction
 if strcmp(correction_method, 'fdr')
     results = multcomp_fdr_bh(pvalues, 'alpha', correction_threshold);
@@ -78,3 +86,5 @@ if is_save
 end
 fprintf('--------------------------All Done!--------------------------\n');
 end
+
+[h,p,ci,s]=ttest2(GLM.y(GLM.X(:,3)==1,:),GLM.y(GLM.X(:,1)==1,:))

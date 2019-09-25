@@ -38,10 +38,10 @@ header_need_extracting = ['folder','诊断','年龄','性别','病程月','首�
                          'TE,Total_Errors','PE,Perseverative_Errors','NPE,Nonperseverative_Errors',
                          'anti-depressant','anti-psycho','moodstablizer','anti-anxiety']
 
-demographicdata_hc = demographicdata_hc[header_need_extracting]
-demographicdata_sz = demographicdata_sz[header_need_extracting]
-demographicdata_bd = demographicdata_bd[header_need_extracting]
-demographicdata_mdd = demographicdata_mdd[header_need_extracting]
+demographicdata_hc = demographicdata_hc[header_need_extracting].to_excel(r'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\scale_hc.xlsx',index=False)
+demographicdata_sz = demographicdata_sz[header_need_extracting].to_excel(r'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\scale_sz.xlsx',index=False)
+demographicdata_bd = demographicdata_bd[header_need_extracting].to_excel(r'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\scale_bd.xlsx',index=False)
+demographicdata_mdd = demographicdata_mdd[header_need_extracting].to_excel(r'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\scale_mdd.xlsx',index=False)
 
 demographicdata_all_screened = pd.concat([demographicdata_hc,demographicdata_sz,demographicdata_bd, demographicdata_mdd], axis=0)
 demographicdata_all_screened = demographicdata_all_screened[['folder','诊断','年龄','性别','用药_x']]
