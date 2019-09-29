@@ -1,4 +1,4 @@
-function matrixplot(data,varargin)
+function matrixplot(data,xstr,ystr,varargin)
 %   根据实值矩阵绘制色块图，用丰富的颜色和形状形象的展示矩阵元素值的大小。
 %
 %   matrixplot(data) 绘制矩阵色块图，data为实值矩阵，每一个元素对应一个色块，色
@@ -122,15 +122,21 @@ else
 end
 
 % 绘图
-figure('color','w',...
-    'units','normalized',...
-    'pos',[0.289165,0.154948,0.409956,0.68099]);
-axes('units','normalized','pos',[0.1,0.022,0.89,0.85]);
+% figure('color','w',...
+%     'units','normalized',...
+%     'pos',[0.289165,0.154948,0.409956,0.68099]);
+
+% figure('color','w',...
+%     'units','normalized',...
+%     'pos',[0.1,0.1,10,10]);
+axes('units','normalized','pos',[0.1,0.1,0.6,0.6]);
+
+% axes('units','normalized','pos',[0.1,0.022,0.89,0.85]);
 if strncmpi(GridOpt,'On',2)
     mesh(x,y,z,...
         'EdgeColor',[0.7,0.7,0.7],...
         'FaceAlpha',0,...
-        'LineWidth',1);   % 参考网格线
+        'LineWidth',0.5);   % 参考网格线
 end
 hold on;
 axis equal;
@@ -141,7 +147,8 @@ set(gca,'Xtick',(1:n)-0.5,...
     'XtickLabel',XVarNames,...
     'Ytick',(1:m)-0.5,...
     'YtickLabel',YVarNames,...
-    'XAxisLocation','top',...
+    'XAxisLocation','bottom',...
+    'YAxisLocation','origin',...
     'YDir','reverse',...
     'Xcolor',[0.7,0.7,0.7],...
     'Ycolor',[0.7,0.7,0.7],...
@@ -155,7 +162,7 @@ end
 
 % 显示数值文本信息
 if strncmpi(DisplayOpt,'On',2)
-    str = num2str(data,'%4.3f');
+    str = num2str(data,'%4.2f');
     scale = 0.1*max(n/m,1)/(max(m,n)^0.55);
     if strncmpi(TextColor,'Auto',3)
         ColorMat = get(gcf,'ColorMap');
@@ -168,7 +175,7 @@ if strncmpi(DisplayOpt,'On',2)
             text(sx(i),sy(i),0.1,str(i,:),...
                 'FontUnits','normalized',...
                 'FontSize',scale,...
-                'fontweight','bold',...
+                'fontweight','normal',...
                 'HorizontalAlignment','center',...
                 'Color',TextColor(i,:));
         end
@@ -176,14 +183,15 @@ if strncmpi(DisplayOpt,'On',2)
         text(sx,sy,0.1*ones(size(sx)),str,...
             'FontUnits','normalized',...
             'FontSize',scale,...
-            'fontweight','bold',...
+            'fontweight','normal',...
             'HorizontalAlignment','center',...
             'Color',TextColor);
     end
 end
 
 % 设置X轴和Y轴刻度标签的缩进方式
-MyTickLabel(gca,FigStyle);
+% Revised by Li Chao 2019-09-27
+MyTickLabel(gca,FigStyle,xstr,ystr);
 
 % 添加颜色条
 if strncmpi(ColorBar,'On',2)
@@ -198,7 +206,7 @@ end
 % ---------------------------------------------------
 %  调整坐标轴刻度标签子函数
 % ---------------------------------------------------
-function MyTickLabel(ha,tag)
+function MyTickLabel(ha,tag,xstr,ystr)
 
 %   根据显示范围自动调整坐标轴刻度标签的函数
 %   ha   坐标系句柄值
@@ -206,10 +214,13 @@ function MyTickLabel(ha,tag)
 %        'Auto' --- 将x轴刻度标签旋转90度，y轴刻度标签不作调整
 %        'Tril' --- 将x轴刻度标签旋转90度，并依次缩进，y轴刻度标签不作调整
 %        'Triu' --- 将x轴刻度标签旋转90度，y轴刻度标签依次缩进
+%   xstr:xticklabels
+%   ystr:yticklabels
 %   Example:
 %   MyTickLabel(gca,'Tril');
 %
 %   CopyRight：xiezhh（谢中华）,2013.1编写
+% Revised by Li Chao 2019-09-27
 
 if ~ishandle(ha)
     warning('MATLAB:warning2','第一个输入参数应为坐标系句柄');
@@ -222,10 +233,10 @@ if ~strcmpi(get(ha,'type'),'axes')
 end
 
 axes(ha);
-xstr = get(ha,'XTickLabel');
+% xstr = get(ha,'XTickLabel');
 xtick = get(ha,'XTick');
 xl = xlim(ha);
-ystr = get(ha,'YTickLabel');
+% ystr = get(ha,'YTickLabel');
 ytick = get(ha,'YTick');
 yl = ylim(ha);
 set(ha,'XTickLabel',[],'YTickLabel',[]);
