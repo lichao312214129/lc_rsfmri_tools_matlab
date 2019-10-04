@@ -81,6 +81,7 @@ plot(Order_sorted(:,1),Order_sorted(:,2),opt.roc_type,'color',opt.color,...
     'MarkerFaceColor',opt.MarkerFaceColor);%g为颜色，-为线型。);
 xlabel('1-Specificity');
 ylabel('Sensitivity');
+set(gca,'LineWidth',2);
 set(gca,'Fontsize',14);%设置坐标标尺大小
 box off
 axis([-0.1 1 0 1]);%设置坐标轴在指定的区间.
