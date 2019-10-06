@@ -22,7 +22,7 @@ showLegend=0;
 Mean=cell2mat(cellfun(@(x) mean(x,1),Matrix,'UniformOutput',false)')';
 Std=cell2mat(cellfun(@(x) std(x),Matrix,'UniformOutput',false)')';
 
-h = bar(Mean,0.6,'EdgeColor','k','LineWidth',1.5);
+h = bar(Mean,0.6,'grouped','EdgeColor','k','LineWidth',1.5);
 % h(1).FaceColor=[0.2,0.2,0.2];h(2).FaceColor='w';
 % h(1).Visible='off';h(2).Visible='off';
 % set(gca,'YTick',-0.01:0.00001:0.02);
@@ -37,9 +37,11 @@ for i=1:numel(Mean)
         line([coordinate_x(i),coordinate_x(i)],[Mean(i),Mean(i)+Std(i)],'linewidth',2);
     else
         line([coordinate_x(i),coordinate_x(i)],[Mean(i),Mean(i)-Std(i)],'linewidth',2);
+%         errorbar([coordinate_x(i),coordinate_x(i)],[Mean(i),Mean(i)-Std(i)],'linewidth',2);
     end
 end
 ax = gca;
+set(ax,'LineWidth',2.5);
 box off
 
 ax.XTick =  1:size(Matrix{1},1);
@@ -51,8 +53,6 @@ if showXTickLabels
         '右侧putamen','左侧putamen','右侧岛叶/frontal Operculum Corter','左侧岛叶/frontal Operculum Corter',...
         '右侧杏仁核 ','左侧杏仁核 ','右侧海马','左侧海马','右侧海马旁回','左侧海马旁回',...
         ' 右侧舌回',' 左侧舌回','右侧cuneus','左侧cuneus','右侧angular gyrus','右侧中央后回'};
-%     ax.XTickLabels = ...
-%         {'AUC','Accuracy','Sensitivity','Specificity','PPV','NPV'};
     
     set(ax,'Fontsize',10);%设置ax标尺大小
     % set(ax,'ytick',-0.1:0.05:0.1);
@@ -71,7 +71,7 @@ end
 % legend
 if showLegend
     h=legend('HC','SZ','BD','MDD','Orientation','horizontal');%根据需要修改
-    set(h,'Fontsize',15);%设置legend字体大小
+    set(h,'Fontsize',15);  % 设置legend字体大小
     set(h,'Box','off');
     % h.Location='best';
     box off

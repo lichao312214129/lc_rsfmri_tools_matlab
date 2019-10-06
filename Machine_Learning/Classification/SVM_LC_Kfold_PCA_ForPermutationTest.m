@@ -53,13 +53,13 @@ switch K<N
             [predict_label, dec_values] = predict(model,test_data);
             Decision{i}=dec_values(:,2);
             %% 评估模型
-            [accuracy,sensitivity,specificity,ppv,npv]=Calculate_Performances(predict_label,test_label);
+            [accuracy,sensitivity,specificity,ppv,npv]=lc_calculate_performances(predict_label,test_label);
             Accuracy(i) =accuracy;
             Sensitivity(i) =sensitivity;
             Specificity(i) =specificity;
             PPV(i)=ppv;
             NPV(i)=npv;
-            [AUC(i)]=AUC_LC(test_label,dec_values(:,2));
+            [AUC(i)]=lc_calculate_auc(test_label,dec_values(:,2));
             %%  空间判别模式
             %             w_Brain_Component = model.Beta;
             %             w_Brain(i,:) = w_Brain_Component' * COEFF';

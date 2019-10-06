@@ -100,13 +100,13 @@ switch K<N
             [predict_label, dec_values] = predict(model,test_data_all);
             Decision{i}=dec_values(:,2);
             % Calculate performances
-            [accuracy,sensitivity,specificity,ppv,npv]=Calculate_Performances(predict_label,test_label);
+            [accuracy,sensitivity,specificity,ppv,npv]=lc_calculate_performances(predict_label,test_label);
             Accuracy(i) =accuracy;
             Sensitivity(i) =sensitivity;
             Specificity(i) =specificity;
             PPV(i)=ppv;
             NPV(i)=npv;
-            [AUC(i)]=AUC_LC(test_label,dec_values(:,2));
+            [AUC(i)]=lc_calculate_auc(test_label,dec_values(:,2));
             %weight
             w_Brain_Component = model.Beta;
             w_Brain(i,:) = w_Brain_Component' * COEFF';
@@ -166,8 +166,8 @@ if K<N
 end
 
 if K==N
-    [Accuracy, Sensitivity, Specificity, PPV, NPV]=Calculate_Performances(Predict,cell2mat(label_ForPerformance));
-    AUC=AUC_LC(label_ForPerformance,cell2mat(Decision));
+    [Accuracy, Sensitivity, Specificity, PPV, NPV]=lc_calculate_performances(Predict,cell2mat(label_ForPerformance));
+    AUC=lc_calculate_auc(label_ForPerformance,cell2mat(Decision));
     performances=[Accuracy, Sensitivity, Specificity, PPV, NPV,AUC]';%显示分类表现
     f = figure;
     title(['Performance with',' ',num2str(K),'-fold']);
