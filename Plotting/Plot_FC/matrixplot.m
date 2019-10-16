@@ -62,8 +62,8 @@ function matrixplot(data,xstr,ystr,varargin)
 %   matrixplot(x,'FillStyle','nofill','TextColor','Auto');
 %   matrixplot(x,'TextColor',[0.7,0.7,0.7],'FigShap','d','FigSize','Auto','ColorBar','on');
 %   matrixplot(x,'TextColor','k','FigShap','d','FigSize','Full','ColorBar','on','FigStyle','Tril');
-%   XVarNames = {'xiezhh','heping','keda','tust','tianjin'};
-%   YVarNames = {'xiezhh','heping','keda','tust','tianjin'};
+%   XVarNames = {'xiezhh','heping','keda','tust','tianjin','tianjin','tianjin'};
+%   YVarNames = {'xiezhh','heping','keda','tust','tianjin','tianjin','tianjin'};
 %   matrixplot(x,'FigShap','e','TextColor',[0.7,0.7,0.],'FigSize','Auto','ColorBar','on','XVarNames',XVarNames,'YVarNames',XVarNames);
 %
 %   CopyRight£ºxiezhh£¨Ð»ÖÐ»ª£©,2013.01.24±àÐ´

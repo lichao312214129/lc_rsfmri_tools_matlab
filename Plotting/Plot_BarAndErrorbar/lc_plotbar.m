@@ -46,9 +46,10 @@ for i = 1:numbars
 end
 
 set(gca,'LineWidth',2);
+set(gca,'tickdir','out');
 box off
 % set(gca, 'Ytick', [0.5:0.05:1]);
-legend('25','50','100','200', 'Location', 'northoutside','Orientation','horizon')
+legend({'','','',''}, 'Location', 'northoutside','Orientation','horizon')
 legend('boxoff');
 
 end

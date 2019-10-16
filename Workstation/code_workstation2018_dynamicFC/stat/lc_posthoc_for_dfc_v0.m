@@ -73,7 +73,7 @@ GLM.test = 'ttest';
 n_f = size(all_subj_fc,2);
 
 test_stat = zeros(3,n_f);
-pvalues = zeros(3,n_f);
+pvalues = ones(3,n_f);
 % GLM.contrast = [-1 0 0 -1];
 for i =1:3
     contrast = cat(2,-1,zeros(1,3));
