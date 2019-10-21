@@ -105,8 +105,6 @@ function mask_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 [mask_name,mask_path]=uigetfile('*.nii;*.img');
 handles.opt.mask_data=y_Read(fullfile(mask_path,mask_name));
-% 不等于0的为mask
-handles.opt.mask_data=handles.opt.mask_data~=0;
 % Update handles structure
 guidata(hObject, handles)
 
@@ -181,16 +179,28 @@ elseif strcmp(handles.opt.how_extract,'提取mask内的均值')
         fprintf('%d/%d\n',i,length(handles.opt.img_path_name))
         % mask filter
         [img,h]=y_Read(handles.opt.img_path_name{i});
-        img_filter=img.*handles.opt.mask_data;
-        img_filter=mean(img_filter(:));
-        
+        % if multi label in the mask
+        if length(unique(handles.opt.mask_data)) > 2
+            unimask = unique(handles.opt.mask_data(mask));
+            unimask = setdiff(unimask, 0);
+            n_roi = numel(unimask);
+            mean_img_filter = zeros(n_roi,1);
+            for j =  1:n_roi
+                img_filter=img(handles.opt.mask_data == unimask(j));
+                mean_img_filter(j)=mean(img_filter(:));
+            end
+        % if only one label in the mask
+        else
+            img_filter=img(handles.opt.mask_data);
+            mean_img_filter=mean(img_filter(:));
+        end
         % save
         [~,name]=fileparts(handles.opt.img_path_name{i});
         name=fullfile(handles.opt.save_folder,name);
-        save([name,'.mat'],'img_filter') % to mat
+        save([name,'.mat'],'mean_img_filter') % to mat
         % save all signals to one csv
         f = fopen(all_signals_file,'a+');
-        fprintf(f, '%f\n', img_filter);
+        fprintf(f, '%f\n', mean_img_filter);
         fclose(f);
         % save ordered name
         f = fopen(all_signals_name,'a+');

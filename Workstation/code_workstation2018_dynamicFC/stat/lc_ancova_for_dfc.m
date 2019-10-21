@@ -32,7 +32,7 @@ if nargin < 1
     end
     
     % dependent variable, Y
-    fprintf('Loading temporal properties...\n');
+    fprintf('Loading data...\n');
     directory = uigetdir(pwd,'select directory of .mat files');
     suffix = '*.mat';
     subj = dir(fullfile(directory,suffix));
@@ -48,7 +48,7 @@ if nargin < 1
         onemat = onemat(mask);
         all_subj_fc(i,:)=onemat;
     end
-    fprintf('Loaded temporal properties\n');
+    fprintf('Loaded data\n');
     
     % match Y and X
     ms = regexp( subj, '(?<=\w+)[1-9][0-9]*', 'match' );
