@@ -1,11 +1,12 @@
-function [result_x2y,result_y2x,result,roi_sequence] = lc_gca_bivariate_coefficient(timecourses,order,covariables)
+function [result, result_x2y,result_y2x,result_auto,roi_sequence] = lc_gca_bivariate_coefficient(timecourses,order,covariables)
 % Tis function is used to perform bivariate ROI-wise Granger Causal Analysis
 % Inputs:
 %   timecourses: rois' timecourses with dimension of number of timepoints by number of rois
 % 	order: default is 1 wihich means 1 timepoints lag
 %   covariables: orther covariables
 % Outputs:
-%   result:x2y + y2x';
+%   result:x2y + y2x'; result(i,j) denotes effective connectivity from node
+%   i to node j.
 %   See rest manual
 % Revised from REST software
 if nargin < 3
@@ -58,6 +59,6 @@ for i = 1: n_pairs
     matgc_auto(roi_sequence(i,1),roi_sequence(i,2)) = pairgc(i,2);
 end
 % matgc = matgc;
-matgc_auto = matgc_auto + matgc_auto';
+matgc_auto = matgc_auto;
 matgc(eye(n_node)==1) = b_autoreg;
 end

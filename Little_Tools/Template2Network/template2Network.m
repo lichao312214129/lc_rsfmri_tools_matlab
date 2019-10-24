@@ -1,5 +1,5 @@
 function [label_net] = template2Network(brain_parcellation,network)
-% 将某个脑分区模板的各个脑区映射到相应的脑网络模板上（根据体素重叠比例）。
+% This function is used to calculate the overlapping ratio between one brain area and different brain area.
 % 具体方法请参考{Chronnectome fingerprinting: Identifying individuals and
 % predicting higher cognitive functions using dynamic brain connectivity patterns}
 %   input:

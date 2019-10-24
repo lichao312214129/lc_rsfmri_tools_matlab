@@ -1,9 +1,10 @@
 function lc_dfc_roiwise_gift(input_params)
 % Modified from GIFT. Users must cite the GIFT software.
 % Used to calculate roi-wise dynamic fc using sliding-window method.
-% input:
-%   all_subjects_files: all subjects' files (wich abslute path). Each subject's file indicates a group of time series with (number of time series) * (number of nodes)
-% 	result_dir: directiory for saving results
+% Inputs:
+%   input_params have the following two fields:
+%       all_subjects_files: all subjects' files (wich abslute path). Each subject's file indicates a group of time series with (number of time series) * (number of nodes)
+% 	    outputdir: directiory for saving results
 % 	TR = 2;  only used for post-processing
 % 	volume = 190;
 % 	numroi = 114;
@@ -44,10 +45,10 @@ else
     all_subjects_files = input_params.all_subjects_files;
 end
 
-if ~ isfield(input_params, 'result_dir')
-    result_dir = uigetdir(pwd, 'select directory that saving results');
+if ~ isfield(input_params, 'outputdir')
+    outputdir = uigetdir(pwd, 'select directory that saving results');
 else
-    result_dir = input_params.result_dir;
+    outputdir = input_params.outputdir;
 end
 
 % Case-sensitive. Only for my paper currently.
@@ -68,7 +69,7 @@ num_repetitions = 10;
 prefix = '';
 
 % make result directory
-result_dir_of_dynamic = fullfile(result_dir, strcat('zDynamicFC_WindowLength',num2str(window_length),'_WindowStep',num2str(window_step)));
+result_dir_of_dynamic = fullfile(outputdir, strcat('zDynamicFC_WindowLength',num2str(window_length),'_WindowStep',num2str(window_step)));
 if ~exist(result_dir_of_dynamic, 'dir')
     mkdir(result_dir_of_dynamic);
 end

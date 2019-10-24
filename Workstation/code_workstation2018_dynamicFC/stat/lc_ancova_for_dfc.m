@@ -1,28 +1,31 @@
-function  lc_ancova_for_dfc(dir_of_temporal_properties, path_of_cov_files, correction_threshold, is_save)
-% Perform ANCOVA + FDR correction for temporal properties of dynamic functional connectivity (mean dwell time, fractional windows and number of transitions).
+function  lc_ancova_for_dfc(data_dir, cov_files, correction_threshold, is_save)
+% Perform ANCOVA + FDR correction for temporal properties of dynamic functional connectivity.
 % input:
-% 	dir_of_temporal_properties: directory of temporal properties.
-% 	path_of_cov_files: directory of of covariances
+% 	data_dir: data directory of dynamic functional connectivity.
+% 	cov_files: covariances' file names
 % 	correction_threshold: currently, there is only FDR correction (e.g., correction_threshold = 0.05).
 % 	is_save: save flag.
 % output:f, h and p values.
 % NOTE. Make sure the order of the dependent variables matches the order of the covariances
+% Thanks to NBS software.
 %% Inputs
 if nargin < 1
+    % your dfc network size
     n_row = 114;
     n_col = 114;
-    % make folder to save results
+
+    % save results
     is_save = 1;
     save_path =  uigetdir(pwd,'select saving folder');
     if ~exist(save_path,'dir')
         mkdir(save_path);
     end
     
-    % correction
+    % multiple correction
     correction_threshold = 0.05;
     correction_method = 'fdr';
     
-    % covariance
+    % covariances
     [file_name, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of cov files',pwd,'MultiSelect', 'off');
     cov = xlsread(fullfile(path, file_name));
     group_label = cov(:,2);
@@ -33,11 +36,11 @@ if nargin < 1
     
     % dependent variable, Y
     fprintf('Loading data...\n');
-    directory = uigetdir(pwd,'select directory of .mat files');
+    data_dir = uigetdir(pwd,'select data_dir of .mat files');
     suffix = '*.mat';
-    subj = dir(fullfile(directory,suffix));
+    subj = dir(fullfile(data_dir,suffix));
     subj = {subj.name}';
-    subj_path = fullfile(directory,subj);
+    subj_path = fullfile(data_dir,subj);
     n_subj = length(subj);
     for i = 1:n_subj
         onemat = importdata(subj_path{i});
@@ -51,6 +54,8 @@ if nargin < 1
     fprintf('Loaded data\n');
     
     % match Y and X
+    % Y and X must have the unique ID.
+    % In this case, uID of Y is subj, uID of X is the first co of cov (covariances file is a .xlsx format).
     ms = regexp( subj, '(?<=\w+)[1-9][0-9]*', 'match' );
     nms = length(ms);
     subjid = zeros(nms,1);
@@ -63,12 +68,11 @@ if nargin < 1
    group_design_matched = group_design(Locb,:);
    design_matrix = cat(2, group_design_matched, cov_matched(:,[3,4,6]));
 end
-%% ancova
+
+%% ancova using GLM from NBS
 perms = 0;
-% contrast = [-1 1 0 0  0 0 0 ];
 test_type = 'ftest';
 GLM.perms = perms;
-% GLM.X = design_matrix(:,[1 2 3 4 5 6 8]);
 contrast = [1 1 1 1 0 0 0 ];
 GLM.X = design_matrix;
 GLM.y = all_subj_fc;
@@ -76,18 +80,6 @@ y_name = 'triu_features';
 GLM.contrast = contrast;
 GLM.test = test_type;
 [test_stat,pvalues]=NBSglm(GLM);
-% pall=[p_sz(1:end-1),p_mdd(1:end-1),p_bd(1:end-1),p_szbd(1:end-1),p_szmdd(1:end-1),p_bdmdd(1:end-1)];
-
-%% NBS STATAS
-% % NBS to test_stat (or pval)
-% tt = test_stat(1,:);
-% tp = pvalues(1,:);
-% STATS.thresh = min(tt(tp<=0.05));
-% STATS.test_stat = test_stat;
-% STATS.N = n_row;
-% STATS.size='extent';
-% STATS.alpha = 0.05;
-% [n_cnt,con_mat,pval]=NBSstats(STATS);
 
 %% Multiple comparison correction
 if strcmp(correction_method, 'fdr')
