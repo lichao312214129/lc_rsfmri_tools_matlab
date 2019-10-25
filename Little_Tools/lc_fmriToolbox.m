@@ -55,7 +55,7 @@ function lc_fmriToolbox_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.opt.img_path=pwd;
 handles.opt.img_path_name={};
 handles.opt.mask_data=[];
-handles.opt.how_stand='Z标准化';
+handles.opt.how_stand='Zstandard';
 handles.opt.save_folder=pwd;
 % Choose default command line output for lc_fmriToolbox
 handles.output = hObject;
@@ -157,7 +157,7 @@ for i=1:len_img
     end
     img = img_strut.img;
     
-    if strcmp(handles.opt.how_stand,'Z标准化')
+    if strcmp(handles.opt.how_stand,'Zstandard')
         if  ~isempty(handles.opt.mask_data)
             disp('Have Mask');
             img_inmask=img(handles.opt.mask_data);
@@ -176,7 +176,7 @@ for i=1:len_img
         img_strut.img = zvalues;
         save_nii(img_strut,name);
         
-    elseif strcmp(handles.opt.how_stand,'归一化([-1,1])')
+    elseif strcmp(handles.opt.how_stand,'scale to ([-1,1])')
         svalues=zeros(size(img));
         if  ~isempty(handles.opt.mask_data)
             % Note that: MATLAB have BUG of mapminmax, I fix the BUG
@@ -212,7 +212,7 @@ for i=1:len_img
         img_strut.img = fisherzvalue;
         save_nii(img_strut,name);
         
-    elseif strcmp(handles.opt.how_stand,'除均值化（除以均值）')
+    elseif strcmp(handles.opt.how_stand,'divmean')
         if  ~isempty(handles.opt.mask_data)
             img_inmask=img(handles.opt.mask_data);
         else

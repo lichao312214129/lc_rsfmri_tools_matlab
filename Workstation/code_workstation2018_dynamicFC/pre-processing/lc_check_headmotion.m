@@ -9,7 +9,8 @@ rigidbody_thresh = 3;
 savepath = 'F:\Data\Doctor';
 
 % Getting headmotion files' path 
-[FD_path, rigidbody_path, all_name]  = select_files(regstr_FD, regstr_rigid_body);
+rootpath = 'F:\Data\Doctor\RealignParameter';
+[FD_path, rigidbody_path, all_name]  = select_files(rootpath, regstr_FD, regstr_rigid_body);
 
 % Calculating headmotion and saving to savepath
 calc_headmotion(FD_path, rigidbody_path, all_name, ...
@@ -18,11 +19,10 @@ calc_headmotion(FD_path, rigidbody_path, all_name, ...
 fprintf('Done\n');
 end
 
-function [FD_path, rigidbody_path, all_name]  = select_files(regstr_FD, regstr_rigid_body)
+function [FD_path, rigidbody_path, all_name]  = select_files(rootpath, regstr_FD, regstr_rigid_body)
 % Goal:Extracting FD and rigid body movement files' path using regular expression
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % read all subj path
-rootpath = 'F:\Data\Doctor\RealignParameter';
 all_path = dir(rootpath);
 all_name = {all_path.name}';
 all_name = all_name(3:end);
