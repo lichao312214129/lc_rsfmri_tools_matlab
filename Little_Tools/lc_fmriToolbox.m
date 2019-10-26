@@ -23,7 +23,7 @@ function varargout = lc_fmriToolbox(varargin)
 
 % Edit the above text to modify the response to help lc_fmriToolbox
 
-% Last Modified by GUIDE v2.5 17-Apr-2019 19:46:13
+% Last Modified by GUIDE v2.5 26-Oct-2019 23:00:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -52,11 +52,11 @@ function lc_fmriToolbox_OpeningFcn(hObject, eventdata, handles, varargin)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to lc_fmriToolbox (see VARARGIN)
-handles.opt.img_path=pwd;
-handles.opt.img_path_name={};
-handles.opt.mask_data=[];
-handles.opt.how_stand='Zstandard';
-handles.opt.save_folder=pwd;
+handles.img_path=pwd;
+handles.img_path_name={};
+handles.mask_data=[];
+handles.howStand='Zstandard';
+handles.save_folder=pwd;
 % Choose default command line output for lc_fmriToolbox
 handles.output = hObject;
 
@@ -83,7 +83,7 @@ function image_Callback(hObject, eventdata, handles)
 % hObject    handle to image (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-[file,path] = uigetfile('*.nii;*.img','请选择文件',pwd,'MultiSelect','on');
+[file,path] = uigetfile('*.nii;*.img;*.nii.gz','Select source data',pwd,'MultiSelect','on');
 try
     fun=@(a) fullfile(path,a);
     img_path_name = cellfun(fun,file, 'UniformOutput',false);
@@ -101,7 +101,7 @@ function mask_Callback(hObject, eventdata, handles)
 % hObject    handle to mask (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-[mask_name,mask_path]=uigetfile('*.nii;*.img');
+[mask_name,mask_path]=uigetfile('*.nii;*.img;*.nii.gz');
 handles.opt.mask_data=y_Read(fullfile(mask_path,mask_name));
 % 不等于0的为mask
 handles.opt.mask_data=handles.opt.mask_data~=0;
@@ -118,20 +118,21 @@ handles.opt.save_folder=save_folder;
 % Update handles structure
 guidata(hObject, handles)
 
-% --- Executes on selection change in how_stand.
-function how_stand_Callback(hObject, eventdata, handles)
-% hObject    handle to how_stand (see GCBO)
+% --- Executes on selection change in howStand.
+function howStand_Callback(hObject, eventdata, handles)
+% hObject    handle to howStand (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-opt_cell=get(handles.how_stand, 'String');
-opt_value=get(handles.how_stand, 'Value');
+val=get(handles.howStand,'value')
+% opt_cell=get(handles.howStand, 'String')
+% opt_value=get(handles.howStand, 'Value');
 % fprintf(opt_cell{opt_value});
 handles.opt.how_stand=opt_cell{opt_value};
 % Update handles structure
 guidata(hObject, handles)
-% how_stand
-% Hints: contents = cellstr(get(hObject,'String')) returns how_stand contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from how_stand
+% howStand
+% Hints: contents = cellstr(get(hObject,'String')) returns howStand contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from howStand
 
 
 % --- Executes on button press in Run.
@@ -229,7 +230,7 @@ for i=1:len_img
         img_strut.img = divmean_values;
         save_nii(img_strut,name);
         
-    elseif strcmp(handles.opt.how_stand,'去均值化（减去均值）')
+    elseif strcmp(handles.opt.how_stand,'demean')
         if  ~isempty(handles.opt.mask_data)
             img_inmask=img(handles.opt.mask_data);
         else
@@ -247,7 +248,7 @@ for i=1:len_img
         save_nii(img_strut,name);
         
     else
-        fprintf('设定的方法为%s,本程序没有添加此功能\n',handles.opt.how_stand)
+        fprintf('This standardization method: %s not supported\n',handles.opt.how_stand)
         return
     end
 end

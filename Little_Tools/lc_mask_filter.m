@@ -85,7 +85,7 @@ function image_Callback(hObject, eventdata, handles)
 % hObject    handle to image (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-img_path=uigetdir('Ó°ÏñÎÄ¼ş¼Ğ');
+img_path=uigetdir(pwd,'Select source data');
 img_s=dir(img_path);
 img_name={img_s.name};
 img_name=img_name(3:end)';

@@ -1,4 +1,4 @@
-function excelfile = lc_suit_gui(subjpath,outdir)
+function lc_suit_gui(subjpath,outdir)
 % This function is used to call suit software for one .nii file.
 % Inputs:
 %   rootdir: directory that contains all subject directory.
@@ -39,29 +39,35 @@ addpath(genpath(toolbox));
 
 %% Start SPM
 spm fmri
-
+tic;
 %% Loop for all subjects
 ns = numel(subjpath);
-excelfile = cell(ns,1);
+sumarrymat = cell(ns,1);
 for i = 1:ns
-    fprintf('%d/%d subject\n',i,ns);
+    % Find the subject .nii file
+    fprintf([repmat('=',1,30),'%d/%d subject',repmat('=',1,30),'\n'],i,ns);
     isubjpath = subjpath{i};
-    filesrtuct = dir(fullfile(isubjpath, '*.nii'));
+    filesrtuct = dir(fullfile(isubjpath, '*.nii*'));
     file = fullfile(isubjpath,filesrtuct.name);
-    %  if the sub have more files
+    
+    %  If the subect have more files, then return error
     if numel({filesrtuct.name}) >1 
         error([isubjpath,' have more files']);
     end
     
     % -*- Exe main function
+    disp('Main processing...');
     lc_suit_gui_base(file);
     
-    % Extract excel file name
+    % Get summary.mat file path
+    disp('Getting summary.mat file path...');
     [~, filename] = fileparts(file);
     [path, ~,suffix] = fileparts(file);
     [~,name] = fileparts(path);
-    excelfile{i} = fullfile(outdir,name,'size_summary.xlsx');    
-    % Group produced file to another outdir
+    sumarrymat{i} = fullfile(outdir,name,'summary.mat');   
+    
+    % Group produced file to outdir
+    disp('Grouping produced files to outdir...');
     producedfiles = dir(path);
     producedfiles = {producedfiles.name}';
     producedfiles = producedfiles(3:end);
@@ -71,23 +77,82 @@ for i = 1:ns
 end
 
 %% Summary all excel files of all subjects to one file
-disp('Summarize all size info to one file...');
+fprintf([repmat('=',1,30),'Summarizing allinfo to one file',repmat('=',1,30),'\n']);
 allsubname = cell(1,ns);
 for i = 1:ns
-    [data, rn] = xlsread(excelfile{i});
+    summary_struct= importdata(sumarrymat{i});
+    gsize = summary_struct.size;
+    gmean = summary_struct.mean;
+    gmin = summary_struct.min;
+    gmax = summary_struct.max;
+    gnanmean = summary_struct.nanmean;
+    gregionname = summary_struct.region;
     if i == 1
-        Data = rand(numel(data),ns);
+        Data = zeros(ns, numel(gmean)*5);
     end
-    Data(:,i) = data;
+    Data(i,:) = cat(1,gmean,gmin,gmax,gnanmean,gsize(:,1));
     allsubname(i) = subname(i);
 end
-outexcelname = fullfile(outdir, 'all_sub_size_info.xlsx');
-xlswrite(outexcelname,{'Regions'},'sheet1','A1');
-xlswrite(outexcelname,allsubname,'sheet1','B1');
-xlswrite(outexcelname,rn,'sheet1','A2');
-xlswrite(outexcelname,Data,'sheet1','B2');
 
-disp('All Done!');
+% Region name
+orignal_region_name = importdata([spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii.lut']);
+splitrn = cellfun(@strsplit,orignal_region_name,'UniformOutput',false);
+myfun = @(s) {str2double(s{1})};
+region_atalas = cell2mat(cellfun(myfun,splitrn));
+myfun = @(s) {s{end}};
+region_name = cellfun(myfun,splitrn);
+% In some cases, gregionname should match with the region_name.
+region_name = repmat(region_name',1,5);
+
+% Save to excels
+Excel = actxserver('Excel.Application');
+set(Excel, 'Visible', 0);
+Workbooks = Excel.Workbooks;
+Workbook = invoke(Workbooks, 'Add');
+Sheets = Excel.ActiveWorkBook.Sheets;
+sheet1 = get(Sheets, 'Item', 1);
+invoke(sheet1, 'Activate');
+Activesheet = Excel.Activesheet;
+header = {'mean','min','max','nanmean','size'};
+blocklength = numel(gmean);
+for i = 1:5
+    start = 2+(i-1)*blocklength;
+    endpoint = start+blocklength-1;
+    
+    if start <= 26  % the first row was given to subname
+        startchar = [upper(char(0+start-1+97)),'1'];  
+    elseif (start > 26) && (start <= 26*27)
+        whichloop = ceil(start/26)-1;
+        loc_in_loop = start - whichloop*26;
+        startchar = [upper(char(0+whichloop-1+97)),upper(char(0+loc_in_loop-1+97)),'1'];
+    else
+        disp('The number of columns is out of the range: ZZ1');
+    end
+    
+    if endpoint <= 26   % the first row was given to subname
+        endpointchar = [upper(char(0+endpoint+97)),'1'];
+    elseif (endpoint > 26) && (endpoint <= 26*27)
+        whichloop = ceil(endpoint/26)-1;
+        loc_in_loop = endpoint - whichloop*26;
+        endpointchar = [upper(char(0+whichloop-1+97)),upper(char(0+loc_in_loop-1+97)),'1'];
+    else
+        disp('The number of columns is out of the range: ZZ1');
+    end
+    rangestr = [startchar,':',endpointchar];
+    ActivesheetRange = get(Activesheet,'Range',rangestr);
+    set(ActivesheetRange,'MergeCells',1);
+    set(ActivesheetRange,'HorizontalAlignment',3);
+    set(ActivesheetRange,'Value',header{i});
+end
+
+outexcelname = fullfile(outdir, 'All_Subject_Information.xlsx');
+Activesheet.SaveAs(outexcelname); Quit(Excel); delete(Excel);
+xlswrite(outexcelname,region_name,'sheet1','B2');
+xlswrite(outexcelname,Data,'sheet1','B3');
+xlswrite(outexcelname,allsubname','sheet1','A3');
+
+toc;
+fprintf([repmat('=',1,30),'Congratulations! All done!',repmat('=',1,30),'\n']);
 end
 
 function groupfile(isubjpath,file_to_move, outdir)
@@ -169,22 +234,25 @@ atlas=[spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii'];
 
 D = suit_ROI_summarize(reslicegraymatterfile,...
     'atlas', atlas,...
-    'outfilename',summaryfile);
-% region name
-regionname = importdata([spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii.lut']);
-splitrn = cellfun(@strsplit,regionname,'UniformOutput',false);
-myfun = @(s) {str2double(s{1})};
-region_atalas = cell2mat(cellfun(myfun,splitrn));
-myfun = @(s) {s{end}};
-region_name = cellfun(myfun,splitrn);
-% Matching region id
-region_sum = D.region;
-size = D.size;
-[~,idx]=ismember(region_sum,region_atalas);
-size = size(idx);
-% Save
-xlswrite(excelfile,region_name,'sheet1','A1');
-xlswrite(excelfile,size,'sheet1','B1');
+    'stats', {'nanmean','max','min','size','mean','std'});
+% save to mat
+save(fullfile(path,'summary.mat'),'D');
+
+% % region name
+% regionname = importdata([spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii.lut']);
+% splitrn = cellfun(@strsplit,regionname,'UniformOutput',false);
+% myfun = @(s) {str2double(s{1})};
+% region_atalas = cell2mat(cellfun(myfun,splitrn));
+% myfun = @(s) {s{end}};
+% region_name = cellfun(myfun,splitrn);
+% % Matching region id
+% region_sum = D.region;
+% size = D.size;
+% [~,idx]=ismember(region_sum,region_atalas);
+% size = size(idx);
+% % Save
+% xlswrite(excelfile,region_name,'sheet1','A1');
+% xlswrite(excelfile,size,'sheet1','B1');
 
 %% Reslice back from SUIT space to native space.
 disp('reslice back to native space...')
