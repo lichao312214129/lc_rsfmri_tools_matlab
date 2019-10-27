@@ -76,6 +76,7 @@ varargout{1} = handles.output;
 % --- Executes on selection change in popupmenu1.
 function popupmenu1_Callback(hObject, eventdata, handles)
 get(handles.popupmenu1, 'value')
+get(handles.popupmenu1, 'string')
 % hObject    handle to popupmenu1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

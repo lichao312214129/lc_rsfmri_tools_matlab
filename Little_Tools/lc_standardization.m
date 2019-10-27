@@ -2,7 +2,7 @@
 handles.img_path=pwd;
 handles.img_path_name={};
 handles.mask_data=[];
-handles.how_stand='Zstandard';
+handles.how_stand='demean';
 % Zstandard
 % scale to ([-1,1])
 % Fisher-Z transformation
@@ -22,8 +22,9 @@ handles.img_path_name=img_path_name;
 
 
 [mask_name,mask_path]=uigetfile('*.nii;*.img;*.nii.gz','Select mask',pwd);
-handles.mask_data=y_Read(fullfile(mask_path,mask_name));
-% 不等于0的为mask
+mask_data=load_nii(fullfile(mask_path,mask_name));
+handles.mask_data = mask_data.img;
+% mask
 handles.mask_data=handles.mask_data~=0;
 
 
@@ -38,34 +39,35 @@ else
 end
 for i=1:len_img
     fprintf('%d/%d\n',i,len_img)
-    %     [img,h]=y_Read(handles.opt.img_path_name{i});
+    %     [img,h]=load_nii(handles.opt.img_path_name{i});
     if iscell(handles.img_path_name)
         [~,name,suffix]=fileparts(handles.img_path_name{i});
-        img_strut = load_nii(handles.img_path_name{i});
+        img_struct = load_nii(handles.img_path_name{i});
+        img = double(img_struct.img);
     else
         [~,name,suffix]=fileparts(handles.img_path_name);
-        img_strut = load_nii(handles.img_path_name);
+        img_struct = load_nii(handles.img_path_name);
+        img = double(img_struct.img);
     end
-    img = double(img_strut.img);
     
     if strcmp(handles.how_stand,'Zstandard')
         if  ~isempty(handles.mask_data)
-            disp('Have Mask');
             img_inmask=img(handles.mask_data);
         else
             img_inmask=img;
         end
         mean_inmask=mean(img_inmask);
         mystd=std(img_inmask);
-        zvalues=(img_inmask-mean_inmask)./mystd;
+        zvalues=(img-mean_inmask)./mystd;
         if  ~isempty(handles.mask_data)  % make sure out mask data is zeros
             zvalues(~handles.mask_data)=0;
         end
         %save
         name=fullfile(handles.save_folder,strcat('z_', name, suffix));
-        %         y_Write(zvalues,h,name)
-        img_strut.img = zvalues;
-        save_nii(img_strut,name);
+        %         save_nii(img_struct,zvalues,h,name)
+        img = zvalues;
+        img_struct.img = img;   
+        save_nii(img_struct,name);
         
     elseif strcmp(handles.how_stand,'scale to ([-1,1])')
         svalues=zeros(size(img));
@@ -88,9 +90,10 @@ for i=1:len_img
         end
         %save
         name=fullfile(handles.save_folder,strcat('scale_', name, suffix));
-        %         y_Write(svalues,h,name)
-        img_strut.img = svalues;
-        save_nii(img_strut,name);
+        %         save_nii(img_struct,svalues,h,name)
+        img = svalues;
+        img_struct.img = img;
+        save_nii(img_struct,name);
         
     elseif strcmp(handles.how_stand,'Fisher-Z transformation')
         fisherzvalue=0.5*log((1+img)./(1-img));
@@ -99,9 +102,10 @@ for i=1:len_img
         end
         %save
         name=fullfile(handles.save_folder,strcat('fisherz_', name, suffix));
-        %         y_Write(fisherzvalue,h,name)
-        img_strut.img = fisherzvalue;
-        save_nii(img_strut,name);
+        %         save_nii(img_struct,fisherzvalue,h,name)
+        img = fisherzvalue;
+        img_struct.img = img;
+        save_nii(img_struct,name);
         
     elseif strcmp(handles.how_stand,'divmean')
         if  ~isempty(handles.mask_data)
@@ -116,9 +120,10 @@ for i=1:len_img
         end
         %save
         name=fullfile(handles.save_folder,strcat('divmean_', name, suffix));
-        %         y_Write(divmean_values,h,name);
-        img_strut.img = divmean_values;
-        save_nii(img_strut,name);
+        %         save_nii(img_struct,divmean_values,h,name);
+        img = divmean_values;
+        img_struct.img = img;
+        save_nii(img_struct,name);
         
     elseif strcmp(handles.how_stand,'demean')
         if  ~isempty(handles.mask_data)
@@ -133,9 +138,10 @@ for i=1:len_img
         end
         %save
         name=fullfile(handles.save_folder,strcat('demean_', name,suffix));
-        %         y_Write(demean_values,h,name)
-        img_strut.img = demean_values;
-        save_nii(img_strut,name);
+        %         save_nii(img_struct,demean_values,h,name)
+        img = demean_values;
+        img_struct.img = img;
+        save_nii(img_struct,name);
         
     else
         fprintf('This standardization method: %s not supported\n',handles.how_stand)
