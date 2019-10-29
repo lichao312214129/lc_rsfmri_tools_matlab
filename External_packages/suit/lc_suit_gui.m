@@ -1,264 +1,263 @@
-function lc_suit_gui(subjpath,outdir)
-% This function is used to call suit software for one .nii file.
-% Inputs:
-%   rootdir: directory that contains all subject directory.
-% Author: Li Chao.
+function varargout = lc_suit_gui(varargin)
+% 此代码用来对影像数据标准化
+% LC_SUIT_GUI MATLAB code for lc_suit_gui.fig
+%      LC_SUIT_GUI, by itself, creates a new LC_SUIT_GUI or raises the existing
+%      singleton*.
+%
+%      H = LC_SUIT_GUI returns the handle to a new LC_SUIT_GUI or the handle to
+%      the existing singleton*.
+%
+%      LC_SUIT_GUI('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in LC_SUIT_GUI.M with the given input arguments.
+%
+%      LC_SUIT_GUI('Property','Value',...) creates a new LC_SUIT_GUI or raises the
+%      existing singleton*.  Starting from the left, property value pairs are
+%      applied to the GUI before lc_suit_gui_OpeningFcn gets called.  An
+%      unrecognized property name or invalid value makes property application
+%      stop.  All inputs are passed to lc_suit_gui_OpeningFcn via varargin.
+%
+%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+%      instance to run (singleton)".
+%
+% See also: GUIDE, GUIDATA, GUIHANDLES
 
-%% Suggestions
-word = sprintf(['1. Put SUIT software under the ''toolbox'' folder in SPM software directory.\n'...
-    '2. Make sure that the data structure is T1Img-->sub00n-->T1.nii.\n'...
-    '3. Select the ''T1Img'' folder in the folder selection dialog box.\n']);
-h = questdlg(word,'Note.','continue','exit','continue');
-switch h
-    case 'exit'
-        disp('Buy Now...');
-        return
-    case 'continue'
-        disp('Continue...');
-    otherwise
-        quit cancel;
+% Edit the above text to modify the response to help lc_suit_gui
+
+% Last Modified by GUIDE v2.5 29-Oct-2019 18:58:34
+
+% Begin initialization code - DO NOT EDIT
+gui_Singleton = 1;
+gui_State = struct('gui_Name',       mfilename, ...
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @lc_suit_gui_OpeningFcn, ...
+    'gui_OutputFcn',  @lc_suit_gui_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
+if nargin && ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
 end
 
-%% Inputs
-if nargin < 2
-    outdir = uigetdir(pwd, 'Select directory to save results');
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
 end
+% End initialization code - DO NOT EDIT
 
-if nargin < 1
-    rootdir = uigetdir(pwd, 'Select folder containing all subjects'' T1');
-    subjdirs = dir(rootdir);
-    subjdirs = subjdirs(3:end);
-    subname = {subjdirs.name}';
-    subjpath = fullfile(rootdir, subname);
-end
 
-%% Add path
-spm_dir = fileparts(which('spm'));
-toolbox = [spm_dir '/toolbox/suit'];
-addpath(genpath(toolbox));
+% --- Executes just before lc_suit_gui is made visible.
+function lc_suit_gui_OpeningFcn(hObject, eventdata, handles, varargin)
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to lc_suit_gui (see VARARGIN)
+handles.issort = 0;
+handles.save_folder=pwd;
+% Choose default command line output for lc_suit_gui
+handles.output = hObject;
+% Update handles structure
+guidata(hObject, handles);
 
-%% Start SPM
-spm fmri
-tic;
-%% Loop for all subjects
-ns = numel(subjpath);
-sumarrymat = cell(ns,1);
-for i = 1:ns
-    % Find the subject .nii file
-    fprintf([repmat('=',1,30),'%d/%d subject',repmat('=',1,30),'\n'],i,ns);
-    isubjpath = subjpath{i};
-    filesrtuct = dir(fullfile(isubjpath, '*.nii*'));
-    file = fullfile(isubjpath,filesrtuct.name);
-    
-    %  If the subect have more files, then return error
-    if numel({filesrtuct.name}) >1 
-        error([isubjpath,' have more files']);
-    end
-    
-    % -*- Exe main function
-    disp('Main processing...');
-    lc_suit_gui_base(file);
-    
-    % Get summary.mat file path
-    disp('Getting summary.mat file path...');
-    [~, filename] = fileparts(file);
-    [path, ~,suffix] = fileparts(file);
-    [~,name] = fileparts(path);
-    sumarrymat{i} = fullfile(outdir,name,'summary.mat');   
-    
-    % Group produced file to outdir
-    disp('Grouping produced files to outdir...');
-    producedfiles = dir(path);
-    producedfiles = {producedfiles.name}';
-    producedfiles = producedfiles(3:end);
-    moveloc = ~ismember(producedfiles, [filename,suffix]);
-    file_to_move = fullfile(path, producedfiles(moveloc));
-    groupfile(isubjpath,file_to_move, outdir);
-end
+% UIWAIT makes lc_suit_gui wait for user response (see UIRESUME)
+% uiwait(handles.figure1);
 
-%% Summary all excel files of all subjects to one file
-fprintf([repmat('=',1,30),'Summarizing allinfo to one file',repmat('=',1,30),'\n']);
-allsubname = cell(1,ns);
-for i = 1:ns
-    summary_struct= importdata(sumarrymat{i});
-    gsize = summary_struct.size;
-    gmean = summary_struct.mean;
-    gmin = summary_struct.min;
-    gmax = summary_struct.max;
-    gnanmean = summary_struct.nanmean;
-    gregionname = summary_struct.region;
-    if i == 1
-        Data = zeros(ns, numel(gmean)*5);
-    end
-    Data(i,:) = cat(1,gmean,gmin,gmax,gnanmean,gsize(:,1));
-    allsubname(i) = subname(i);
-end
 
-% Region name
-orignal_region_name = importdata([spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii.lut']);
-splitrn = cellfun(@strsplit,orignal_region_name,'UniformOutput',false);
-myfun = @(s) {str2double(s{1})};
-region_atalas = cell2mat(cellfun(myfun,splitrn));
-myfun = @(s) {s{end}};
-region_name = cellfun(myfun,splitrn);
-% In some cases, gregionname should match with the region_name.
-region_name = repmat(region_name',1,5);
+% --- Outputs from this function are returned to the command line.
+function varargout = lc_suit_gui_OutputFcn(hObject, eventdata, handles)
+% varargout  cell array for returning output args (see VARARGOUT);
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
-% Save to excels
-Excel = actxserver('Excel.Application');
-set(Excel, 'Visible', 0);
-Workbooks = Excel.Workbooks;
-Workbook = invoke(Workbooks, 'Add');
-Sheets = Excel.ActiveWorkBook.Sheets;
-sheet1 = get(Sheets, 'Item', 1);
-invoke(sheet1, 'Activate');
-Activesheet = Excel.Activesheet;
-header = {'mean','min','max','nanmean','size'};
-blocklength = numel(gmean);
-for i = 1:5
-    start = 2+(i-1)*blocklength;
-    endpoint = start+blocklength-1;
-    
-    if start <= 26  % the first row was given to subname
-        startchar = [upper(char(0+start-1+97)),'1'];  
-    elseif (start > 26) && (start <= 26*27)
-        whichloop = ceil(start/26)-1;
-        loc_in_loop = start - whichloop*26;
-        startchar = [upper(char(0+whichloop-1+97)),upper(char(0+loc_in_loop-1+97)),'1'];
-    else
-        disp('The number of columns is out of the range: ZZ1');
-    end
-    
-    if endpoint <= 26   % the first row was given to subname
-        endpointchar = [upper(char(0+endpoint+97)),'1'];
-    elseif (endpoint > 26) && (endpoint <= 26*27)
-        whichloop = ceil(endpoint/26)-1;
-        loc_in_loop = endpoint - whichloop*26;
-        endpointchar = [upper(char(0+whichloop-1+97)),upper(char(0+loc_in_loop-1+97)),'1'];
-    else
-        disp('The number of columns is out of the range: ZZ1');
-    end
-    rangestr = [startchar,':',endpointchar];
-    ActivesheetRange = get(Activesheet,'Range',rangestr);
-    set(ActivesheetRange,'MergeCells',1);
-    set(ActivesheetRange,'HorizontalAlignment',3);
-    set(ActivesheetRange,'Value',header{i});
-end
+% Get default command line output from handles structure
+varargout{1} = handles.output;
 
-outexcelname = fullfile(outdir, 'All_Subject_Information.xlsx');
-Activesheet.SaveAs(outexcelname); Quit(Excel); delete(Excel);
-xlswrite(outexcelname,region_name,'sheet1','B2');
-xlswrite(outexcelname,Data,'sheet1','B3');
-xlswrite(outexcelname,allsubname','sheet1','A3');
 
-toc;
-fprintf([repmat('=',1,30),'Congratulations! All done!',repmat('=',1,30),'\n']);
-end
-
-function groupfile(isubjpath,file_to_move, outdir)
-% Group produced file to another outdir
-[~, foldername] = fileparts(isubjpath);
-outsubdir = fullfile(outdir,foldername);
-if ~(exist(outsubdir,'dir') == 7)
-    mkdir(outsubdir);
-end
-nf = numel(file_to_move);
-for j = 1:nf
+% --- Executes on button press in sortimg.
+function sortimg_Callback(hObject, eventdata, handles)
+% hObject    handle to sortimg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if handles.issort ~= -1
+    [file,path] = uigetfile('*.nii;*.img;*.nii.gz','Select source data',pwd,'MultiSelect','on');
     try
-        [~,outfile,suffix] = fileparts(file_to_move{j});
-        movefile(file_to_move{j}, outsubdir);
+        fun=@(a) fullfile(path,a);
+        img_path_name = cellfun(fun,file, 'UniformOutput',false);
     catch
-        disp('No such file');
+        img_path_name = fullfile(path,file);
     end
+    % handles.img_path_name=img_path_name;
+    set(handles.sourcefile,'string',img_path_name);
+    if iscell(img_path_name)
+        nf = length(img_path_name);
+    else
+        img_path_name = {img_path_name};
+        nf = 1;
+    end
+    set(handles.sortimg,'string',cat(2,'Selected Source Data (',num2str(nf),')'));
+    handles.img_path_name = img_path_name;
+    
+    % Update handles structure
+    handles.issort = 1;
 end
+guidata(hObject, handles)
+
+
+% --- Executes on button press in selectfolder.
+function selectfolder_Callback(hObject, eventdata, handles)
+% hObject    handle to selectfolder (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+root=uigetdir('Root dir');
+handles.root=root;
+
+sub = dir(root);
+name = {sub.name};
+name = name(3:end);
+sub = fullfile(root,name);
+nf = length(sub);
+img_path_name = cell(1,nf);
+for i = 1:nf
+   img = dir(sub{i});
+   imgname = {img.name};
+   imgname = imgname(3:end);
+   img_path_name(1,i) = fullfile(sub(i),imgname);
+end
+handles.img_path_name = img_path_name;
+set(handles.filesinfolder,'string',img_path_name);
+set(handles.selectfolder,'string','Selected Source file');
+handles.issort = 0;
+% Update handles structure
+guidata(hObject, handles)
+
+
+% --- Executes on button press in save_folder.
+function save_folder_Callback(hObject, eventdata, handles)
+% hObject    handle to save_folder (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+save_folder=uigetdir('save_folder');
+handles.save_folder=save_folder;
+set(handles.outdirfile,'string',save_folder);
+% Update handles structure
+guidata(hObject, handles)
+
+
+% --- Executes on selection change in filesinfolder.
+function filesinfolder_Callback(hObject, eventdata, handles)
+% hObject    handle to filesinfolder (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns filesinfolder contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from filesinfolder
+
+
+% --- Executes during object creation, after setting all properties.
+function filesinfolder_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to filesinfolder (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
 
-function [graymatterfile, whitematterfile, maskfile, affineTrfile,...
-    flowfieldfile, reslicegraymatterfile, summaryfile,...
-    excelfile,iwfile,cfile,pcerebfile] =  lc_suit_gui_base(file)
-% This function is used to call suit software for one .nii file
-% Inputs:
-%  file: .nii file that needs to process.
-% Returns:
-%    Produced files that may need to be moved to another directory.
-%% Pre-processing
-[path, name] = fileparts(file);
-% All produced file names, which was needed to move to other folder
-graymatterfile = fullfile(path,[name,'_seg1.nii']);
-whitematterfile = fullfile(path,[name,'_seg2.nii']);
-maskfile = fullfile(path,[name,'_mask.nii']);
+% --- Executes on button press in Run.
+function Run_Callback(hObject, eventdata, handles)
+% hObject    handle to Run (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% handles.opt
 
-affineTrfile = fullfile(path,['Affine_',name,'_seg1.mat']);
-flowfieldfile = fullfile(path,['u_a_',name,'_seg1.nii']);
 
-reslicegraymatterfile = fullfile(path,['wd',name,'_seg1.nii']);
+% Sort img arroding with sudo BIDS
+% img_path_name_now = cell(nf,1);
+% for i = 1: nf
+%     img = handles.img_path_name{i};
+%     [path, name,suffix] = fileparts(img);
+%     subfolder = fullfile(path,'workstation',name);
+%     if ~(exist(subfolder,'dir') == 7)
+%         mkdir(subfolder);
+%     else
+%         fprintf('%s exist\n',subfolder);
+%     end
+%     try
+%         movefile(img,subfolder);
+%     catch
+%         fprintf('%s already moved or not exist\n',img);
+%     end
+%     img_path_name_now{i} = fullfile(subfolder,[name,suffix]) ;
+% end
+% Main function
 
-summaryfile = fullfile(path,'summary.txt');
-
-excelfile = fullfile(path,'size_summary.xlsx');
-
-iwfile = fullfile(path,['iw_',name,'_seg1_u_a_',name,'_seg1.nii']);
-cfile = fullfile(path,['c_',name,'.nii']);
-pcerebfile = fullfile(path,['c_',name,'_pcereb.nii']);
-
-%% Segmentation
-disp('segmentation...');
-suit_isolate_seg({file});
-
-%% Gen mask for normalation
-[gray_matter, header] = y_Read(graymatterfile);
-white_matter = y_Read(whitematterfile);
-mask = gray_matter + white_matter;
-y_Write(mask, header,maskfile);
-
-%% Normalization
-disp('normalation...');
-job.subjND.gray = {graymatterfile};
-job.subjND.white = {whitematterfile};
-job.subjND.isolation = {maskfile};
-suit_normalize_dartel(job);
-
-%% Reslice
-disp('reslice...');
-job.subj(1).affineTr={affineTrfile};
-job.subj(1).flowfield={flowfieldfile};
-job.subj(1).resample={graymatterfile};
-job.subj(1).mask={maskfile};
-job.jactransf = 1;  % use for VBM
-suit_reslice_dartel(job);
-
-%% Summray
-disp('summary...')
-spm_dir = fileparts(which('spm'));
-atlas=[spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii'];
-
-D = suit_ROI_summarize(reslicegraymatterfile,...
-    'atlas', atlas,...
-    'stats', {'nanmean','max','min','size','mean','std'});
-% save to mat
-save(fullfile(path,'summary.mat'),'D');
-
-% % region name
-% regionname = importdata([spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii.lut']);
-% splitrn = cellfun(@strsplit,regionname,'UniformOutput',false);
-% myfun = @(s) {str2double(s{1})};
-% region_atalas = cell2mat(cellfun(myfun,splitrn));
-% myfun = @(s) {s{end}};
-% region_name = cellfun(myfun,splitrn);
-% % Matching region id
-% region_sum = D.region;
-% size = D.size;
-% [~,idx]=ismember(region_sum,region_atalas);
-% size = size(idx);
-% % Save
-% xlswrite(excelfile,region_name,'sheet1','A1');
-% xlswrite(excelfile,size,'sheet1','B1');
-
-%% Reslice back from SUIT space to native space.
-disp('reslice back to native space...')
-job.Affine={affineTrfile};
-job.flowfield={flowfieldfile};
-job.resample={graymatterfile};
-job.ref={fullfile(path,[name,'.nii'])};  %  initial T1
-suit_reslice_dartel_inv(job);
+% Sort img arroding with sudo BIDS
+if handles.issort == 1
+    if iscell(handles.img_path_name)
+        nf = length(handles.img_path_name);
+    else
+        handles.img_path_name = {handles.img_path_name};
+        nf = 1;
+    end
+    img_path_name_now = cell(nf,1);
+    for i = 1: nf
+        img = handles.img_path_name{i};
+        [path, name,suffix] = fileparts(img);
+        path = fullfile(path,'workstation',name);
+        if ~(exist(path,'dir') == 7)
+            mkdir(path);
+        else
+            fprintf('%s exist\n',path);
+        end
+        try
+            movefile(img,path);
+        catch
+            fprintf('%s already moved or not exist\n',img);
+        end
+        img_path_name_now{i} = fullfile(path,[name,suffix]) ;
+    end
+    handles.img_path_name_now = img_path_name_now;
+    set(handles.sourcefile,'string',img_path_name_now);
+    set(handles.sortimg,'string','Back to orignal format');
+    handles.issort = -1;
+    % Update handles structure
+    guidata(hObject, handles)
+    
+% back to orginal format
+elseif handles.issort == -1
+    if iscell(handles.img_path_name_now)
+        nf = length(handles.img_path_name_now);
+    else
+        handles.img_path_name_now = {handles.img_path_name_now};
+        nf = 1;
+    end
+    img_path_name = cell(nf,1);
+    for i = 1: nf
+        img = handles.img_path_name_now{i};
+        [path, name,suffix] = fileparts(handles.img_path_name{i});
+        if ~(exist(path,'dir') == 7)
+            mkdir(path);
+        else
+            fprintf('%s exist\n',path);
+        end
+        try
+            movefile(img,path);
+        catch
+            fprintf('%s already moved or not exist\n',img);
+        end
+        img_path_name{i} = fullfile(path,[name,suffix]) ;
+    end
+    set(handles.sourcefile,'string',img_path_name);
+    set(handles.sortimg,'string','Sort imgages to BIDS format');
+    handles.issort = 1;
+    deldir = fullfile(path,'workstation');
+    rmdir (deldir, 's');
+    % Update handles structure
+    guidata(hObject, handles)
+else
+    lc_suit(handles.img_path_name,handles.save_folder);
 end
+
