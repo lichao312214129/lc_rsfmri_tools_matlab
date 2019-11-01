@@ -1,24 +1,29 @@
 function lc_circleplot(net_path,mask_path,how_disp,if_binary,which_group,if_save,save_name,net_index_path,node_name_path)
-% 用途：用circle的形式，画出功能连接矩阵
+% Purpose: show a network in a circle format.
 % input
-%   net_path:带路径的功能连接网络文件名
-%   mask: 带路径的mask文件名
-%   how_disp：显示正还是负
-%   only_disp_consistent:是否只显示多组间正负号一致的连接
-%   which_group:显示哪一个组
+%   net_path: network file path
+%   mask_path: mask file path
+%   how_disp: how to display, only positive OR only negative OR both positive and negative
+%   if_binary: if binary the network
+%   which_group: if the network data is 3-D, then display which group.
+%   if_save: if save the results
+%   save_name: output name
+%   net_index_path: each node's network index
+%   node_name_path: files of nodes' name  % TODO
+%   only_disp_consistent: if only display those edges with same signs.
 %%
 if nargin<1
     net_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state4\result\tvalue_posthoc_fdr.mat';
     mask_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state4\result\distinct_3_fdr.mat';
-    how_disp='all';% or 'only_neg'
-    if_binary=1; %二值化处理，正值为1，负值为-1
+    how_disp='all'; 
+    if_binary=1; % if binary
     which_group=1;
     if_save=0;
     save_name='state4_distinct_3';
     
-    % 网络index路径，用于重构功能网络（按照网络的顺序）
+    % nodes' network index
     net_index_path='F:\黎超\Workstation_dynamic_fc\Data\Network_and_plot_para\netIndex.mat';
-    % 节点名字
+    % node name
     node_name_path='D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\17network_label.xlsx';
     
 end
@@ -30,25 +35,27 @@ else
     net=net_path;
 end
 
-% 显示正或者负
+% how_disp
 if strcmp(how_disp,'only_pos')
-    net(net<0)=0;%只显示正
+    disp('show only positive edges')
+    net(net<0)=0;
 elseif strcmp(how_disp,'only_neg')
-    net(net>0)=0;%只显示负
+    disp('show only negative edges')
+    net(net>0)=0;
 elseif strcmp(how_disp,'all')
-    disp('正和负都显示')
+    disp('show both positive and negative edges')
 else
-    disp('请指明显示正还是负!')
+    disp('specify how to display?')
     return
 end
 
 
-% 显示哪一组
+% which_group
 if numel(size(net))>2
     net=squeeze(net(which_group,:,:));
 end
 
-% 二值化网络
+% binary
 if if_binary
     net(net<0)=-1;
     net(net>0)=1;
@@ -61,19 +68,19 @@ else
     mask=mask_path; 
 end
 
-% 筛选mask（哪一组的mask）
+% which mask
 if numel(size(mask))==3
     mask=squeeze(mask(1,:,:));
 end
 
-% 求mask内的网络
+% mask filtering
 net=net.*mask;
 
-% 按照网络划分，重新组织net
+% re-organize edges acording to nodes' network index.
 net_index=importdata(net_index_path);
 [index,re_net_index,re_net]=lc_ReorganizeNetForYeo17NetAtlas(net,net_index);
 
-% 节点名字,按照网络重新组织节点名字
+% node name
 [~,node_name]=xlsread(node_name_path);
 node_name=node_name(index,3);
 
@@ -83,15 +90,11 @@ myLabel = cell(length(re_net));
 [ind_i,ind_j,index_nozero]=find(re_net);
 for i = 1:length(myLabel)
     myLabel{i,1} = num2str(index(i));
-%     myLabel{i,1} = '';
 end
-% myLabel=node_name;
-% for i=1:length(index_nozero)
-%     myLabel{ind_i(i)} =node_name{ind_i(i),2};
-%     myLabel{ind_j(i)} =node_name{ind_j(i),2};
-% end
+
 
 % Create custom colormap
+% TODO
 color=jet(7); % lines，hsv
 color(color==1)=color(color==1)-0.3;
 color(color==0)=color(color==0)+0.2;

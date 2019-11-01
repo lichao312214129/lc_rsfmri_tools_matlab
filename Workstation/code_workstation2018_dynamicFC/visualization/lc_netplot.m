@@ -1,10 +1,16 @@
 function [index,re_net_index,re_net] = lc_netplot(net_path,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path)
-% 用途：用matrix的形式，画出功能连接矩阵
+% Purpose: show a network in a square format.
 % input
-%   net_path:带路径的功能连接网络文件名
-%   mask: 带路径的mask文件名
-%   how_disp：显示正还是负
-%   which_group:显示哪一个组
+%   net_path: network file path
+%   mask_path: mask file path
+%   how_disp: how to display, only positive OR only negative OR both positive and negative
+%   if_binary: if binary the network
+%   which_group: if the network data is 3-D, then display which group.
+%   if_save: if save the results
+%   save_name: output name
+%   net_index_path: each node's network index
+%   node_name_path: files of nodes' name  % TODO
+%   only_disp_consistent: if only display those edges with same signs.
 %%
 if nargin<1
     net_path='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all\state1\result\tvalue_posthoc_fdr.mat';

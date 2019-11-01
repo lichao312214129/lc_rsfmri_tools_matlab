@@ -1,8 +1,9 @@
-- "**network\_construction**" is used to construct the dynamic and static networks, kmeans clustering and obtain each subject's median network of each state.
+- "**pre-processing**" is used to pre-process our data, such as extracting head motion and demographic matching.  
+ 
+- "**network\_construction**" is used to construct the dynamic and static networks.
 
-- "**stat**" is used to statistical analysis, such as ANCOVA, post-hoc two-sample t- test, and get shared(common) and distinct(specific) dysconnectivity across these 3 disorders.
+- "**clustering**" is used to perform kmeans clustering on dynamic functional connectivity and obtain each subject's median network of each state.
 
-- "**plot**" is used to plot figures for showing the results.
+- "**stat**" is used to statistical analysis, such as ANCOVA, post-hoc two-sample t- test, and get shared(common) dysconnectivity across these 3 disorders.
 
-- "**validation**" is used to validation our results. 
-***
+- "**visualization**" is used to visualize our results.

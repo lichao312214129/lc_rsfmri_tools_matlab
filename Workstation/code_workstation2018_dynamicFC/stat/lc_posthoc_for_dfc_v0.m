@@ -9,7 +9,8 @@ function  lc_posthoc_for_dfc_v0()
 % NOTE. Make sure the order of the dependent variables matches the order of the covariances
 %% Inputs
 if nargin < 1
-    n_row = 114;
+    % number of nodes in network.
+    n_row = 114;  
     n_col = 114;
 
     % make folder to save results
