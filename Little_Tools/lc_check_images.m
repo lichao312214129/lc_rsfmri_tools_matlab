@@ -1,8 +1,7 @@
 function lc_check_images(normal_num, root_path, save_path)
-% use: check the number of image data in each subject folder
-% if the file with the abnormal number in a subject folder, then I record
-% it
-
+% This function is used to check the number of image data in each subject folder
+% If the file with the abnormal number in a subject folder, then this function record it.
+%% ------------------------------------------------------------------------------------------------
 % input
 if nargin < 1
     normal_num = eval(input('请输入正常文件的数量，并按任意键继续:', 's'));
