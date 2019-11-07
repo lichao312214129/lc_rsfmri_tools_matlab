@@ -1,7 +1,8 @@
 function cal_av()
+% This function is used to calculate average matrix of a group of matrices
 [file_name, file_path] = uigetfile('*.mat');
 out_path = uigetdir(pwd,'select saving folder');
-
+%% ----------------------------------------------------------------
 % load
 file = fullfile(file_path, file_name);
 data = importdata(file);

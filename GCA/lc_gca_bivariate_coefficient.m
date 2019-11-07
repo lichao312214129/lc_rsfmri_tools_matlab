@@ -8,6 +8,7 @@ function [result, result_x2y,result_y2x,result_auto,roi_sequence] = lc_gca_bivar
 %   result:x2y + y2x'; result(i,j) denotes effective connectivity from node
 %   i to node j.
 %   See rest manual
+% I thanks REST
 % Revised from REST software
 if nargin < 3
     covariables = [];
