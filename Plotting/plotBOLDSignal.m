@@ -1,3 +1,6 @@
+"""
+This file is
+"""
 subplot(2,1,1);
 plot(mean(a),'LineWidth',2,'color',[1 0.5 0]);
 xlabel('Time Point');
