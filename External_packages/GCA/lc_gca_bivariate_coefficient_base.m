@@ -1,4 +1,4 @@
-function [result, result_x2y,result_y2x,result_auto,roi_sequence] = lc_gca_bivariate_coefficient(timecourses,order,covariables)
+function [result, result_x2y,result_y2x,result_auto,roi_sequence] = lc_gca_bivariate_coefficient_base(timecourses,order,covariables)
 % Tis function is used to perform bivariate ROI-wise Granger Causal Analysis
 % Inputs:
 %   timecourses: rois' timecourses with dimension of number of timepoints by number of rois
@@ -13,7 +13,7 @@ function [result, result_x2y,result_y2x,result_auto,roi_sequence] = lc_gca_bivar
 if nargin < 3
     covariables = [];
 end
-nDim4=length(timecourses);
+nDim4=size(timecourses,1);
 numROIs=size(timecourses,2);
 roi_sequence=nchoosek(1:numROIs,2);
 past_1=zeros(nDim4-order,order);

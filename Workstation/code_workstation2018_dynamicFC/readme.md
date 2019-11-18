@@ -1,3 +1,7 @@
+<font size=3>** Shared dynamic functional connectivity across schizophrenia, bipolar disorder and major depressive disorder**</font>    
+
+
+
 - "**pre-processing**" is used to pre-process our data, such as extracting head motion and demographic matching.  
  
 - "**network\_construction**" is used to construct the dynamic and static networks.
