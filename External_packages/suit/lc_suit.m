@@ -1,7 +1,8 @@
 function lc_suit(subjpath,outdir)
-% This function is used to call suit software for one .nii file.
+% This function is used to call suit software for a group .nii files.
 % Inputs:
-%   rootdir: directory that contains all subject directory.
+%  subjpath: all subjects' file path
+%  outdir: output directory
 % Author: Li Chao.
 
 %% Suggestions
@@ -62,7 +63,7 @@ for i = 1:ns
         error([isubjpath,' have more files']);
     end
     
-    % -*- Exe main function
+    % -*- Exe main function -*-
     disp('Main processing...');
     lc_suit_gui_base(file);
     
@@ -73,7 +74,7 @@ for i = 1:ns
     [~,name] = fileparts(path);
     sumarrymat{i} = fullfile(outdir,name,'summary.mat');   
     
-    % Group produced file to outdir
+    % Moved produced file into outdir (Only retained the original file)
     disp('Grouping produced files to outdir...');
     producedfiles = dir(path);
     producedfiles = {producedfiles.name}';
@@ -120,67 +121,65 @@ header = {'mean','min','max','nanmean','size'};
 % In some cases, gregionname should match with the region_name.
 
 % Save to excels
-try 
-    disp('Saving to excel...');
-    region_name = repmat(region_name',1,5); 
-    Excel = actxserver('Excel.Application');
-    set(Excel, 'Visible', 0);
-    Workbooks = Excel.Workbooks;
-    Workbook = invoke(Workbooks, 'Add');
-    Sheets = Excel.ActiveWorkBook.Sheets;
-    sheet1 = get(Sheets, 'Item', 1);
-    invoke(sheet1, 'Activate');
-    Activesheet = Excel.Activesheet;
-    blocklength = numel(gmean{1});
-    for i = 1:5
-        start = 2+(i-1)*blocklength;
-        endpoint = start+blocklength-1;
-        
-        if start <= 26  % the first row was given to subname
-            startchar = [upper(char(0+start-1+97)),'1'];
-        elseif (start > 26) && (start <= 26*27)
-            whichloop = ceil(start/26)-1;
-            loc_in_loop = start - whichloop*26;
-            startchar = [upper(char(0+whichloop-1+97)),upper(char(0+loc_in_loop-1+97)),'1'];
-        else
-            disp('The number of columns is out of the range: ZZ1');
-        end
-        
-        if endpoint <= 26   % the first row was given to subname
-            endpointchar = [upper(char(0+endpoint+97)),'1'];
-        elseif (endpoint > 26) && (endpoint <= 26*27)
-            whichloop = ceil(endpoint/26)-1;
-            loc_in_loop = endpoint - whichloop*26;
-            endpointchar = [upper(char(0+whichloop-1+97)),upper(char(0+loc_in_loop-1+97)),'1'];
-        else
-            disp('The number of columns is out of the range: ZZ1');
-        end
-        rangestr = [startchar,':',endpointchar];
-        ActivesheetRange = get(Activesheet,'Range',rangestr);
-        set(ActivesheetRange,'MergeCells',1);
-        set(ActivesheetRange,'HorizontalAlignment',3);
-        set(ActivesheetRange,'Value',header{i});
-    end
+% disp('Saving to excel...');
+% region_name = repmat(region_name',1,5); 
+% Excel = actxserver('Excel.Application');
+% set(Excel, 'Visible', 0);
+% Workbooks = Excel.Workbooks;
+% Workbook = invoke(Workbooks, 'Add');
+% Sheets = Excel.ActiveWorkBook.Sheets;
+% sheet1 = get(Sheets, 'Item', 1);
+% invoke(sheet1, 'Activate');
+% Activesheet = Excel.Activesheet;
+% blocklength = numel(gmean{1});
+% for i = 1:5
+%     start = 2+(i-1)*blocklength;
+%     endpoint = start+blocklength-1;
     
-    outexcelname = fullfile(outdir, 'All_Subject_Information.xlsx');
-    Activesheet.SaveAs(outexcelname); Quit(Excel); delete(Excel);
-    xlswrite(outexcelname,region_name,'sheet1','B2');
-    xlswrite(outexcelname,Data,'sheet1','B3');
-    xlswrite(outexcelname,allsubname','sheet1','A3');
-catch
-    disp('Saving to txt...');
-    Gmean = pre_tabel(gmean,region_name',ns);
-    Gmax = pre_tabel(gmax,region_name',ns);
-    Gmin = pre_tabel(gmin,region_name',ns);
-    Gsize = pre_tabel(gsize,region_name',ns);
-    Gnanmean = pre_tabel(gnanmean,region_name',ns);
-    T = table(Gmean,Gmax,Gmin,Gnanmean,Gsize,'RowNames',cat(1,'region',allsubname'));
-    writetable(T,fullfile(outdir,'summary.txt'),'WriteRowNames',true','WriteVariableNames' ,1,'Delimiter',',') ;
-end
+%     if start <= 26  % the first row was given to subname
+%         startchar = [upper(char(0+start-1+97)),'1'];
+%     elseif (start > 26) && (start <= 26*27)
+%         whichloop = ceil(start/26)-1;
+%         loc_in_loop = start - whichloop*26;
+%         startchar = [upper(char(0+whichloop-1+97)),upper(char(0+loc_in_loop-1+97)),'1'];
+%     else
+%         disp('The number of columns is out of the range: ZZ1');
+%     end
+    
+%     if endpoint <= 26   % the first row was given to subname
+%         endpointchar = [upper(char(0+endpoint+97)),'1'];
+%     elseif (endpoint > 26) && (endpoint <= 26*27)
+%         whichloop = ceil(endpoint/26)-1;
+%         loc_in_loop = endpoint - whichloop*26;
+%         endpointchar = [upper(char(0+whichloop-1+97)),upper(char(0+loc_in_loop-1+97)),'1'];
+%     else
+%         disp('The number of columns is out of the range: ZZ1');
+%     end
+%     rangestr = [startchar,':',endpointchar];
+%     ActivesheetRange = get(Activesheet,'Range',rangestr);
+%     set(ActivesheetRange,'MergeCells',1);
+%     set(ActivesheetRange,'HorizontalAlignment',3);
+%     set(ActivesheetRange,'Value',header{i});
+% end
+
+% outexcelname = fullfile(outdir, 'All_Subject_Information.xlsx');
+% Activesheet.SaveAs(outexcelname); Quit(Excel); delete(Excel);
+% xlswrite(outexcelname,region_name,'sheet1','B2');
+% xlswrite(outexcelname,Data,'sheet1','B3');
+% xlswrite(outexcelname,allsubname','sheet1','A3');
+disp('Saving to txt...');
+Gmean = pre_tabel(gmean,region_name',ns);
+Gmax = pre_tabel(gmax,region_name',ns);
+Gmin = pre_tabel(gmin,region_name',ns);
+Gsize = pre_tabel(gsize,region_name',ns);
+Gnanmean = pre_tabel(gnanmean,region_name',ns);
+T = table(Gmean,Gmax,Gmin,Gnanmean,Gsize,'RowNames',cat(1,'region',allsubname'));
+writetable(T,fullfile(outdir,'summary.txt'),'WriteRowNames',true','WriteVariableNames' ,1,'Delimiter',',') ;
 toc;
 fprintf([repmat('=',1,30),'Congratulations! All done!',repmat('=',1,30),'\n']);
 end
 
+%% =======================================Base Functions===================================
 function pro_data = pre_tabel(data,region,ns)
 sall = {};
 for i = 1:ns
@@ -229,11 +228,8 @@ maskfile = fullfile(path,[name,'_mask.nii']);
 
 affineTrfile = fullfile(path,['Affine_',name,'_seg1.mat']);
 flowfieldfile = fullfile(path,['u_a_',name,'_seg1.nii']);
-
 reslicegraymatterfile = fullfile(path,['wd',name,'_seg1.nii']);
-
 summaryfile = fullfile(path,'summary.txt');
-
 excelfile = fullfile(path,'size_summary.xlsx');
 
 iwfile = fullfile(path,['iw_',name,'_seg1_u_a_',name,'_seg1.nii']);
@@ -267,15 +263,15 @@ job.jactransf = 1;  % use for VBM
 suit_reslice_dartel(job);
 
 %% Summray
-disp('summary...')
-spm_dir = fileparts(which('spm'));
-atlas=[spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii'];
+% disp('summary...')
+% spm_dir = fileparts(which('spm'));
+% atlas=[spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii'];
 
-D = suit_ROI_summarize(reslicegraymatterfile,...
-    'atlas', atlas,...
-    'stats', {'nanmean','max','min','size','mean','std'});
-% save to mat
-save(fullfile(path,'summary.mat'),'D');
+% D = suit_ROI_summarize(reslicegraymatterfile,...
+%     'atlas', atlas,...
+%     'stats', {'nanmean','max','min','size','mean','std'});
+% % save to mat
+% save(fullfile(path,'summary.mat'),'D');
 
 % % region name
 % regionname = importdata([spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii.lut']);
@@ -300,4 +296,16 @@ job.flowfield={flowfieldfile};
 job.resample={graymatterfile};
 job.ref={fullfile(path,[name,'.nii'])};  %  initial T1
 suit_reslice_dartel_inv(job);
+
+%% Get volume size in  native space
+disp('Getting volume size in native space...')
+disp('summary...')
+spm_dir = fileparts(which('spm'));
+atlas=[spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii'];
+resliced_graymatter_file_in_nativespace = fullfile(path,['iw_',name,'_seg1_u_a_',name, '_seg1.nii'])
+D = suit_ROI_summarize(resliced_graymatter_file_in_nativespace,...
+    'atlas', atlas,...
+    'stats', {'nanmean','max','min','size','mean','std'});
+% save to mat
+save(fullfile(path,'summary.mat'),'D');
 end
