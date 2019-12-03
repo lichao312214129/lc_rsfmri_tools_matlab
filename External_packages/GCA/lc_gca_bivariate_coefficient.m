@@ -30,6 +30,8 @@ for i = 1:nsubj
     timecourses =  importdata(subjfile);
     [GrangerCausalCefficient, result_x2y,result_y2x,result_auto,roi_sequence] = lc_gca_bivariate_coefficient_base(timecourses,order,covariables);
     savename = img_name{i};
+    [savename,~]=split(savename,'.')
+    savename = [savename{1},'.mat'];
     savename  = fullfile(outputdir, savename);
     save(savename, 'GrangerCausalCefficient');
 end
