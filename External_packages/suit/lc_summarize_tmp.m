@@ -14,7 +14,7 @@ else
     n_subj = 1;
 end
 %
-size = zeros(n_subj, n_region);
+
 for i = 1:n_subj
     name = names{i};
     fprintf('%d/%d: %s...\n', i, n_subj, name);
@@ -35,7 +35,7 @@ for i = 1:n_subj
     targefile = fullfile(path, ['iw_Lobules-SUIT_u_a_',name, '_seg1.nii']);
     targetdata = y_Read(targefile);
     n_region = numel(setdiff(unique(targetdata(:)),0));
-  
+    if i == 1; size = zeros(n_subj, n_region); end
     for j = 1:n_region
         size(i,j) = length(find(targetdata == j));
     end
