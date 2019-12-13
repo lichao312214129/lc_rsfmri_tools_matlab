@@ -1,5 +1,4 @@
 function [p, Q]= chi2test_LiuFeng(x)
-	
 % Usage: [p, Q]= chi2test(x)
 % 
 % The chi-squared test. 
