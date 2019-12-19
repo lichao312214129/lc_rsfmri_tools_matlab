@@ -29,22 +29,26 @@ id_bd = pd.read_excel(id_bd, header=None)
 id_mdd = pd.read_excel(id_mdd, header=None)
 
 # extract
-headmotion_info_hc = pd.merge(headmotion_info, id_hc, left_on='subjects', right_on=0, how='inner')
-headmotion_info_sz = pd.merge(headmotion_info, id_sz, left_on='subjects', right_on=0, how='inner')
-headmotion_info_bd = pd.merge(headmotion_info, id_bd, left_on='subjects', right_on=0, how='inner')
-headmotion_info_mdd = pd.merge(headmotion_info, id_mdd, left_on='subjects', right_on=0, how='inner')
+headmotion_info_hc = pd.merge(
+    headmotion_info, id_hc, left_on='subjects', right_on=0, how='inner')
+headmotion_info_sz = pd.merge(
+    headmotion_info, id_sz, left_on='subjects', right_on=0, how='inner')
+headmotion_info_bd = pd.merge(
+    headmotion_info, id_bd, left_on='subjects', right_on=0, how='inner')
+headmotion_info_mdd = pd.merge(
+    headmotion_info, id_mdd, left_on='subjects', right_on=0, how='inner')
 
-# statistics: FD and proportion 
+# statistics: FD and proportion
 describe_hc = headmotion_info_hc.describe()
 describe_sz = headmotion_info_sz.describe()
 describe_bd = headmotion_info_bd.describe()
 describe_mdd = headmotion_info_mdd.describe()
 
 # statistics: max rigbody motion--translation
-rigbody_translation_hc = headmotion_info_hc.iloc[:,[3,4,5]]
-rigbody_translation_sz = headmotion_info_sz.iloc[:,[3,4,5]]
-rigbody_translation_bd = headmotion_info_bd.iloc[:,[3,4,5]]
-rigbody_translation_mdd = headmotion_info_mdd.iloc[:,[3,4,5]]
+rigbody_translation_hc = headmotion_info_hc.iloc[:, [3, 4, 5]]
+rigbody_translation_sz = headmotion_info_sz.iloc[:, [3, 4, 5]]
+rigbody_translation_bd = headmotion_info_bd.iloc[:, [3, 4, 5]]
+rigbody_translation_mdd = headmotion_info_mdd.iloc[:, [3, 4, 5]]
 
 max_rigidbody_translation_hc = np.max(rigbody_translation_hc, axis=1)
 max_rigidbody_translation_sz = np.max(rigbody_translation_sz, axis=1)
@@ -57,15 +61,15 @@ max_rigidbody_translation_bd.describe()
 max_rigidbody_translation_mdd.describe()
 
 # statistics: max rigbody motion--rotation (transform to degree)
-rigbody_rotation_hc = headmotion_info_hc.iloc[:,[6,7,8]]
-rigbody_rotation_sz = headmotion_info_sz.iloc[:,[6,7,8]]
-rigbody_rotation_bd = headmotion_info_bd.iloc[:,[6,7,8]]
-rigbody_rotation_mdd = headmotion_info_mdd.iloc[:,[6,7,8]]
+rigbody_rotation_hc = headmotion_info_hc.iloc[:, [6, 7, 8]]
+rigbody_rotation_sz = headmotion_info_sz.iloc[:, [6, 7, 8]]
+rigbody_rotation_bd = headmotion_info_bd.iloc[:, [6, 7, 8]]
+rigbody_rotation_mdd = headmotion_info_mdd.iloc[:, [6, 7, 8]]
 
-max_rigidbody_rotation_hc = np.max(rigbody_rotation_hc, axis=1)*(180/np.pi)
-max_rigidbody_rotation_sz = np.max(rigbody_rotation_sz, axis=1)*(180/np.pi)
-max_rigidbody_rotation_bd = np.max(rigbody_rotation_bd, axis=1)*(180/np.pi)
-max_rigidbody_rotation_mdd = np.max(rigbody_rotation_mdd, axis=1)*(180/np.pi)
+max_rigidbody_rotation_hc = np.max(rigbody_rotation_hc, axis=1) * (180/np.pi)
+max_rigidbody_rotation_sz = np.max(rigbody_rotation_sz, axis=1) * (180/np.pi)
+max_rigidbody_rotation_bd = np.max(rigbody_rotation_bd, axis=1) * (180/np.pi)
+max_rigidbody_rotation_mdd = np.max(rigbody_rotation_mdd, axis=1) * (180/np.pi)
 
 max_rigidbody_rotation_hc.describe()
 max_rigidbody_rotation_sz.describe()
@@ -74,17 +78,17 @@ max_rigidbody_rotation_mdd.describe()
 
 # Get statistics and p values
 f, p = stats.f_oneway(headmotion_info_hc['meanFD'], headmotion_info_sz['meanFD'],
-						headmotion_info_bd['meanFD'], headmotion_info_mdd['meanFD'])
+                      headmotion_info_bd['meanFD'], headmotion_info_mdd['meanFD'])
 print(f'f={f}\np={p}')
 
 f, p = stats.f_oneway(headmotion_info_hc['proportion_of_bad_timepoints'], headmotion_info_sz['proportion_of_bad_timepoints'],
-						headmotion_info_bd['proportion_of_bad_timepoints'], headmotion_info_mdd['proportion_of_bad_timepoints'])
+                      headmotion_info_bd['proportion_of_bad_timepoints'], headmotion_info_mdd['proportion_of_bad_timepoints'])
 print(f'f={f}\np={p}')
 
-f, p = stats.f_oneway(max_rigidbody_translation_hc, max_rigidbody_translation_sz, 
-						max_rigidbody_translation_bd, max_rigidbody_translation_mdd)
+f, p = stats.f_oneway(max_rigidbody_translation_hc, max_rigidbody_translation_sz,
+                      max_rigidbody_translation_bd, max_rigidbody_translation_mdd)
 print(f'f={f}\np={p}')
 
-f, p = stats.f_oneway(max_rigidbody_rotation_hc, max_rigidbody_rotation_sz, 
-						max_rigidbody_rotation_bd, max_rigidbody_rotation_mdd)
+f, p = stats.f_oneway(max_rigidbody_rotation_hc, max_rigidbody_rotation_sz,
+                      max_rigidbody_rotation_bd, max_rigidbody_rotation_mdd)
 print(f'f={f}\np={p}')
