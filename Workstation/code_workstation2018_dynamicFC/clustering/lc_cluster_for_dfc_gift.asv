@@ -145,41 +145,40 @@ fprintf('to find the optimal k and corresponding centroid...\n');
 
 % First I try to use icatb_optimal_clusters.m function in GIFT software to identify the optimal clusters number
 % If no icatb_optimal_clusters to use, we use the default MATLAB fuction evalclusters.m.
-disp('Running icatb_optimal_clusters.m function...');
-stream = RandStream('mlfg6331_64');
-options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
-
-eva_silhoutte = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'silhoutte');  % For main results
-eva_elbow = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'elbow');  % For validation
-silhouette_values = eva_silhoutte{1}.values;
-elbow_values = eva_elbow{1}.values;
-k_optimal = eva_silhoutte{1}.K;
-save(fullfile(out_dir, 'silhouette_values.mat'), 'silhouette_values');
-save(fullfile(out_dir, 'elbow_values.mat'), 'elbow_values');
-subplot(1,2,1);
-plot(silhouette_values);
-title('Silhouette values');
-subplot(1,2,2);
-plot(elbow_values);
-title('Elbow values');
-
-% disp('Running MATLAB default evalclusters.m function...');
-% try
-%     pool = parpool; 
-% catch
-%     fprintf('Already opened parpool\n');
-% end
-% stream = RandStream('mlfg6331_64');
-% options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
-% myKmeans = @(X,K)(kmeans(X, K, 'emptyaction','singleton','Start', 'plus','replicate',nreplicates, 'Options', options,'Display','final'));
-% eva_silhoutte = evalclusters(localmaxima_mat, myKmeans, 'silhouette','klist',krange,'Distance', distance_measure);
-% k_optimal = eva_silhoutte.OptimalK;
-% silhouette_values = eva_silhoutte.CriterionValues;
-% save(fullfile(out_dir, 'silhouette_values.mat'), 'silhouette_values');
-% plot(silhouette_values);
-% title('silhouette values');
-
-fprintf('Clustering subject exemplars to %d (optimal k) clusters for getting start centroid...\n', k_optimal);
+try
+	disp('Running icatb_optimal_clusters.m function...');
+    % stream = RandStream('mlfg6331_64');
+	options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
+	eva_silhoutte = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'silhoutte');  % For main results
+    eva_elbow = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'elbow');  % For validation
+    silhouette_values = eva_silhoutte{1}.values;
+    elbow_values = eva_elbow{1}.values;
+    k_optimal = eva_silhoutte{1}.K;
+    save(fullfile(out_dir, 'silhouette_values.mat'), 'silhouette_values');
+    save(fullfile(out_dir, 'elbow_values.mat'), 'elbow_values');
+    subplot(1,2,1);
+    plot(silhouette_values);
+    subplot(1,2,2);
+    plot(e);
+    title('silhouette values');
+catch
+    disp('Running MATLAB default evalclusters.m function...');
+	try
+	    pool = parpool; 
+	catch
+	    fprintf('Already opened parpool\n');
+	end
+	stream = RandStream('mlfg6331_64');
+	options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
+	myKmeans = @(X,K)(kmeans(X, K, 'emptyaction','singleton','Start', 'plus','replicate',nreplicates, 'Options', options,'Display','final'));
+	eva_silhoutte = evalclusters(localmaxima_mat, myKmeans, 'silhouette','klist',krange,'Distance', distance_measure);
+	k_optimal = eva_silhoutte.OptimalK;
+    silhouette_values = eva_silhoutte.CriterionValues;
+    save(fullfile(out_dir, 'silhouette_values.mat'), 'silhouette_values');
+    plot(silhouette_values);
+    title('silhouette values');
+end
+disp('Clustering subject exemplars to %d (optimal k) clusters for getting start centroid...');
 [~, centroid_optimal, ~, ~] = kmeans(localmaxima_mat, k_optimal, 'emptyaction','singleton','Start', 'plus','replicate',nreplicates, 'Display','off');
 
 %% kmeans clustering to all dfc using the optimal centroid identified by using the subject exemplars to the optimal number of clusters
