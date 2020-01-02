@@ -9,7 +9,7 @@ function pvalues = lc_permutation_test_for_number_of_edges_in_networks(real_netw
 % Output:
 %       pvalues: The p values of each interest network.
 %==========================================================================
-real_network = shared_1and2and3;
+real_network = H;
 net_index = 'D:\My_Codes\LC_Machine_Learning\lc_rsfmri_tools\lc_rsfmri_tools_matlab\Workstation\code_workstation2018_dynamicFC\visualization\netIndex.mat';
 %%
 net_index = importdata(net_index);
@@ -42,3 +42,11 @@ for i =  1:num_networks
         pvalues(i,j) = (sum(ratio_real_net(i,j) <= ratio_rand_net(:,i,j))) / num_perm;
     end
 end
+
+% Show
+p=1-pvalues;
+p(p<0.95) = 0;
+imagesc(p);
+mycmp = importdata('mycmp.mat');
+% colormap(mycmp);
+

@@ -29,6 +29,11 @@ function lc_cluster_for_dfc_gift(subj_path, krange, distance_measure, nreplicate
 % Thanks to GIFT software
 % Author: Li Chao
 % Email:lichao19870617@gmail.com OR lichao19870617@163.com
+% Add(2020/1/2): 
+%   1. I added elbow criterion.
+%   2. Function will save criterion values.
+%   3. Besides kmeans, I added fractional analysis to get brain states.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tic
 % input
@@ -189,8 +194,37 @@ fprintf('Clustering all dfc to %d (optimal k) clusters using centroid derived fr
                                'Start', centroid_optimal);
 fprintf('Kmeans clustering to all subjects finished!\n')
 fprintf('------------------------------------------------\n')
-% delete(gcp('nocreate'))  % close the parallel pool
 
+%% -----------------------------------------------------------------
+fprintf('Using dimensional latent method (Fractor analysis) to extract dfc states...\n');
+whole_mat_pca = zeros(n_feature*n_subj,n_window);
+loc_start = 1;
+loc_end = n_feature;
+for i = 1:n_subj
+    whole_mat_pca(loc_start:loc_end,:) = whole_mat(:,:,i);
+    loc_start = loc_start + n_feature;
+    loc_end = loc_start + n_feature - 1;
+end
+[Lambda,~,~,~,fractors] = factoran(whole_mat_pca, k_optimal, 'scores','regression');  % Factoran
+% Contribut = 100*sum(Lambda.^2)/173;
+% CumCont = cumsum(Contribut);
+C1 = fractors;
+% Save the centroid of each state of the whole group
+fprintf('Getting and saving the Fractors...\n')
+for i = 1 : k_optimal
+    C1_reshaped = reshape(C1(:,i), n_feature, n_subj)';
+    median_mat = median( C1_reshaped);
+    square_median_mat = eye(n_node);
+    square_median_mat(mask_of_up_mat) = median_mat;
+    square_median_mat = square_median_mat + square_median_mat';
+    square_median_mat(eye(n_node) == 1) = 1;
+    save(fullfile(out_dir,['group_centroids_frator_',num2str(i), '.mat']), 'square_median_mat');
+end
+fprintf('Fractor analysis done!...\n')
+fprintf('------------------------------------------------\n')
+%% -----------------------------------------------------------------
+
+% delete(gcp('nocreate'))  % close the parallel pool
 % Saving meta info
 fprintf('saving meta info...\n');
 save(fullfile(out_dir,'idx.mat'),'idx');
