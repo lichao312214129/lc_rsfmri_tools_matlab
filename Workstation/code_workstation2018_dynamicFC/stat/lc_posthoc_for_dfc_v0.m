@@ -10,9 +10,9 @@ function  lc_posthoc_for_dfc_v0()
 %% Inputs
 if nargin < 1
     % number of nodes in network.
-    n_row = 114;  
+    n_row = 114;
     n_col = 114;
-
+    
     % make folder to save results
     is_save = 1;
     save_path =  uigetdir(pwd,'select saving folder');
@@ -21,7 +21,7 @@ if nargin < 1
     end
     
     % mask = H matrix that derived from ANCOVA
-    mask = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc\results_of_individual\dfc_ancova_results_fdr.mat'
+    mask = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\dfc_STATS_results_fdr.mat';
     % correction
     correction_threshold = 0.05;
     correction_method = 'fdr';
@@ -54,7 +54,7 @@ if nargin < 1
         all_subj_fc(i,:)=onemat;
     end
     fprintf('Loaded temporal properties\n');
-
+    
     % match Y and X
     % Y and X must have the unique ID.
     % In this case, uID of Y is subj, uID of X is the first co of cov (covariances file is a .xlsx format).
@@ -65,10 +65,10 @@ if nargin < 1
         tmp = ms{i}{1};
         subjid(i) = str2double(tmp);
     end
-   [Lia,Locb] = ismember(subjid, cov(:,1));
-   cov_matched = cov(Locb,:);
-   group_design_matched = group_design(Locb,:);
-   design_matrix = group_design_matched;
+    [Lia,Locb] = ismember(subjid, cov(:,1));
+    cov_matched = cov(Locb,:);
+    group_design_matched = group_design(Locb,:);
+    design_matrix = group_design_matched;
 end
 
 % ttest2
@@ -93,29 +93,29 @@ end
 h_corrected = post_hoc_fdr(pvalues,correction_threshold,correction_method);
 
 % Save
-savename = ['dfc_posthoc_mddvshc_results_','dfc_posthoc_szvshc_results_','dfc_posthoc_bdvshc_results_'];  % 1:MDD;2:SZ;3:BD.
+savename = {'dfc_posthoc_mddvshc_results_','dfc_posthoc_szvshc_results_','dfc_posthoc_bdvshc_results_'};  % 1:MDD;2:SZ;3:BD.
 for i = 1:3
     % to original space (2d matrix)
     Tvalues = zeros(n_row,n_col);
     Tvalues(mask) = test_stat(i,:);
     Tvalues = Tvalues+Tvalues';
-
+    
     Pvalues_posthoc = zeros(n_row,n_col);
     Pvalues_posthoc(mask) = pvalues(i,:);
     Pvalues_posthoc = Pvalues_posthoc+Pvalues_posthoc';
-
+    
     H_posthoc = zeros(n_row,n_col);
     H_posthoc(mask) = h_corrected(i,:);
     H_posthoc = H_posthoc+H_posthoc';
-
+    
     % save
     if is_save
         disp('save results...');
-        save (fullfile(save_path,[savename(i),correction_method,'.mat']),'y_name','Tvalues','Pvalues_posthoc','H_posthoc');
+        save (fullfile(save_path,[savename{i},correction_method,'.mat']),'y_name','Tvalues','Pvalues_posthoc','H_posthoc');
         disp('saved results');
     end
     fprintf('--------------------------All Done!--------------------------\n');
-    end
+end
 end
 
 function [h_fdr] = post_hoc_fdr(pvalues,correction_threshold, correction_method)

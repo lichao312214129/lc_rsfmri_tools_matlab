@@ -24,3 +24,12 @@ mask_path='D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\zDynamic\state\allS
 lc_netplot(net_path,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path);
 colormap(mymap)
 caxis([-1.5 2]);
+
+
+% static fc
+figure
+net_path=H';
+mask_path='D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\zDynamic\state\allState17_5\state5_all\state2\result\h_ancova_fdr.mat';
+lc_netplot(net_path,if_add_mask,mask_path,how_disp,if_binary,which_group, net_index_path);
+colormap(mymap)
+caxis([-1.5 2]);
