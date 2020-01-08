@@ -21,10 +21,12 @@ if nargin < 1
     end
     
     % mask = H matrix that derived from ANCOVA
-    mask = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\dfc_STATS_results_fdr.mat';
+    load ('D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\test_results\dfc_STATS_results_fwe.mat');
+    mask = triu(H,1) == 1;
+    
     % correction
     correction_threshold = 0.05;
-    correction_method = 'fdr';
+    correction_method = 'fwe';
     
     % covariance
     [file_name, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of cov files',pwd,'MultiSelect', 'off');
@@ -45,8 +47,6 @@ if nargin < 1
     n_subj = length(subj);
     
     % mask; H derived from ancova
-    load mask
-    mask = triu(H,1) == 1;
     all_subj_fc = zeros(n_subj,sum(mask(:)));
     for i = 1:n_subj
         onemat = importdata(subj_path{i});
@@ -124,7 +124,7 @@ h_fdr=zeros(n_g,n_f);
 for i=1:n_f
     if strcmp(correction_method,'fdr')
         results=multcomp_fdr_bh(pvalues(:,i),'alpha', correction_threshold);
-    elseif strcmp(correction_method,'fwd')
+    elseif strcmp(correction_method,'fwe')
         results=multcomp_bonferroni(pvalues(:,i),'alpha', correction_threshold);
     else
         fprintf('Please indicate the correct correction method!\n');

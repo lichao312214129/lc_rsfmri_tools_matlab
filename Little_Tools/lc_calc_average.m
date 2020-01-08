@@ -33,9 +33,9 @@ n_subj = length(subj_name);
 sum_edge = 0;  % 初始化sum_edge
 for i=1:n_subj
     subj_edge = importdata(subj_dir{i});
-	subj_edge = load(subj_dir{i});
+% 	subj_edge = load(subj_dir{i});
     % inf---1,nan---0
-    subj_edge(isinf(subj_edge))=1;
+    subj_edge(isinf(subj_edge))=0;
     subj_edge(isnan(subj_edge))=0;
     % 如果一个矩阵全部为inf或者nan，则有理由认为数据有问题
     if sum(subj_edge(:))==numel(subj_edge) || sum(subj_edge(:))==0

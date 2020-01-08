@@ -8,18 +8,18 @@ function [shared_1and2and3,shared_1and2,shared_1and3,shared_2and3,...
 %%
 if nargin<1
     % input
-    posthoc_szvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_sfc\sfc_posthoc_szvshc_results_fdr';
-    posthoc_mddvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_sfc\sfc_posthoc_mddvshc_results_fdr';
-    posthoc_bdvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_sfc\sfc_posthoc_bdvshc_results_fdr';
+    posthoc_szvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\test_results\dfc_posthoc_szvshc_results_fwe';
+    posthoc_mddvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\test_results\dfc_posthoc_mddvshc_results_fwe';
+    posthoc_bdvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\test_results\dfc_posthoc_bdvshc_results_fwe';
     posthoc_szvshc = load(posthoc_szvshc);
     posthoc_mddvshc = load(posthoc_mddvshc);
     posthoc_bdvshc = load(posthoc_bdvshc);
     h_mat = cat(3,posthoc_szvshc.H_posthoc,posthoc_mddvshc.H_posthoc,posthoc_bdvshc.H_posthoc);
     t_mat = cat(3,posthoc_szvshc.Tvalues,posthoc_mddvshc.Tvalues,posthoc_bdvshc.Tvalues);
 
-    correction_method='fdr';
+    correction_method='fwe';
     if_save=1;
-    save_path='D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_sfc';
+    save_path='D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\test_results';
 end
 
 % make directory to save results

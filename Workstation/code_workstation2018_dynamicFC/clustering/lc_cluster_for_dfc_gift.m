@@ -195,6 +195,24 @@ fprintf('Clustering all dfc to %d (optimal k) clusters using centroid derived fr
 fprintf('Kmeans clustering to all subjects finished!\n')
 fprintf('------------------------------------------------\n')
 
+% Saving meta info
+fprintf('saving meta info...\n');
+save(fullfile(out_dir,'idx.mat'),'idx');
+save(fullfile(out_dir,'C.mat'),'C');
+save(fullfile(out_dir,'sumd.mat'),'sumd');
+save(fullfile(out_dir,'D.mat'),'D');
+
+% Save the centroid of each state of the whole group
+fprintf('Getting and saving the median network of each state of the whole group...\n')
+for i = 1 : k_optimal
+    median_mat = C(i,:);
+    square_median_mat = eye(n_node);
+    square_median_mat(mask_of_up_mat) = median_mat;
+    square_median_mat = square_median_mat + square_median_mat';
+    square_median_mat(eye(n_node) == 1) = 1;
+    save(fullfile(out_dir,['group_centroids_',num2str(i), '.mat']), 'square_median_mat');
+end
+
 %% -----------------------------------------------------------------
 fprintf('Using dimensional latent method (Fractor analysis) to extract dfc states...\n');
 whole_mat_pca = zeros(n_feature*n_subj,n_window);
@@ -218,30 +236,10 @@ for i = 1 : k_optimal
     square_median_mat(mask_of_up_mat) = median_mat;
     square_median_mat = square_median_mat + square_median_mat';
     square_median_mat(eye(n_node) == 1) = 1;
-    save(fullfile(out_dir,['group_centroids_frator_',num2str(i), '.mat']), 'square_median_mat');
+    save(fullfile(out_dir,['frator_',num2str(i), '.mat']), 'square_median_mat');
 end
 fprintf('Fractor analysis done!...\n')
-fprintf('------------------------------------------------\n')
-%% -----------------------------------------------------------------
 
-% delete(gcp('nocreate'))  % close the parallel pool
-% Saving meta info
-fprintf('saving meta info...\n');
-save(fullfile(out_dir,'idx.mat'),'idx');
-save(fullfile(out_dir,'C.mat'),'C');
-save(fullfile(out_dir,'sumd.mat'),'sumd');
-save(fullfile(out_dir,'D.mat'),'D');
-
-% Save the centroid of each state of the whole group
-fprintf('Getting and saving the median network of each state of the whole group...\n')
-for i = 1 : k_optimal
-    median_mat = C(i,:);
-    square_median_mat = eye(n_node);
-    square_median_mat(mask_of_up_mat) = median_mat;
-    square_median_mat = square_median_mat + square_median_mat';
-    square_median_mat(eye(n_node) == 1) = 1;
-    save(fullfile(out_dir,['group_centroids_',num2str(i), '.mat']), 'square_median_mat');
-end
 fprintf('------------All Done!------------\n');
 toc
 end
