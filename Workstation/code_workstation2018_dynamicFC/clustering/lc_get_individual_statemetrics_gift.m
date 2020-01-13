@@ -1,17 +1,17 @@
 function subname_of_each_state = lc_get_individual_statemetrics_gift(idx,k,dir_of_dFC,all_subjname,out_dir)
-% PURPOSE:  get subject's centroid and state metrics of each state according group centroid (idx)
+% PURPOSE:  To get subject's centroid and state metrics of each state according group centroid (idx)
 % Each subject's dynamic FC data is nNode*nNode*nWindow tensor
 % NOTE: Not all subjects have all state, but all subjects have state metrics.
-% input:
+% Inputs:
     % k: number of clusters
     % dir_of_dFC: folder containing the dFC (Producing a tensor with dimension nNode*nNode*nWindow*nSubj after loading)
     % ordered_subjname: ordered subject names; the order of idx must match the ordered_subjname
     % out_dir: directory to save the results
-% output:
+% Outputs:
     % Saving all subjects' centroid networks to out_dir
     % subname_of_each_state: subjects' names of each state group used to extract covariates such as age, sex, headmotion etc.
 %% input
-if nargin < 1
+if nargin < 1  % TODO
     idx_path = fullfile('D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results_cluster','idx.mat');
     k = 2;
     dir_of_dFC = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\dfc_whole';

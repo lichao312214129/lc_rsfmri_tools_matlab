@@ -135,6 +135,7 @@ for i = 1:n_subj
     n_locmax_delay = n_locmax_current;
     localmaxima_mat(startpoint:endpoint,:) = mat;
 end
+clear whole_mat;
 save(fullfile(out_dir, 'localmaxima.mat'), 'localmaxima_mat');
 fprintf('------------Found all subjects'' local maxima!------------\n')
 
@@ -145,28 +146,27 @@ fprintf('------------Found all subjects'' local maxima!------------\n')
 % The search window of k from 2 to N.
 % TODO: expant to other criterion such as elbow criterion etc.
 % [ratio, centroid] = lc_kmeans_identifyK_elbowcriterion(localmaxima_mat,krange, distance_measure, nreplicates, 1);
-fprintf('Kmeans clustering to subject exemplars (local maxima in FC variance)\n');
-fprintf('to find the optimal k and corresponding centroid...\n');
-
+fprintf('Kmeans clustering to subject exemplars (local maxima in FC variance) to find the optimal k and corresponding centroid...\n');
 % First I try to use icatb_optimal_clusters.m function in GIFT software to identify the optimal clusters number
 % If no icatb_optimal_clusters to use, we use the default MATLAB fuction evalclusters.m.
-disp('Running icatb_optimal_clusters.m function...');
+disp('Running icatb_optimal_clusters function...');
 stream = RandStream('mlfg6331_64');
 options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
 
 eva_silhoutte = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'silhoutte');  % For main results
-eva_elbow = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'elbow');  % For validation
 silhouette_values = eva_silhoutte{1}.values;
-elbow_values = eva_elbow{1}.values;
 k_optimal = eva_silhoutte{1}.K;
 save(fullfile(out_dir, 'silhouette_values.mat'), 'silhouette_values');
-save(fullfile(out_dir, 'elbow_values.mat'), 'elbow_values');
-subplot(1,2,1);
-plot(silhouette_values);
+
+% eva_elbow = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'elbow');  % For validation
+% elbow_values = eva_elbow{1}.values;
+% save(fullfile(out_dir, 'elbow_values.mat'), 'elbow_values');
+% subplot(1,2,1);
+plot(silhouette_values,'-o','linewidth',2);
 title('Silhouette values');
-subplot(1,2,2);
-plot(elbow_values);
-title('Elbow values');
+% subplot(1,2,2);
+% plot(elbow_values);
+% title('Elbow values');
 
 % disp('Running MATLAB default evalclusters.m function...');
 % try
@@ -186,12 +186,12 @@ title('Elbow values');
 
 fprintf('Clustering subject exemplars to %d (optimal k) clusters for getting start centroid...\n', k_optimal);
 [~, centroid_optimal, ~, ~] = kmeans(localmaxima_mat, k_optimal, 'emptyaction','singleton','Start', 'plus','replicate',nreplicates, 'Display','off');
-
+clear localmaxima_mat;
 %% kmeans clustering to all dfc using the optimal centroid identified by using the subject exemplars to the optimal number of clusters
-fprintf('Clustering all dfc to %d (optimal k) clusters using centroid derived from subject exemplars)...\n', k_optimal);
+fprintf('Clustering all dfc to %d (optimal k) clusters using centroid derived from subject exemplar...\n', k_optimal);
+fprintf('This step may cost many memory and take a long time!\n');
 [idx, C, sumd, D] = kmeans(whole_mat_reshaped, k_optimal, 'Distance', distance_measure,...
-                               'Replicates', 1, 'Options', options,...
-                               'Start', centroid_optimal);
+                               'Replicates', 1, 'Options', options, 'Start', centroid_optimal);
 fprintf('Kmeans clustering to all subjects finished!\n')
 fprintf('------------------------------------------------\n')
 
@@ -214,31 +214,31 @@ for i = 1 : k_optimal
 end
 
 %% -----------------------------------------------------------------
-fprintf('Using dimensional latent method (Fractor analysis) to extract dfc states...\n');
-whole_mat_pca = zeros(n_feature*n_subj,n_window);
-loc_start = 1;
-loc_end = n_feature;
-for i = 1:n_subj
-    whole_mat_pca(loc_start:loc_end,:) = whole_mat(:,:,i);
-    loc_start = loc_start + n_feature;
-    loc_end = loc_start + n_feature - 1;
-end
-[Lambda,~,~,~,fractors] = factoran(whole_mat_pca, k_optimal, 'scores','regression');  % Factoran
-% Contribut = 100*sum(Lambda.^2)/173;
-% CumCont = cumsum(Contribut);
-C1 = fractors;
-% Save the centroid of each state of the whole group
-fprintf('Getting and saving the Fractors...\n')
-for i = 1 : k_optimal
-    C1_reshaped = reshape(C1(:,i), n_feature, n_subj)';
-    median_mat = median( C1_reshaped);
-    square_median_mat = eye(n_node);
-    square_median_mat(mask_of_up_mat) = median_mat;
-    square_median_mat = square_median_mat + square_median_mat';
-    square_median_mat(eye(n_node) == 1) = 1;
-    save(fullfile(out_dir,['frator_',num2str(i), '.mat']), 'square_median_mat');
-end
-fprintf('Fractor analysis done!...\n')
+% fprintf('Using dimensional latent method (Fractor analysis) to extract dfc states...\n');
+% whole_mat_pca = zeros(n_feature*n_subj,n_window);
+% loc_start = 1;
+% loc_end = n_feature;
+% for i = 1:n_subj
+%     whole_mat_pca(loc_start:loc_end,:) = whole_mat(:,:,i);
+%     loc_start = loc_start + n_feature;
+%     loc_end = loc_start + n_feature - 1;
+% end
+% [Lambda,~,~,~,fractors] = factoran(whole_mat_pca, k_optimal, 'scores','regression');  % Factoran
+% % Contribut = 100*sum(Lambda.^2)/173;
+% % CumCont = cumsum(Contribut);
+% C1 = fractors;
+% % Save the centroid of each state of the whole group
+% fprintf('Getting and saving the Fractors...\n')
+% for i = 1 : k_optimal
+%     C1_reshaped = reshape(C1(:,i), n_feature, n_subj)';
+%     median_mat = median( C1_reshaped);
+%     square_median_mat = eye(n_node);
+%     square_median_mat(mask_of_up_mat) = median_mat;
+%     square_median_mat = square_median_mat + square_median_mat';
+%     square_median_mat(eye(n_node) == 1) = 1;
+%     save(fullfile(out_dir,['frator_',num2str(i), '.mat']), 'square_median_mat');
+% end
+% fprintf('Fractor analysis done!...\n')
 
 fprintf('------------All Done!------------\n');
 toc

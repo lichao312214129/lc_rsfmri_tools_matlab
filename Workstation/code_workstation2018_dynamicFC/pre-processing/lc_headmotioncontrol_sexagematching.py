@@ -15,7 +15,7 @@ from lc_chisqure import lc_chisqure
 # input
 all_subjects = r'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\headmotion\all_ID_851.xlsx'
 included_subjects = r'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\headmotion\included_subjects_from851database_ID.xlsx' # survived from headmotion control
-all_demographicdata = r'D:\WorkStation_2018\Workstation_dynamic_FC_V2\Scales\大表_add_drugInfo.xlsx'
+all_demographicdata = r'D:\WorkStation_2018\WorkStation_CNN_Schizo\Scale\10-24大表.xlsx'
 
 # load
 all_subjects = pd.read_excel(all_subjects, header=None)

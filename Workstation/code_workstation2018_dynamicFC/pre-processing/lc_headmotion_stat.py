@@ -92,3 +92,4 @@ print(f'f={f}\np={p}')
 f, p = stats.f_oneway(max_rigidbody_rotation_hc, max_rigidbody_rotation_sz,
                       max_rigidbody_rotation_bd, max_rigidbody_rotation_mdd)
 print(f'f={f}\np={p}')
+
