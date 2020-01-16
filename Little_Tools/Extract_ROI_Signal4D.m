@@ -1,4 +1,4 @@
-function [ Signal] = Extract_ROI_Signal4D(numOfVolume)
+function [ Signal] = Extract_ROI_Signal4D()
 % This function waa used to extract multiple signals from 3D or 4D data. 
 % If 4D data, the dimension 4 is the volume/time point
 % input:
@@ -42,9 +42,10 @@ end
 %%
 % prepare data
 mask=y_Read(mask_file);
+numOfVolume = numel(unique(mask(:))) -1;
 % preallocate
 numOfSubj=length(all_subj);
-% Signal=zeros(numOfSubj,numOfVolume);
+Signal = zeros(numOfSubj,numOfVolume);
 % extract signal according subject's order
 for i=1:numOfSubj
     if mod(i,10)==0
@@ -54,13 +55,14 @@ for i=1:numOfSubj
     end
     data=y_Read(all_subj{i});
     signal = extract_ROI_signal(data,mask);
+    Signal(i,:) = signal; 
     % save
     [~,name]=fileparts(nameOfAllSubj{i});
     save([outdir,filesep,name,'.mat'],'signal');
 end
 %% save all signal
-% save([outdir,filesep,'signalAllSubj_From_',nameOfMask,'.mat'],'Signal');
-% fprintf('\n===============Completed!===================\n');
+save([outdir,filesep,'signalAllSubj_From_',nameOfMask,'.mat'],'Signal');
+fprintf('\n===============Completed!===================\n');
 end
 
 function signal = extract_ROI_signal(data,mask)
