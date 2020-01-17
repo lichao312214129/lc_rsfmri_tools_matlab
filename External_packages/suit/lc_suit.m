@@ -289,23 +289,37 @@ suit_reslice_dartel(job);
 % xlswrite(excelfile,region_name,'sheet1','A1');
 % xlswrite(excelfile,size,'sheet1','B1');
 
-%% Reslice back from SUIT space to native space.
-disp('reslice back to native space...')
+%% Reslice the atlas in SUIT space to native space, so that each voxel will have a unique label.
+% Using this label, we can get volume size in the native space.
+disp('Reslice the atlas in SUIT space to native space...')
+spm_dir = fileparts(which('spm'));
+atlas=[spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii'];
+
 job.Affine={affineTrfile};
 job.flowfield={flowfieldfile};
-job.resample={graymatterfile};
-job.ref={fullfile(path,[name,'.nii'])};  %  initial T1
+job.resample={atlas};
+job.ref={fullfile(path,[name,'.nii'])};  %  Original T1 nifti file.
 suit_reslice_dartel_inv(job);
 
 %% Get volume size in  native space
 disp('Getting volume size in native space...')
-disp('summary...')
-spm_dir = fileparts(which('spm'));
-atlas=[spm_dir '/toolbox/suit/atlasesSUIT/Lobules-SUIT.nii'];
-resliced_graymatter_file_in_nativespace = fullfile(path,['iw_',name,'_seg1_u_a_',name, '_seg1.nii'])
+targefile = fullfile(path, ['iw_Lobules-SUIT_u_a_',name, '_seg1.nii']);
+targetdata = y_Read(targefile);
+n_region = numel(setdiff(unique(targetdata(:)),0));
+volume_size = zeros(n_region,1);
+for j = 1:n_region
+    volume_size(j) = length(find(targetdata == j));
+end
+
+%% Summary
+disp('Summarizing..')
+resliced_graymatter_file_in_nativespace = fullfile(path,['iw_Lobules-SUIT_u_a_',name,'_seg1.nii']);
 D = suit_ROI_summarize(resliced_graymatter_file_in_nativespace,...
     'atlas', atlas,...
     'stats', {'nanmean','max','min','size','mean','std'});
+
+% Replacing the size (all regions have the same size) by original size.
+D.size = volume_size;
 % save to mat
 save(fullfile(path,'summary.mat'),'D');
 end

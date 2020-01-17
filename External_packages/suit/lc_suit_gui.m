@@ -1,5 +1,4 @@
 function varargout = lc_suit_gui(varargin)
-% 此代码用来对影像数据标准化
 % LC_SUIT_GUI MATLAB code for lc_suit_gui.fig
 %      LC_SUIT_GUI, by itself, creates a new LC_SUIT_GUI or raises the existing
 %      singleton*.
