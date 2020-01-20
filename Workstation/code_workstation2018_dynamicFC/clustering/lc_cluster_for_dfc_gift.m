@@ -187,6 +187,7 @@ title('Silhouette values');
 fprintf('Clustering subject exemplars to %d (optimal k) clusters for getting start centroid...\n', k_optimal);
 [~, centroid_optimal, ~, ~] = kmeans(localmaxima_mat, k_optimal, 'emptyaction','singleton','Start', 'plus','replicate',nreplicates, 'Display','off');
 clear localmaxima_mat;
+
 %% kmeans clustering to all dfc using the optimal centroid identified by using the subject exemplars to the optimal number of clusters
 fprintf('Clustering all dfc to %d (optimal k) clusters using centroid derived from subject exemplar...\n', k_optimal);
 fprintf('This step may cost many memory and take a long time!\n');
