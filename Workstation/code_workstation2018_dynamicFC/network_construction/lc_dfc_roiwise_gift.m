@@ -1,86 +1,75 @@
-function lc_dfc_roiwise_gift(input_params)
+function lc_dfc_roiwise_gift(all_subjects_path, outputdir, ...
+                             TR, volume, numroi, ...
+                             window_length, window_step, window_alpha,...
+                             numOfSess, doDespike, tc_filter, method, num_repetitions, prefix)
 % Modified from GIFT. Users must cite the GIFT software.
 % Used to calculate roi-wise dynamic fc using sliding-window method.
 % Inputs:
-%   input_params have the following two fields:
-%       all_subjects_files: all subjects' files (wich abslute path). Each subject's file indicates a group of time series with (number of time series) * (number of nodes)
-% 	    outputdir: directiory for saving results
-% 	TR = 2;  only used for post-processing
-% 	volume = 190;
-% 	numroi = 114;
-%   window_step: sliding-window step
-%   window_length: sliding-window length
-%   window_type: e.g., Gaussian window
-%   window_alpha: Gaussian window alpha, e.g., 3TRs
-% 	% Default and other parameters
-% 	numOfSess = 1;
-% 	doDespike = 'no';
-% 	tc_filter = 0;
-% 	method = 'L1';
-% 	num_repetitions = 10;
-% 	prefix = '';
+%   input_params have the following fields:
+%       all_subjects_path: all subjects' files (wich abslute path). Each subject's file indicates a group of time series with (number of time series) * (number of nodes)
+% 	    outputdir: directiory for saving results.
+% 	    TR = 2: Time of Repeat.
+% 	    volume: How many frames.
+% 	    numroi: How many ROI/Node.
+%       window_step: sliding-window step.
+%       window_length: sliding-window length.
+%       window_type: e.g., Gaussian window.
+%       window_alpha: Gaussian window alpha, e.g., 3TRs.
+% 	    numOfSess: number of sessions.
+% 	    doDespike: if despiking.
+% 	    tc_filter: if filter.
+% 	    method: Using L1 regularisation or not.
+% 	    num_repetitions: number of repetitions of random centroid.
+% 	    prefix: Results name prefix.
 % output
 %   zDynamicFC: dynamic FC matrix with Fisher r-to-z transformed; size=N*N*W, 
 % 	N is the number of ROIs, W is the number of sliding-window
 % Author:  Li Chao
 % Email:lichao19870617@gmail.com OR lichao19870617@163.com
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% input
-% Interactive
-if nargin < 1
-    input_params.ini = 1;
-end
 
-if ~isfield(input_params, 'all_subjects_files')
-    all_subjects_files =uigetdir(pwd, 'select directory that containing all subjects'' data');
-    all_subjects_files =dir(all_subjects_files);
-    folder={all_subjects_files.folder};
-    name={all_subjects_files.name}';
-    name = name(3:end);
-    all_subjects_files =cell(length(name),1);
-    for i =1:length(name)
-        all_subjects_files {i}=fullfile(folder{i},name{i});
-    end
-else
-    all_subjects_files = input_params.all_subjects_files;
-end
+%% ----------------------------------input---------------------------------
+% ROI signals
+% all_subjects_dir = uigetdir(pwd, 'select directory that containing all subjects'' data');
+% all_subjects_struct = dir(all_subjects_dir);
+% folder = {all_subjects_struct.folder};
+% file_name = {all_subjects_struct.file_name}';
+% file_name = file_name(3:end);
+% all_subjects_path = cell(length(name),1);
+% for i =1:length(name)
+%     all_subjects_path {i}=fullfile(folder{i},name{i});
+% end
 
-if ~ isfield(input_params, 'outputdir')
-    outputdir = uigetdir(pwd, 'select directory that saving results');
-else
-    outputdir = input_params.outputdir;
-end
+% % Out directory saving results
+% outputdir = uigetdir(pwd, 'select directory that saving results');
 
-% Case-sensitive. Only for my paper currently.
-% TODO: Interactive
-TR = 2;
-volume = 190;
-numroi = 114;
-window_length = 17;
-window_step = 1;
+% % Other inputs
+% TR = 2;
+% volume = 190;
+% numroi = 114;
+% window_length = 17;
+% window_step = 1;
+% window_alpha = 3;  % gaussian window alpha
+% numOfSess = 1;
+% doDespike = 'no';
+% tc_filter = 0;
+% method = 'L1';
+% num_repetitions = 10;
+% prefix = '';
+%% -------------------------------------------------------------------
 
-% Default and other parameters
-window_alpha = 3;  % gaussian window alpha
-numOfSess = 1;
-doDespike = 'no';
-tc_filter = 0;
-method = 'L1';
-num_repetitions = 10;
-prefix = '';
-
-% make result directory
+%% Make result directory
 result_dir_of_dynamic = fullfile(outputdir, strcat('zDynamicFC_WindowLength',num2str(window_length),'_WindowStep',num2str(window_step)));
 if ~exist(result_dir_of_dynamic, 'dir')
     mkdir(result_dir_of_dynamic);
 end
 
-%% ---------------------------Run-----------------------------------
+%% ----------------------------Run------------------------------------
 % Load timeseries
 tic;
-numOfSub = length(all_subjects_files);
+numOfSub = length(all_subjects_path);
 tc = zeros(numOfSub, numOfSess, volume, numroi);
 for i = 1:numOfSub
-   tc(i, 1,:,:) = importdata(all_subjects_files{i});
+   tc(i, 1,:,:) = importdata(all_subjects_path{i});
 end
 
 % Make sliding window
@@ -88,7 +77,7 @@ c = icatb_compute_sliding_window(volume, window_alpha, window_length);
 A = repmat(c, 1, numroi);
 Nwin = volume - window_length;
 
-%initial_lambdas = (0.1:.03:1);
+% Initial_lambdas
 initial_lambdas = (0.1:.03:.40);
 best_lambda = zeros(1, numOfSub);
 outFiles = cell(1, numOfSub);
@@ -98,11 +87,8 @@ dataSetCount = 0;
 for nSub = 1:numOfSub
     % Loop over sessions
     for nSess = 1:numOfSess
-        
         dataSetCount = dataSetCount + 1;
-        
         results_file = [prefix, name{nSub}];
-        
         FNCdyn = zeros(Nwin, numroi*(numroi - 1)/2);
         Lambdas = zeros(num_repetitions, length(initial_lambdas));
         disp(['Computing dynamic FNC on subject ', num2str(nSub), ' session ', num2str(nSess)]);
@@ -118,7 +104,6 @@ for nSub = 1:numOfSub
         % Preprocess timecourses
         for nComp = 1:numroi
             current_tc = squeeze(tc(nSub, nSess, :, nComp));
-            
             % Despiking timecourses
             if (strcmpi(doDespike, 'yes'))
                 current_tc = icatb_despike_tc(current_tc, TR);
@@ -212,11 +197,11 @@ for nSub = 1:numOfSub
 end
 % End of loop over subjects
 
-dfc_info.best_lambda = best_lambda;
-dfc_info.outputFiles = outFiles;
-fileN = fullfile(result_dir_of_dynamic, [prefix,'dfc_info', '.mat']);
-disp(['Saving parameter file ', fileN, ' ...']);
-save(fileN,'dfc_info')
+% dfc_info.best_lambda = best_lambda;
+% dfc_info.outputFiles = outFiles;
+% fileN = fullfile(result_dir_of_dynamic, [prefix,'dfc_info', '.mat']);
+% disp(['Saving parameter file ', fileN, ' ...']);
+% save(fileN,'dfc_info')
 totalTime = toc;
 
 fprintf('\n');
@@ -226,17 +211,14 @@ diary('off');
 fprintf('\n');
 
 
-%% ===============================Utility Functions===============================
+%% -------------------------------Utility Functions-------------------------------
 function [trainTC, testTC] = split_timewindows(TCwin, ntrain)
-%[Nwin, nT, nC] = size(TCwin);
 [Nwin, nT, nC] = size(TCwin);
 r = randperm(Nwin);
 trainTC = TCwin(r(1:ntrain),:,:);
 testTC = TCwin(r(ntrain+1:end),:,:);
-
 trainTC = reshape(trainTC, ntrain*nT, nC);
 testTC = reshape(testTC, (Nwin-ntrain)*nT, nC);
-
 
 function mat = lc_vec2mat(dfc_2d, numroi)
 n_feature = size(dfc_2d, 1);
@@ -244,7 +226,6 @@ mat = zeros(numroi, numroi, n_feature);
 for i = 1:n_feature
     mat(:,:,i) = vec2mat(dfc_2d(i,:),numroi);
 end
-
 
 function mat = vec2mat(vec,numroi)
 temp = ones(numroi, numroi);
@@ -283,11 +264,9 @@ b = zeros(nT, 1);  b((m -w + 1):(m+w)) = 1;
 c = conv(gw, b); c = c/max(c); c = c(m+1:end-m+1);
 c = c(1:nT1);
 
-
 function w = gaussianwindow(N,x0,sigma)
 x = 0:N-1;
 w = exp(- ((x-x0).^2)/ (2 * sigma * sigma))';
-
 
 function L = cov_likelihood(obs_cov, theta)
 % L = cov_likelihood(obs_cov, sigma)
@@ -305,7 +284,6 @@ for ii = 1:nmodels
     theta_ii = squeeze(theta(:,:,ii));
     L(ii) = -log(det(theta_ii)) + trace(theta_ii*obs_cov);
 end
-
 
 function [wList, thetaList] = computeGlasso(tc, initial_lambdas, useMEX)
 % Compute graphical lasso

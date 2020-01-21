@@ -1,4 +1,4 @@
-function lc_cluster_for_dfc_gift(subj_path, krange, distance_measure, nreplicates, out_dir)
+function lc_cluster_for_dfc_gift(subj_path, out_dir, krange, distance_measure, nreplicates)
 % PURPOSE: To clustering dfc to K state.
 % HOW:
 % 	1: Initial clustering was performed on a subset of windows, consisting of local maxima in
@@ -36,43 +36,45 @@ function lc_cluster_for_dfc_gift(subj_path, krange, distance_measure, nreplicate
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tic
-% input
+%% ----------------------------------input---------------------------------
 if nargin < 5
-    out_dir = uigetdir(pwd, 'Select the folder containing results');
-end
-
-if nargin < 4
     nreplicates = 10;
 end
 
-if nargin < 3
+if nargin < 4
     distance_measure = 'cityblock';  % L1 distance
 end
 
-if nargin < 2
-%     krange = str2num(input('Enter the K you want to cluster:', 's'));
+if nargin < 3
     krange = 2:1:10;
+end
+
+if nargin < 2
+    out_dir = uigetdir(pwd, 'Select the folder containing results');
 end
 
 if nargin < 1
     subj_folder = uigetdir(pwd, 'Select the folder containing subjects'' network');
-    subj_path = dir(fullfile(subj_folder,'*.mat'));  
+    subj_path_struct = dir(fullfile(subj_folder,'*.mat'));  
+    subj_name = {subj_path_struct.name}';
+    subj_path = fullfile(subj_folder, subj_name);
     % TODO: expand the .mat file to other file, e.g. .txt file
 end
-  
+%% ----------------------------------input end---------------------------------
+
 % Saving subjects's_name, so that we can align subject's order with index_of_state, Required and very important!
 fprintf('Saving subject''s name according loading order...\n');
-subj_name = {subj_path.name}';
 if ~exist(out_dir, 'dir')
     mkdir(out_dir);
 end
 timenow = strrep(num2str(fix(clock)),' ','');
-savename = strcat('ordered_subjname_', timenow, '.txt');
+savename = strcat('sorted_subjname_', timenow, '.txt');
 savefullname = fullfile(out_dir,savename);
 fid = fopen(savefullname,'wt');
-n_subj = length(subj_name);
+n_subj = length(subj_path);
 for i = 1:n_subj
-    fprintf(fid,'%s\n',subj_name{i});
+    [~, sn] = fileparts(subj_path{i});
+    fprintf(fid,'%s\n', sn);
 end
 fclose(fid);
 
