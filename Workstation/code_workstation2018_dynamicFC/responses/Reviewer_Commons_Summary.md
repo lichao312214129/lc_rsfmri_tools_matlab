@@ -45,6 +45,7 @@ doi: 10.1016/j.neuroimage.2019.07.004
 >代码：https://github.com/lichao312214129/lc_rsfmri_tools_matlab/blob/master/Workstation/code_workstation2018_dynamicFC/validation/lc_silhoutte_simulation.m
 ![Figure 7](./simutated.png)
 
+
 3. In the discussion the authors seem to focus on a handful on networks including the FPN, DMN and sensory networks. However, as far as I can tell there are significant group differences in edges that fall within every network and nearly every within and between network connection. Why were specific network differences emphasized? <font color=red> The authors should consider formally testing whether significant edges tended to fall within specific networks than would be expected by chance. There are more edges in some networks, and networks have structured spatial patterns. Therefore if the authors want to make inferences about certain networks being overrepresented they should formally test this and use statistical methods that account for spatial autocorrelation. See examples and methodological implementation of this method below: </font>  
 The discussion should reflect the results of these formal tests for network specificity or remain more descriptive and avoid overemphasizing specific network connections.  
 Alexander-Bloch et al., “On testing for spatial correspondence between maps of human brain structure and function.”  Neuroimage 2018   
