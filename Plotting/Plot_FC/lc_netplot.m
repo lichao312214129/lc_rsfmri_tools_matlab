@@ -70,5 +70,5 @@ net_index=importdata(net_index_path);
 
 % plot: insert separate line between each network
 lc_InsertSepLineToNet(re_net)
-axis square
+% axis square
 end
