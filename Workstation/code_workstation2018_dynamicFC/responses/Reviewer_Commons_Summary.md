@@ -52,3 +52,6 @@ Alexander-Bloch et al., “On testing for spatial correspondence between maps of
 Reardon et al., “Normative brain size variation and brain shape diversity in humans.” Science 2018.    
 >6和7的问题本质是一个问题。目前，我已经根据这两篇文献中的方法做了置换检验。我们生成与真实网络同样节点数，同样的连接数，以及同样的度分布的5000个随机网络。将真实网络中落在各个子网络的差异连接对子数与随机网络中的进行对比，我们得到了各个子网络差异连接对子数是否具有统计学差异。
 ![Figure 8](./perm.png)
+
+
+
