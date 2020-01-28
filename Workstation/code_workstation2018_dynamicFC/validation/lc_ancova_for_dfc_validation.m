@@ -32,7 +32,7 @@ if nargin < 1
     if strcmp(suffix, '.txt')
         cov = importdata(fullfile(path, file_name));
     elseif strcmp(suffix, '.xlsx')
-        cov = xlsread(fullfile(path, file_name));
+        [cov, ~, ~] = xlsread(fullfile(path, file_name));
     else
         disp('Unspport file type');
         return;
@@ -78,7 +78,8 @@ if nargin < 1
    cov_matched = cov(loc_matched_cov,:);
    all_subj_fc_matched = all_subj_fc(Lia,:);
    group_design_matched = group_design(loc_matched_cov,:);
-   design_matrix = cat(2, group_design_matched, cov_matched(:,3:end));
+%    design_matrix = cat(2, group_design_matched, cov_matched(:,3:end));
+   design_matrix = cat(2, group_design_matched, cov_matched(:,[3,4,5,8]));
 end
 
 %% ancova using GLM from NBS

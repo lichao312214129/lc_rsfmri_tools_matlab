@@ -1,0 +1,3 @@
+ax = gca;
+mycmap = colormap(ax); 
+save('MyColormaps','mycmap');
