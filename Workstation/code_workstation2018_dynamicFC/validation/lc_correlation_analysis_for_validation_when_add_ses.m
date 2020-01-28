@@ -30,12 +30,12 @@ if nargin < 1
     mask = importdata(mask_file);
     
     % covariances
-    [file_name, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of cov files',pwd,'MultiSelect', 'off');
-    [~, ~, suffix] = fileparts(file_name);
+    [cov_files, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of cov files',pwd,'MultiSelect', 'off');
+    [~, ~, suffix] = fileparts(cov_files);
     if strcmp(suffix, '.txt')
-        cov = importdata(fullfile(path, file_name));
+        cov = importdata(fullfile(path, cov_files));
     elseif strcmp(suffix, '.xlsx')
-        [cov, ~, ~] = xlsread(fullfile(path, file_name));
+        [cov, ~, ~] = xlsread(fullfile(path, cov_files));
     else
         disp('Unspport file type');
         return;
@@ -96,6 +96,8 @@ if strcmp(correction_method, 'fdr')
     
 elseif strcmp(correction_method, 'fwe')
     results = multcomp_bonferroni(pvalues, 'alpha', correction_threshold);
+    h = results.corrected_h;
+    h = reshape(h,size(r,1),size(r,2));
 else
     fprintf('Please indicate the correct correction method!\n');
 end
@@ -134,7 +136,7 @@ if is_save
     disp('saved results');
 end
 
-%% This script is used for visualization the correlations between shared dysconnectivity and SES.
+%% Visualization the correlations between shared dysconnectivity and SES.
 if_add_mask=1;
 how_disp='all';
 if_binary=0;
@@ -143,7 +145,7 @@ net_index_path='D:\My_Codes\LC_Machine_Learning\lc_rsfmri_tools\lc_rsfmri_tools_
 
 ax = tight_subplot(2,3,[0.05 0.05],[0.05 0.05],[0.01 0.01]);
 
-% co1
+% cov1
 axes(ax(1))
 net_path = rvalues1;
 mask_path = logical(H1);
@@ -177,7 +179,7 @@ colorbar;
 % Plot post-shared
 load D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc\V1\results_of_individual\shared_1and2and3_fdr;
 load D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc\V1\results_of_individual\dfc_posthoc_szvshc_results_original_fdr.mat;
-% post-shared cov1
+% post-shared1
 axes(ax(4))
 net_path = Tvalues;
 mask_path = shared_1and2and3 & H1==0;
@@ -187,7 +189,7 @@ caxis([-0.16 0.15]);
 axis square
 colorbar;
 
-% cov2
+% post-shared2
 axes(ax(5))
 net_path = Tvalues;
 mask_path = shared_1and2and3 & H2==0;
@@ -197,7 +199,7 @@ caxis([-0.16 0.15]);
 axis square
 colorbar;
 
-% cov3
+% post-shared3
 axes(ax(6))
 net_path = Tvalues;
 mask_path = shared_1and2and3 & H3==0;
@@ -206,8 +208,6 @@ colormap(mycmp)
 caxis([-0.16 0.15]);
 axis square
 colorbar;
+
 fprintf('--------------------------All Done!--------------------------\n');
-% ax = gca;
-% mycmp = colormap(ax); 
-% save('mycmp','mycmp');
 end
