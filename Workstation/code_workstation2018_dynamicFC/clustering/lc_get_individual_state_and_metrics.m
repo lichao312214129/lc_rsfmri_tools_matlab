@@ -1,4 +1,4 @@
-function subname_of_each_state = lc_get_individual_statemetrics_gift(idx,k,dir_of_dFC,all_subjname,out_dir)
+function subname_of_each_state = lc_get_individual_state_and_metrics(idx,k,dir_of_dFC,all_subjname,out_dir)
 % PURPOSE:  To get subject's centroid and state metrics of each state according group centroid (idx)
 % Each subject's dynamic FC data is nNode*nNode*nWindow tensor
 % NOTE: Not all subjects have all state, but all subjects have state metrics.
