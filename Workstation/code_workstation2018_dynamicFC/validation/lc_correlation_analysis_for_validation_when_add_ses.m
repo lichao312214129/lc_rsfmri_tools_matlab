@@ -37,7 +37,7 @@ if nargin < 1
     elseif strcmp(suffix, '.xlsx')
         [cov, ~, ~] = xlsread(fullfile(path, cov_files));
     else
-        disp('Unspport file type');
+        disp('Unspported file type');
         return;
     end
     group_label = cov(:,2);
