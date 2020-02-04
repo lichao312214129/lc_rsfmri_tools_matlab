@@ -1,13 +1,20 @@
-function  lc_ancova_for_dfc(data_dir, cov_files, correction_threshold, is_save)
+function  lc_ancova_for_dfc(data_dir, sub_info, parm_of_sub_info, contrast, correction_threshold, is_save)
 % Perform ANCOVA + FDR correction for temporal properties of dynamic functional connectivity.
 % input:
 % 	data_dir: data directory of dynamic functional connectivity.
-% 	cov_files: covariances' file names
+%
+%   parm_of_sub_info: parameters of subject information, including the following fields:
+%                                                       parm_of_sub_info.id = 1; which column is subject unique index.
+%                                                       parm_of_sub_info.group_label = 2; which column is group label.
+%                                                       parm_of_sub_info.covariates = [3,4,6]; which column(s) is(are) covariate(s).
+%
+% 	sub_info: file containing subject information, including unique index, group label and covariates.
 % 	correction_threshold: currently, there is only FDR correction (e.g., correction_threshold = 0.05).
 % 	is_save: save flag.
 % output:f, h and p values.
 % NOTE. Make sure the order of the dependent variables matches the order of the covariances
 % Thanks to NBS software.
+% -----------------------------------------------------------------------------------------------------
 %% Inputs
 if nargin < 1
     % your dfc network size
@@ -16,22 +23,45 @@ if nargin < 1
 
     % save results
     is_save = 1;
+    save_name = ['dfc_ANCOVA_results_fdr','.mat'];
     save_path =  uigetdir(pwd,'select saving folder');
     if ~exist(save_path,'dir')
         mkdir(save_path);
     end
     
+    % Test type and Contrast
+    test_type = 'ftest';
+    contrast = [1 1 1 1 0 0 0 ];
+    test_info = 'ANCOVA-FDR-thrd0.05';
+
     % multiple correction
     correction_threshold = 0.05;
     correction_method = 'fdr';
     
-    % covariances
-    [file_name, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of cov files',pwd,'MultiSelect', 'off');
-    cov = xlsread(fullfile(path, file_name));
-    group_label = cov(:,2);
-    group_design = zeros(size(cov,1),4);
-    for i =  1:4
-        group_design(:,i) = ismember(group_label, i);
+    % Covariates
+    parm_of_sub_info.id = 1;
+    parm_of_sub_info.group_label = 2;
+    parm_of_sub_info.covariates = [3,4,5];
+
+    [sub_info_file, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of cov files',pwd,'MultiSelect', 'off');
+    [~, ~, suffix] = fileparts(sub_info_file);
+    if strcmp(suffix, '.txt')
+        sub_info = importdata(fullfile(path, sub_info_file));
+        sub_info = sub_info.data;
+    elseif strcmp(suffix, '.xlsx')
+        [sub_info, ~, ~] = xlsread(fullfile(path, sub_info_file));
+    else
+        disp('Unspport file type');
+        return;
+    end
+    group_label = sub_info(:, parm_of_sub_info.group_label);
+    
+    % TMP
+    uni_groups = unique(group_label);
+    n_groups = numel(unique(group_label));
+    group_design = zeros(size(group_label,1), n_groups);
+    for i =  1:n_groups
+        group_design(:,i) = ismember(group_label, uni_groups(i));
     end
     
     % dependent variable, Y
@@ -55,7 +85,7 @@ if nargin < 1
     
     % match Y and X
     % Y and X must have the unique ID.
-    % In this case, uID of Y is subj, uID of X is the first co of cov (covariances file is a .xlsx format).
+    % In this case, uID of Y is subj, uID of X is the first co of sub_info (covariances file is a .xlsx format).
     ms = regexp( subj, '(?<=\w+)[1-9][0-9]*', 'match' );
     nms = length(ms);
     subjid = zeros(nms,1);
@@ -63,20 +93,24 @@ if nargin < 1
         tmp = ms{i}{1};
         subjid(i) = str2double(tmp);
     end
-   [Lia,Locb] = ismember(subjid, cov(:,1));
-   cov_matched = cov(Locb,:);
-   group_design_matched = group_design(Locb,:);
-   design_matrix = cat(2, group_design_matched, cov_matched(:,[3,4,6]));
+
+   [Lia,Locb] = ismember(subjid, sub_info(:,parm_of_sub_info.id));
+   Locb_matched = Locb(Lia);
+   cov_matched = sub_info(Locb_matched,:);
+   group_design_matched = group_design(Locb_matched,:);
+   design_matrix = cat(2, group_design_matched, cov_matched(:, parm_of_sub_info.covariates));
+   
+   % Exclude NaN
+   loc_nan = sum(isnan(design_matrix),2) > 0;
+   design_matrix(loc_nan, :) = [];
+   all_subj_fc(loc_nan, :) = [];
 end
 
 %% ancova using GLM from NBS
 perms = 0;
-test_type = 'ftest';
 GLM.perms = perms;
-contrast = [1 1 1 1 0 0 0 ];
 GLM.X = design_matrix;
 GLM.y = all_subj_fc;
-y_name = 'triu_features';
 GLM.contrast = contrast;
 GLM.test = test_type;
 [test_stat,pvalues]=NBSglm(GLM);
@@ -107,7 +141,7 @@ H = H+H';
 %% save
 if is_save
     disp('save results...');
-    save (fullfile(save_path,['dfc_STATS_results_',correction_method,'.mat']),'y_name','Fvalues','Pvalues','H');
+    save (fullfile(save_path,['dfc_ANCOVA_results_',correction_method,'.mat']),'test_info','Fvalues','Pvalues','H');
     disp('saved results');
 end
 fprintf('--------------------------All Done!--------------------------\n');

@@ -1,4 +1,4 @@
-function subname_of_each_state = lc_get_individual_state_and_metrics(idx,k,dir_of_dFC,all_subjname,out_dir)
+function lc_get_individual_state_and_metrics(idx,k,dir_of_dFC,all_subjname,out_dir)
 % PURPOSE:  To get subject's centroid and state metrics of each state according group centroid (idx)
 % Each subject's dynamic FC data is nNode*nNode*nWindow tensor
 % NOTE: Not all subjects have all state, but all subjects have state metrics.
@@ -12,22 +12,17 @@ function subname_of_each_state = lc_get_individual_state_and_metrics(idx,k,dir_o
     % subname_of_each_state: subjects' names of each state group used to extract covariates such as age, sex, headmotion etc.
 %% input
 if nargin < 1  % TODO
-    idx_path = fullfile('D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results_cluster','idx.mat');
+    idx_path = fullfile('D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc_heldOutSamples','idx.mat');
     k = 2;
-    dir_of_dFC = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\dfc_whole';
-    subname = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results_cluster\ordered_subjname_2019912151910.txt';
-    out_dir = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results_cluster\results_of_individual';
+    dir_of_dFC = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc_heldOutSamples\zDynamicFC_WindowLength17_WindowStep1';
+    subname = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc_heldOutSamples\ordered_subjname_2020111154955.txt';
+    out_dir = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc_heldOutSamples\results_of_individual';
     idx = importdata(idx_path);
     all_subjname = importdata(subname);
 end
 
 %%
-% make results' directory
-metrics_dir = fullfile(out_dir,'metrics');
-if ~exist(metrics_dir,'dir')
-    mkdir(metrics_dir);
-end
-
+% Make dir for saving individual states
 for i=1:k
     if ~exist(fullfile(out_dir,['individual_state',num2str(i)]),'dir')
         mkdir(fullfile(out_dir,['individual_state',num2str(i)]));
@@ -54,22 +49,27 @@ n_subj = length(all_subjname);
 ind_start = 1:num_window:n_row;
 ind_end = num_window:num_window:n_row;
 
-for ithSubj=1:n_subj
+for ithSubj = 1:n_subj
     fprintf('%d/%d\n',ithSubj,n_subj);
     subjname = all_subjname{ithSubj};
-    get_median_network(idx, k, ithSubj,ind_start,ind_end,dfc_file,subjname,out_dir);
+    get_median_network(idx, k, ithSubj,ind_start,ind_end,dfc_file,subjname, out_dir);
 end
 fprintf('------------------------All Done!------------------------\n');
 end
 
 
-function state_fc=get_median_network(idx, k, ithSubj,ind_start,ind_end,dfc_file,subjname,out_dir)
-idx_current_subj=idx(ind_start(ithSubj):ind_end(ithSubj));
-
+function state_fc = get_median_network(idx, k, ithSubj, ind_start, ind_end, dfc_file, subjname, out_dir)
+idx_current_subj = idx(ind_start(ithSubj):ind_end(ithSubj));
 % Metrics
 [F, TM, MDT, NT] = lc_icatb_dfnc_statevector_stats(idx_current_subj, k);
-metrics_dir = fullfile(out_dir,'temporal_properties',subjname);
-save(metrics_dir, 'F', 'TM', 'MDT', 'NT');
+
+% Make dir for saving metrics
+metrics_dir = fullfile(out_dir,'metrics');
+if ~exist(metrics_dir,'dir')
+    mkdir(metrics_dir);
+end
+out_dir_metrics = fullfile(metrics_dir, subjname);
+save(out_dir_metrics, 'F', 'TM', 'MDT', 'NT');
 
 % Centroid
 unique_idx=unique(idx_current_subj);
