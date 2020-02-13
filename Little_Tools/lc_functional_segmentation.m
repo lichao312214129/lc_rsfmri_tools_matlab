@@ -1,4 +1,4 @@
-function lc_functional_segmentation(atalas_file， network_index, data_dir, target_network_id, out_name)
+function functional_segmentation(atalas_file, network_index, data_dir, target_network_id, out_name)
 % GOAL: This function is used to segment one region into several sub-regions
 % according to its function connectivity with other regions.
 % Inputs:
@@ -9,13 +9,14 @@ function lc_functional_segmentation(atalas_file， network_index, data_dir, targ
 %   out_name: output name of the segmented file.
 %% --------------------------------------------------
 %% Step 0 is setting inputs and loading.
-% ------------------------------------------------------Inputs------------------------------------------------------
-atalas_file = 'D:\WorkStation_2018\WorkStation_CNN_Schizo\Data\Atalas\sorted_brainnetome_atalas_3mm.nii';
-network_index = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\network_index.txt';
-data_dir = 'D:\WorkStation_2018\WorkStation_CNN_Schizo\Data\workstation_rest_ucla\FunImg\FunImgARWSFC';
-target_network_id = [3];
-out_name = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\segmentation.nii';
-% ------------------------------------------------------------------------------------------------------------
+% Inputs
+if nargin < 1
+    atalas_file = 'D:\WorkStation_2018\WorkStation_CNN_Schizo\Data\Atalas\sorted_brainnetome_atalas_3mm.nii';
+    network_index = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\network_index.txt';
+    data_dir = 'D:\WorkStation_2018\WorkStation_CNN_Schizo\Data\workstation_rest_ucla\FunImg\FunImgARWSFC';
+    target_network_id = [3];
+    out_name = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\segmentation.nii';
+end
 
 % Load
 [atalas, header_atalas] = y_Read(atalas_file);
@@ -303,3 +304,4 @@ ROISignals = double(cell2mat(SeedSeries)); %Suggested by H. Baetschmann.    %ROI
 
 theElapsedTime = cputime - theElapsedTime;
 % fprintf('\n\t Extracting ROI signals finished, elapsed time: %g seconds.\n', theElapsedTime);
+end
