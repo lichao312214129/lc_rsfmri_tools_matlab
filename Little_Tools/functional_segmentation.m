@@ -1,6 +1,12 @@
-function functional_segmentation()
+function functional_segmentation(atalas_file， network_index, data_dir, target_network_id, out_name)
 % GOAL: This function is used to segment one region into several sub-regions
 % according to its function connectivity with other regions.
+% Inputs:
+%   atalas_file: the atlas file
+%   network_index: network index of each region in atlas.
+%   data_dir: directory of all 4D files.
+%   target_network_id: network index of target regions that needed to be segmented.
+%   out_name: output name of the segmented file.
 %% --------------------------------------------------
 %% Step 0 is setting inputs and loading.
 % Inputs
@@ -30,6 +36,7 @@ for i = 1: n_sub
 end
 
 %% Main
+% To get the mask in which 1 is the target region.
 num_target_network = length(unique(target_network_id));
 target_region_id = arrayfun(@ (id)(find(network_index == id)), target_network_id, 'UniformOutput',false);
 target_region_id_all = [];
@@ -38,7 +45,6 @@ for i = 1:num_target_network
 end
 target_region_id =target_region_id_all;
 clear target_region_id_all;
-
 mask_target = arrayfun(@ (id)(atalas == id),target_region_id, 'UniformOutput',false);
 mask_target_all = 0;
 for i = 1:length(mask_target)
@@ -46,9 +52,9 @@ for i = 1:length(mask_target)
 end
 mask_target = mask_target_all;
 clear mask_target_all;
-% y_Write(mask_target, header_atalas, 'mask.nii');
 mask_target = logical(reshape(mask_target, 1, dim1*dim2*dim3));
 
+% Core codes
 coef_all = 0;
 for i = 1:n_sub
     fprintf('Running %d/%d\n', i, n_sub);
