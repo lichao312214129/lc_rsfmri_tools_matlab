@@ -1,4 +1,4 @@
-function functional_segmentation(atalas_file， network_index, data_dir, target_network_id, out_name)
+function functional_segmentation(atalas_file, network_index, data_dir, target_network_id, out_name)
 % GOAL: This function is used to segment one region into several sub-regions
 % according to its function connectivity with other regions.
 % Inputs:
@@ -10,11 +10,13 @@ function functional_segmentation(atalas_file， network_index, data_dir, target_
 %% --------------------------------------------------
 %% Step 0 is setting inputs and loading.
 % Inputs
-atalas_file = 'D:\WorkStation_2018\WorkStation_CNN_Schizo\Data\Atalas\sorted_brainnetome_atalas_3mm.nii';
-network_index = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\network_index.txt';
-data_dir = 'D:\WorkStation_2018\WorkStation_CNN_Schizo\Data\workstation_rest_ucla\FunImg\FunImgARWSFC';
-target_network_id = [3];
-out_name = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\segmentation.nii';
+if nargin < 1
+    atalas_file = 'D:\WorkStation_2018\WorkStation_CNN_Schizo\Data\Atalas\sorted_brainnetome_atalas_3mm.nii';
+    network_index = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\network_index.txt';
+    data_dir = 'D:\WorkStation_2018\WorkStation_CNN_Schizo\Data\workstation_rest_ucla\FunImg\FunImgARWSFC';
+    target_network_id = [3];
+    out_name = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\segmentation.nii';
+end
 
 % Load
 [atalas, header_atalas] = y_Read(atalas_file);
@@ -114,4 +116,192 @@ header = header_atalas;
 header.descrip = 'region segmentation';
 y_Write(segmentation, header, out_name);
 disp('Done!');
+end
+
+function [ROISignals] = y_ExtractROISignal_copy(AllVolume, ROIDef, OutputName, MaskData, IsMultipleLabel, IsNeedDetrend, Band, TR, TemporalMask, ScrubbingMethod, ScrubbingTiming, Header, CUTNUMBER)             
+% NOTE. This function is modified from DPABI.
+% Written by YAN Chao-Gan 120216 based on fc.m.
+% The Nathan Kline Institute for Psychiatric Research, 140 Old Orangeburg Road, Orangeburg, NY 10962, USA
+% Child Mind Institute, 445 Park Avenue, New York, NY 10022, USA
+% The Phyllis Green and Randolph Cowen Institute for Pediatric Neuroscience, New York University Child Study Center, New York, NY 10016, USA
+% ycg.yan@gmail.com
+
+if ~exist('IsMultipleLabel','var')
+    IsMultipleLabel = 0;
+end
+
+if ~exist('CUTNUMBER','var')
+    CUTNUMBER = 10;
+end
+
+theElapsedTime =cputime;
+% fprintf('\n\t Extracting ROI signals...');
+
+if ~isnumeric(AllVolume)
+    [AllVolume,VoxelSize,theImgFileList, Header] =y_ReadAll(AllVolume);
+end
+
+AllVolume(find(isnan(AllVolume))) = 0; %YAN Chao-Gan, 171022. Set the NaN voxels to 0.
+
+[nDim1 nDim2 nDim3 nDimTimePoints]=size(AllVolume);
+BrainSize = [nDim1 nDim2 nDim3];
+VoxelSize = sqrt(sum(Header.mat(1:3,1:3).^2));
+
+
+if ischar(MaskData)
+    if ~isempty(MaskData)
+        [MaskData,MaskVox,MaskHead]=y_ReadRPI(MaskData);
+    else
+        MaskData=ones(nDim1,nDim2,nDim3);
+    end
+end
+
+% Convert into 2D
+AllVolume=reshape(AllVolume,[],nDimTimePoints)';
+% AllVolume=permute(AllVolume,[4,1,2,3]); % Change the Time Course to the first dimention
+% AllVolume=reshape(AllVolume,nDimTimePoints,[]);
+
+MaskDataOneDim=reshape(MaskData,1,[]);
+MaskIndex = find(MaskDataOneDim);
+AllVolume=AllVolume(:,MaskIndex);
+
+% Scrubbing
+if exist('TemporalMask','var') && ~isempty(TemporalMask) && ~strcmpi(ScrubbingTiming,'AfterFiltering')
+    if ~all(TemporalMask)
+        AllVolume = AllVolume(find(TemporalMask),:); %'cut'
+        if ~strcmpi(ScrubbingMethod,'cut')
+            xi=1:length(TemporalMask);
+            x=xi(find(TemporalMask));
+            AllVolume = interp1(x,AllVolume,xi,ScrubbingMethod);
+        end
+        nDimTimePoints = size(AllVolume,1);
+    end
+end
+
+
+% Detrend
+if exist('IsNeedDetrend','var') && IsNeedDetrend==1
+    %AllVolume=detrend(AllVolume);
+    fprintf('\n\t Detrending...');
+    SegmentLength = ceil(size(AllVolume,2) / CUTNUMBER);
+    for iCut=1:CUTNUMBER
+        if iCut~=CUTNUMBER
+            Segment = (iCut-1)*SegmentLength+1 : iCut*SegmentLength;
+        else
+            Segment = (iCut-1)*SegmentLength+1 : size(AllVolume,2);
+        end
+        AllVolume(:,Segment) = detrend(AllVolume(:,Segment));
+        fprintf('.');
+    end
+end
+
+% Filtering
+if exist('Band','var') && ~isempty(Band)
+    fprintf('\n\t Filtering...');
+    SegmentLength = ceil(size(AllVolume,2) / CUTNUMBER);
+    for iCut=1:CUTNUMBER
+        if iCut~=CUTNUMBER
+            Segment = (iCut-1)*SegmentLength+1 : iCut*SegmentLength;
+        else
+            Segment = (iCut-1)*SegmentLength+1 : size(AllVolume,2);
+        end
+        AllVolume(:,Segment) = y_IdealFilter(AllVolume(:,Segment), TR, Band);
+        fprintf('.');
+    end
+end
+
+
+
+% Scrubbing after filtering
+if exist('TemporalMask','var') && ~isempty(TemporalMask) && strcmpi(ScrubbingTiming,'AfterFiltering')
+    if ~all(TemporalMask)
+        AllVolume = AllVolume(find(TemporalMask),:); %'cut'
+        if ~strcmpi(ScrubbingMethod,'cut')
+            xi=1:length(TemporalMask);
+            x=xi(find(TemporalMask));
+            AllVolume = interp1(x,AllVolume,xi,ScrubbingMethod);
+        end
+        nDimTimePoints = size(AllVolume,1);
+    end
+end
+
+
+% Extract the Seed Time Courses
+
+SeedSeries = [];
+MaskROIName=[];
+
+for iROI=1:length(ROIDef)
+    IsDefinedROITimeCourse =0;
+    if strcmpi(int2str(size(ROIDef{iROI})),int2str([nDim1, nDim2, nDim3]))  %ROI Data
+        MaskROI = ROIDef{iROI};
+        MaskROIName{iROI} = sprintf('Mask Matrix definition %d',iROI);
+    elseif size(ROIDef{iROI},1) == nDimTimePoints %Seed series% strcmpi(int2str(size(ROIDef{iROI})),int2str([nDimTimePoints, 1])) %Seed series
+        SeedSeries{1,iROI} = ROIDef{iROI};
+        IsDefinedROITimeCourse =1;
+        MaskROIName{iROI} = sprintf('Seed Series definition %d',iROI);
+    elseif strcmpi(int2str(size(ROIDef{iROI})),int2str([1, 4]))  %Sphere ROI definition: CenterX, CenterY, CenterZ, Radius
+        MaskROI = y_Sphere(ROIDef{iROI}(1:3), ROIDef{iROI}(4), Header);
+        MaskROIName{iROI} = sprintf('Sphere definition (CenterX, CenterY, CenterZ, Radius): %g %g %g %g.',ROIDef{iROI});
+    elseif exist(ROIDef{iROI},'file')==2    % Make sure the Definition file exist
+        [pathstr, name, ext] = fileparts(ROIDef{iROI});
+        if strcmpi(ext, '.txt'),
+            TextSeries = load(ROIDef{iROI});
+            if IsMultipleLabel == 1
+                for iElement=1:size(TextSeries,2)
+                    MaskROILabel{1,iROI}{iElement,1} = ['Column ',num2str(iElement)];
+                end
+                SeedSeries{1,iROI} = TextSeries;
+            else
+                SeedSeries{1,iROI} = mean(TextSeries,2);
+            end
+            IsDefinedROITimeCourse =1;
+            MaskROIName{iROI} = ROIDef{iROI};
+        elseif strcmpi(ext, '.img') || strcmpi(ext, '.nii') || strcmpi(ext, '.gz')
+            %The ROI definition is a mask file
+            
+            MaskROI=y_ReadRPI(ROIDef{iROI});
+            if ~strcmpi(int2str(size(MaskROI)),int2str([nDim1, nDim2, nDim3]))
+                error(sprintf('\n\tMask does not match.\n\tMask size is %dx%dx%d, not same with required size %dx%dx%d',size(MaskROI), [nDim1, nDim2, nDim3]));
+            end
+
+            MaskROIName{iROI} = ROIDef{iROI};
+        else
+            error(sprintf('Wrong ROI file type, please check: \n%s', ROIDef{iROI}));
+        end
+        
+    else
+        error(sprintf('File doesn''t exist or wrong ROI definition, please check: %s.\n', ROIDef{iROI}));
+    end
+
+    if ~IsDefinedROITimeCourse
+        % Speed up! YAN Chao-Gan 101010.
+        MaskROI=reshape(MaskROI,1,[]);
+        MaskROI=MaskROI(MaskIndex); %Apply the brain mask
+        
+        if IsMultipleLabel == 1
+            Element = unique(MaskROI);
+            Element(find(isnan(Element))) = []; % ignore background if encoded as nan. Suggested by Dr. Martin Dyrba
+            Element(find(Element==0)) = []; % This is the background 0
+            SeedSeries_MultipleLabel = zeros(nDimTimePoints,length(Element));
+            for iElement=1:length(Element)
+                
+                SeedSeries_MultipleLabel(:,iElement) = mean(AllVolume(:,find(MaskROI==Element(iElement))),2);
+                
+                MaskROILabel{1,iROI}{iElement,1} = num2str(Element(iElement));
+
+            end
+            SeedSeries{1,iROI} = SeedSeries_MultipleLabel;
+        else
+            SeedSeries{1,iROI} = mean(AllVolume(:,find(MaskROI)),2);
+        end
+    end
+end
+
+
+%Merge the seed series cell into seed series matrix
+ROISignals = double(cell2mat(SeedSeries)); %Suggested by H. Baetschmann.    %ROISignals = cell2mat(SeedSeries);
+
+theElapsedTime = cputime - theElapsedTime;
+% fprintf('\n\t Extracting ROI signals finished, elapsed time: %g seconds.\n', theElapsedTime);
 end
