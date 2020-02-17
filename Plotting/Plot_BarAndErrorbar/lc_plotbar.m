@@ -30,7 +30,7 @@ function lc_plotbar(all_mean,error, opt)
 % lc_plotbar(all_mean', error')
 
 if nargin < 3
-    opt.colormap = 'summer';
+    opt.colormap = 'gray';
     opt.xticklabel = {'Accuracy', 'Sensitivity','Specificity', 'AUC'};
     opt.ylabel = {''};
 end

@@ -69,6 +69,6 @@ net_index=importdata(net_index_path);
 [index,re_net_index,re_net]=lc_ReorganizeNetForYeo17NetAtlas(net,net_index);
 
 % plot: insert separate line between each network
-lc_InsertSepLineToNet(re_net)
+lc_InsertSepLineToNet(re_net, re_net_index);
 % axis square
 end

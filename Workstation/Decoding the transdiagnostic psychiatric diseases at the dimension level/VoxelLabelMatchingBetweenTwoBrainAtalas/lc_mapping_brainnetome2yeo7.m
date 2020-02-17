@@ -52,4 +52,4 @@ end
 netidx = cell2mat(netidx)';  % in the order of unilabel.
 % Save net index and write ordered new brain atalas to nii.
 save('netIndex.mat','netidx');
-y_Write(new_brainnetome_mat,header,'sorted_brainnetome_atalas_3mm.nii');
+% y_Write(new_brainnetome_mat,header,'sorted_brainnetome_atalas_3mm.nii');
