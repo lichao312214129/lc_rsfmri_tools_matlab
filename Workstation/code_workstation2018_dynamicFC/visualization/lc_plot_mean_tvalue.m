@@ -1,14 +1,13 @@
 %% Plot mean tvalues within or between networks
 load  G:\BranAtalas\Template_Yeo2011\netIndex.mat;
-mycolormap = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc\results_of_individual\colorbar_avargT.mat';
-net = {'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc\results_of_individual\dfc_posthoc_szvshc_results_original_fdr',...
-    'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc\results_of_individual\dfc_posthoc_szvshc_results_original_fdr',...
-    'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc\results_of_individual\dfc_posthoc_szvshc_results_original_fdr'};
+mycolormap = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc\V1\results_of_individual\colorbar_avargT.mat';
+net = {'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc\V1\results_of_individual\dfc_posthoc_szvshc_results_original_fdr',...
+    'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc\V1\results_of_individual\dfc_posthoc_szvshc_results_original_fdr',...
+    'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_dfc\V1\results_of_individual\dfc_posthoc_szvshc_results_original_fdr'};
 name = {'avargT_sz','avargT_bd','avargT_mdd'};
-group = 1;
 filter = 0;  %  filter fc without differences: set meanFC that without differences in any FC within or between networks.
-
-load (net{3});
+group = 1;
+load (net{group});
 
 uniid = unique(netIndex);
 meanFC = zeros(numel(uniid));
