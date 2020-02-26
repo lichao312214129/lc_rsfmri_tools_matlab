@@ -410,7 +410,9 @@ r0 = repmat(r,[m,1]);
 Xp = [x;repmat(x,[m,1]) + r0.*cos(t0);x];
 Yp = [y;repmat(y,[m,1]) + r0.*sin(t0);y];
 Zp = repmat(z,[m+2,1]);
-patch(Xp,Yp,Zp,'FaceColor','flat','EdgeColor',[0,0,0]);
+% Revised by Lichao
+% patch(Xp,Yp,Zp,'FaceColor','flat','EdgeColor',[0,0,0]);
+patch(Xp,Yp,Zp,'FaceColor','flat','EdgeColor',[0,0,0], 'LineWidth', 0.1);
 
 % ªÊ÷∆±Ì≈Ã‘≤÷‹
 t = linspace(0,2*pi,30)';
@@ -421,7 +423,9 @@ Zp = repmat(z,[m,1]);
 Xp = [Xp;flipud(Xp)];
 Yp = [Yp;flipud(Yp)];
 Zp = [Zp;flipud(Zp)];
-patch(Xp,Yp,Zp,'FaceColor','flat','EdgeColor',[0,0,0]);
+% Revised by Lichao
+% patch(Xp,Yp,Zp,'FaceColor','flat','EdgeColor',[0,0,0]);
+patch(Xp,Yp,Zp,'FaceColor','flat','EdgeColor',[0,0,0], 'LineWidth', 0.2);
 end
 
 %--------------------------------------------------------------------------
