@@ -30,10 +30,10 @@ if n_sub <=2
     disp('Sample size less than 2!');
     return;
 end
-[tvalues, pvalues] = compute_pval_for_pearson(coef, n_sub, 'b');
+[zvalues, pvalues] = ztest1(coef, n_sub);  % two-tail
 
 tvalues_full = zeros(size(mask_whole_brain_data));
-tvalues_full(mask_whole_brain_data) = tvalues;
+tvalues_full(mask_whole_brain_data) = zvalues;
 
 pvalues_full = zeros(size(mask_whole_brain_data));
 pvalues_full(mask_whole_brain_data) = pvalues;
@@ -51,4 +51,21 @@ switch tail
     case 'l' % 'left'
         p = tcdf(t,n-2);
 end
+end
+
+function [zvalue,pvalue] = ztest1(rho, n)
+z = 0.5*log((1+rho)/(1-rho));
+ddiff = z-0;
+SEddiff = 1/sqrt(n-3);
+zvalue = ddiff/SEddiff;
+pvalue = 2 *(1- normcdf(abs(zvalue)));
+end
+
+function [zvalue,pvalue] = ztest2(rho1, rho2, n1, n2)
+z1 = 0.5*log((1+rho1)/(1-rho1));
+z2 = 0.5*log((1+rho2)/(1-rho2));
+ddiff = z1-z2;
+SEddiff = sqrt(1/(n1-3)+1/(n2-3));
+zvalue = ddiff/SEddiff;
+pvalue = 2 *(1- normcdf(abs(zvalue)));
 end

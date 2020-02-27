@@ -1,48 +1,59 @@
-function [tvalues_full, pvalues_full, coef_full] = compute_structural_covariance(data_dir, mask_seed, mask_whole_brain_data, out_path)
-debug = 1;
-if debug
-    data_dir = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\GMV';
-    mask_seed = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\Reslice_HarvardOxford-cort-maxprob-thr25-2mm.nii';
-    mask_whole_brain = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\Reslice_HarvardOxford-cort-maxprob-thr25-2mm.nii';
-    out_path = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan';
-end
+function [zvalues_full, pvalues_full, coef_full] = compute_structural_covariance(data_dir, mask_seed, mask_whole_brain, out_path)
+% Input
+group1_pre = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\GMV_1';
+group1_post = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\GMV_2';
+group2_pre = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\GMV_3';
+group2_post = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\GMV_4';
 
-% All structure data
-data_strut = dir(data_dir);
-data_path = fullfile(data_dir, {data_strut.name});
-data_path = data_path(3:end)';
-n_sub = length(data_path);
-datafile_path = cell(n_sub,1);
-for i = 1: n_sub
-    fprintf('%d/%d\n', i, n_sub);
-    one_data_strut = dir(data_path{i});
-    one_data_path = fullfile(data_path{i}, {one_data_strut.name});
-    one_data_path = one_data_path(3:end);
-    datafile_path(i) = one_data_path(1);
-end
-data_all = y_ReadAll(datafile_path);
-data_all = reshape(data_all, [],n_sub)';
+mask_seed = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\Reslice_Reslice3_TPM_greaterThan0.2_1.nii';
+mask_whole_brain = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\Reslice_Reslice3_TPM_greaterThan0.2_1.nii';
 
-% Seed mask
-[mask_seed, header] = y_Read(mask_seed);
-mask_seed = reshape(mask_seed, 1,[]);
-mask_seed = mask_seed ~= 0;
+out_path = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan';
 
-% Whole brain mask
-mask_whole_brain_data = y_Read(mask_whole_brain);
-mask_whole_brain_data = reshape(mask_whole_brain_data, 1,[]);
-mask_whole_brain_data = mask_whole_brain_data ~= 0;
+[zvalues_group1_pre, pvalues_group1_pre, coef_group1_pre, n_sub_group1_pre] =compute_structural_covariance_one_group(group1_pre, mask_seed, mask_whole_brain, ...
+                                        fullfile(out_path, 'results_group1_pre'));
+[zvalues_group1_post, pvalues_group1_post, coef_group1_post, n_sub_group1_post]= compute_structural_covariance_one_group(group1_post, mask_seed, mask_whole_brain, ...
+                                        fullfile(out_path, 'results_group1_post'));
+[zvalues_group2_pre, pvalues_group2_pre, coef_group2_pre, n_sub_group2_pre]= compute_structural_covariance_one_group(group2_pre, mask_seed, mask_whole_brain, ...
+                                        fullfile(out_path, 'results_group2_pre'));
+[zvalues_group2_post, zvalues_group2_post, coef_group2_post, n_sub_group2_post]= compute_structural_covariance_one_group(group2_post, mask_seed, mask_whole_brain, ...
+                                        fullfile(out_path, 'results_group2_post'));
 
-% Run
-[tvalues_full, pvalues_full, coef_full] = compute_structural_covariance_base(data_all, mask_seed, mask_whole_brain_data);
+%% Diff  
+% post-pre
+[zvalue_diff_post_pre_group1,pvalue_diff_post_pre_group1, ~, ~] = ztest2(coef_group1_post, coef_group1_pre, n_sub_group1_post, n_sub_group1_pre);
+[zvalue_diff_post_pre_group2,pvalue_diff_post_pre_group2, ~, ~] = ztest2(coef_group2_post, coef_group2_pre, n_sub_group2_post, n_sub_group2_pre);
 
-% Back to orginal dimension
-tvalues_full = reshape(tvalues_full, header.dim);
-pvalues_full = reshape(pvalues_full, header.dim);
-coef_full = reshape(coef_full, header.dim);
+% single effect
+[zvalue_diff_pre,pvalue_diff_pre, CI95_pre_low, CI95_pre_up] = ztest2(coef_group1_pre, coef_group2_pre, n_sub_group1_pre, n_sub_group2_pre);
+[zvalue_diff_post, pvalue_diff_post, CI95_post_low, CI95_post_up] = ztest2(coef_group1_post, coef_group2_post, n_sub_group1_post, n_sub_group2_post);
+
+% intersecting effect
+% if the 95CI do not cover, then we make sure p < 0.05
+% if the 95CI do cover, then we can not make sure p < 0.05, so we only
+% select those uncovered x
+% h_inter = (CI95_pre_low >= CI95_post_up) | (CI95_post_low >= CI95_pre_up);
+[zvalue_diff_inter, pvalue_diff_inter, CI95_post_inter, CI95_post_inter] = ztest2((coef_group1_pre - coef_group2_pre), (coef_group1_post - coef_group2_post), (n_sub_group1_pre + n_sub_group2_pre), (n_sub_group1_post + n_sub_group2_post));
 
 % Save
-y_Write(tvalues_full, header, fullfile(out_path, 'tvalues.nii'));
-y_Write(pvalues_full, header, fullfile(out_path, 'pvalues.nii'));
-y_Write(coef_full, header, fullfile(out_path, 'SC.nii'));
+end
+
+
+function [zvalue,pvalue] = ztest1(coef, n_sub)
+z = atanh(coef);
+ddiff = z-0;
+SEddiff = 1/sqrt(n_sub-3);
+zvalue = ddiff/SEddiff;
+pvalue = 2 *(1- normcdf(abs(zvalue)));
+end
+
+function [zvalue,pvalue, CI95_low, CI95_up] = ztest2(coef1, coef2, n1, n2)
+z1 = atanh(coef1);
+z2 = atanh(coef2);
+ddiff = z1-z2;
+SEddiff = sqrt((1/(n1-3)) + (1/(n2-3)));
+CI95_low = ddiff-(1.96)*SEddiff;
+CI95_up = ddiff+(1.96)*SEddiff;
+zvalue = ddiff/SEddiff;
+pvalue = 2 *(1- normcdf(abs(zvalue)));
 end
