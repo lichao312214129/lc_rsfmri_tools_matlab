@@ -2,6 +2,7 @@ function lc_functional_segmentation(atalas_file, target_file, network_index_atla
 % GOAL: This function is used to segment one region into several sub-regions
 % according to its function connectivity with other regions.
 % Inputs:
+% -------
 %   atalas_file: the atlas file
 %   target_file: the data needed segmentation
 %   target_region_id: region index of target regions that needed to be segmented.
