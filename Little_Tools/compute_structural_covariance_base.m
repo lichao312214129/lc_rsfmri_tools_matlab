@@ -19,6 +19,7 @@ intensity_in_whole_brain_intensity_mask = data_all(:,mask_whole_brain_data);
 % Get intensity in seed_mask
 intensity_in_seed_mask = data_all(:,mask_seed);
 intensity_in_seed_mean = mean(intensity_in_seed_mask, 2);
+
 % Corr
 [coef] = corr(intensity_in_seed_mean, intensity_in_whole_brain_intensity_mask);
 coef_full =zeros(size(mask_whole_brain_data));

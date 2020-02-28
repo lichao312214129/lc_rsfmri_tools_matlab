@@ -107,7 +107,7 @@ for i = 2:1:10
     set(gca,'XTickLabels',xTL);
     xlim([-0.1,10])
     
-    title(['Real numbers of clusters = ',num2str(i)],'fontsize',12,'FontWeight','bold');
+    title(['Real number of clusters = ',num2str(i)],'fontsize',12,'FontWeight','bold');
     xlabel('Numbers of clusters');
     ylabel('Silhouette values');
 
@@ -131,10 +131,10 @@ for i = 2:1:10
     set(gca,'XTickLabels',xTL);
     xlim([-0.1,10])
     
-    title(['Real numbers of clusters = ',num2str(i)],'fontsize',12,'FontWeight','bold');
+    title(['Real number of clusters = ',num2str(i)],'fontsize',12,'FontWeight','bold');
     xlabel('Numbers of clusters');
     ylabel('Elbow values');
 
     box off
 end
-% print(gcf,'-dtiff', '-r600','D:\WorkStation_2018\WorkStation_dynamicFC_V3\M.S\schizophrenia bulletin\RevisedVersion\Figure\Elbow_simu.tiff')
+print(gcf,'-dtiff', '-r600','D:\WorkStation_2018\WorkStation_dynamicFC_V3\M.S\schizophrenia bulletin\RevisedVersion\Figure\Si_simu.tiff')
