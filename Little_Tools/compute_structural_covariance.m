@@ -75,6 +75,8 @@ pvalues_inter_post_full(mask_whole_brain_data) = pvalues_inter_post;
 pvalues_inter_post_full = reshape(pvalues_inter_post_full, header.dim);
 y_Write(pvalues_inter_post_full, header, fullfile(out_path,  'pvalues_single_effect_post.nii'));
 clear real_diff_single_effect_post rand_diff_single_effect_post pvalues_inter_post
+
+disp('All Done!');
 end
 
 function [pvalues_full_fwe, coef_real, coef_rand, n_sub] = compute_structural_covariance_one_group(data_dir, mask_seed, mask_whole_brain, n_perm, out_path)
