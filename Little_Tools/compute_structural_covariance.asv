@@ -1,6 +1,6 @@
 function compute_structural_covariance()
 %% ======================Input======================
-group1_pre = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\GMV_1';  
+group1_pre = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\GMV_1';
 group1_post = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\GMV_2';
 group2_pre = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\GMV_3';
 group2_post = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\GMV_4';
@@ -32,48 +32,36 @@ mask_whole_brain_data = mask_whole_brain_data ~= 0;
 real_diff_group1 = coef_real_group1_post - coef_real_group1_pre;
 rand_diff_group1 = coef_rand_group1_post - coef_rand_group1_pre;
 pvalues_group1 = get_pvalues_for_perm(real_diff_group1, rand_diff_group1, n_perm);
-pvalues_group1_full =zeros(size(mask_whole_brain_data));
-pvalues_group1_full(mask_whole_brain_data) = pvalues_group1;
-pvalues_group1_full = reshape(pvalues_group1_full, header.dim);
-y_Write(pvalues_group1_full, header, fullfile(out_path, 'pvalues_post_vs_pre_group1.nii'));
+coef_real_full =zeros(size(mask_whole_brain_data));
+coef_real_full(mask_whole_brain_data) = coef_real;
+coef_real_full = reshape(coef_real_full, header.dim);
+y_Write(pvalues_group1, header, fullfile(out_path, 'pvalues_post_vs_pre_group1.nii'));
 clear pvalues_group1 real_diff_group1 rand_diff_group1 pvalues_group1_pre
 
 real_diff_group2 = coef_real_group2_post - coef_real_group2_pre;
 rand_diff_group2 = coef_rand_group2_post - coef_rand_group2_pre;
 pvalues_group2 = get_pvalues_for_perm(real_diff_group2, rand_diff_group2, n_perm);
-pvalues_group2_full =zeros(size(mask_whole_brain_data));
-pvalues_group2_full(mask_whole_brain_data) = pvalues_group2;
-pvalues_group2_full = reshape(pvalues_group2_full, header.dim);
-y_Write(pvalues_group2_full, header, fullfile(out_path, 'pvalues_post_vs_pre_group2.nii'));
+y_Write(pvalues_group2, header, fullfile(out_path, 'pvalues_post_vs_pre_group2.nii'));
 clear pvalues_group1 real_diff_group1 rand_diff_group1 pvalues_group1_pre
 
 % intersecting effect
 real_diff_inter = (coef_real_group1_pre - coef_real_group2_pre) - (coef_real_group1_post - coef_real_group2_post);
 rand_diff_inter = (coef_rand_group1_pre - coef_rand_group2_pre) - (coef_rand_group1_post - coef_rand_group2_post);
 pvalues_inter = get_pvalues_for_perm(real_diff_inter, rand_diff_inter, n_perm);
-pvalues_inter_full =zeros(size(mask_whole_brain_data));
-pvalues_inter_full(mask_whole_brain_data) = pvalues_inter;
-pvalues_inter_full = reshape(pvalues_inter_full, header.dim);
-y_Write(pvalues_inter_full, header, fullfile(out_path, 'pvalues_inter.nii'));
+y_Write(pvalues_inter, header, fullfile(out_path, 'pvalues_inter.nii'));
 clear real_diff_inter rand_diff_inter pvalues_inter
 
 % single effect
 real_diff_single_effect_pre = coef_real_group1_pre - coef_real_group2_pre;
 rand_diff_single_effect_pre = coef_rand_group1_pre - coef_rand_group2_pre;
 pvalues_inter_pre = get_pvalues_for_perm(real_diff_single_effect_pre, rand_diff_single_effect_pre, n_perm);
-pvalues_inter_pre_full =zeros(size(mask_whole_brain_data));
-pvalues_inter_pre_full(mask_whole_brain_data) = pvalues_inter_pre;
-pvalues_inter_pre_full = reshape(pvalues_inter_pre_full, header.dim);
-y_Write(pvalues_inter_pre_full, header, fullfile(out_path, 'pvalues_single_effect_pre.nii'));
+y_Write(pvalues_inter_pre, header, fullfile(out_path, 'pvalues_single_effect_pre.nii'));
 clear real_diff_single_effect_pre rand_diff_single_effect_pre pvalues_inter_pre
 
 real_diff_single_effect_post = coef_real_group1_post - coef_real_group2_post;
 rand_diff_single_effect_post = coef_rand_group1_post - coef_rand_group2_post;
 pvalues_inter_post = get_pvalues_for_perm(real_diff_single_effect_post, rand_diff_single_effect_post, n_perm);
-pvalues_inter_post_full =zeros(size(mask_whole_brain_data));
-pvalues_inter_post_full(mask_whole_brain_data) = pvalues_inter_post;
-pvalues_inter_post_full = reshape(pvalues_inter_post_full, header.dim);
-y_Write(pvalues_inter_post_full, header, fullfile(out_path,  'pvalues_single_effect_post.nii'));
+y_Write(pvalues_inter_post, header, fullfile(out_path,  'pvalues_single_effect_post.nii'));
 clear real_diff_single_effect_post rand_diff_single_effect_post pvalues_inter_post
 end
 
