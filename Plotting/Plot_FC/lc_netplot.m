@@ -1,4 +1,4 @@
-function lc_netplot(net, if_add_mask, mask, how_disp, if_binary, which_group, net_index, is_legend, legends)
+function lc_netplot(net, if_add_mask, mask, how_disp, if_binary, which_group, net_index, is_legend, legends, legend_fontsize)
 % PURPOSE: plot functional connectivity network using grid format. 
 % NOTO: This function will automatically sort network according to net_index.
 % Parameters:
@@ -75,11 +75,11 @@ net_index=importdata(net_index);
 [index,re_net_index,re_net]=lc_ReorganizeNetForYeo17NetAtlas(net,net_index);
 
 % plot: insert separate line between each network
-lc_InsertSepLineToNet(re_net, re_net_index, 0.4, is_legend, legends);
+lc_InsertSepLineToNet(re_net, re_net_index, 0.4, is_legend, legends, legend_fontsize);
 % axis square
 end
 
-function lc_InsertSepLineToNet(net, re_net_index, linewidth, is_legend, legends)
+function lc_InsertSepLineToNet(net, re_net_index, linewidth, is_legend, legends, legend_fontsize)
 % 此代码的功能：在一个网络矩阵种插入网络分割线，以及bar
 % 此分割线将不同的脑网络分开
 % 不同颜色的区域，代表一个不同的网络
@@ -106,7 +106,7 @@ hold on;
 extend = n_node / 10;
 xlim([0, n_node + extend]);
 ylim([0, n_node + extend]);
-lc_bar_region_of_each_network(location_of_sep, n_node, extend, is_legend, legends);
+lc_bar_region_of_each_network(location_of_sep, n_node, extend, is_legend, legends, legend_fontsize);
 axis off
 end
 
@@ -129,7 +129,7 @@ for i=1:n_net
 end
 end
 
-function lc_bar_region_of_each_network(location_of_sep, n_node, extend, is_legend, legends)
+function lc_bar_region_of_each_network(location_of_sep, n_node, extend, is_legend, legends, legend_fontsize)
 % TO plot bar with sevral regions, each region with a unique color
 % representting a network.
 n_net = length(location_of_sep);
@@ -144,10 +144,10 @@ for i = 1 : n_net-1
     if is_legend
         % Y axix
         text(n_node + extend_of_legends, (location_of_sep(i+1) - location_of_sep(i)) / 2 +  location_of_sep(i),...
-            legends{i}, 'fontsize', 5, 'rotation', 0);
+            legends{i}, 'fontsize', legend_fontsize, 'rotation', 0);
          % X axix
         text((location_of_sep(i+1) - location_of_sep(i)) / 2 +  location_of_sep(i), n_node + extend_of_legends,...
-            legends{i}, 'fontsize', 5, 'rotation', -90);
+            legends{i}, 'fontsize', legend_fontsize, 'rotation', -90);
     end
 end
 end
