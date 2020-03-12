@@ -1,4 +1,4 @@
-function lc_circleplot(net_path,mask_path,how_disp,if_binary,which_group,if_save,save_name,net_index_path,node_name_path)
+function lc_circleplot(net_path,mask_path,how_disp,if_binary,which_group,if_save,save_name,net_index_path,node_name)
 % 用途：用circle的形式，画出功能连接矩阵
 % input
 %   net_path:带路径的功能连接网络文件名
@@ -19,7 +19,7 @@ if nargin<1
     % 网络index路径，用于重构功能网络（按照网络的顺序）
     net_index_path='F:\黎超\Workstation_dynamic_fc\Data\Network_and_plot_para\netIndex.mat';
     % 节点名字
-    node_name_path='D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\17network_label.xlsx';
+    node_name='D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\17network_label.xlsx';
     
 end
 
@@ -67,15 +67,21 @@ if numel(size(mask))==3
 end
 
 % 求mask内的网络
-net=net.*mask;
+mask = mask ~= 0;
+net (~mask) = 0;
 
 % 按照网络划分，重新组织net
-net_index=importdata(net_index_path);
+if ischar(net_index_path)
+	net_index=importdata(net_index_path);
+else
+    net_index = net_index_path;
+end
+
 [index,re_net_index,re_net]=lc_ReorganizeNetForYeo17NetAtlas(net,net_index);
 
 % 节点名字,按照网络重新组织节点名字
-[~,node_name]=xlsread(node_name_path);
-node_name=node_name(index,3);
+% [~,node_name]=xlsread(node_name);
+% node_name=node_name(index,3);
 
 
 % Create custom node labels
@@ -92,20 +98,17 @@ end
 % end
 
 % Create custom colormap
-color=jet(7); % lines，hsv
-color(color==1)=color(color==1)-0.3;
-color(color==0)=color(color==0)+0.2;
-color(2,:)=[1 0 1];
-color1=color(7,:);
-color(7,:)=[0.67 0 0.8];
-color(1,:)=color1;
-for i=1:114
+n_net = length(unique(re_net_index));
+color = hsv(n_net);
+n_node = size(net, 1);
+myColorMap = zeros(n_node, 3);
+for i=1:n_node
     myColorMap(i,:)=color(re_net_index(i),:);
 end
 
 % plot circle
 % figure;
-circularGraph(re_net,'Colormap',myColorMap,'Label',myLabel);
+circularGraph_lc(re_net,'Colormap',myColorMap,'Label',myLabel);
 
 % save
 if if_save

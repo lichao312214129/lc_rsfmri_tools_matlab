@@ -96,6 +96,7 @@ end
 test_stat=zeros(GLM.perms+1,M);
 P=zeros(GLM.perms+1,M);
 for i=1:GLM.perms+1
+    fprintf('%d/%d', i, GLM.perms+1);
     y_perm=zeros(n,M);
     %Permute
     if i==1
@@ -162,7 +163,7 @@ for i=1:GLM.perms+1
         test_stat(i,:)=(GLM.contrast*b_perm)./se;
         % Added by Li Chao
         if nargout >= 2
-            P(i,:) =2*(1-tcdf(abs(test_stat(i,:)),n-p));  % The reason why I multiplied it by 2 is that I applied two-tailed test.
+            P(i,:) = 2*(1-tcdf(abs(test_stat(i,:)),n-p));  % The reason why I multiplied it by 2 is that I applied two-tailed test.
         end
     elseif strcmp(GLM.test,'ftest')
         sse=zeros(1,M);
@@ -175,7 +176,7 @@ for i=1:GLM.perms+1
             test_stat(i,:)=(ssr/(p-1))./(sse/(n-p));
             % Added by Li Chao
             if nargout >= 2
-                P(i,:) =1-fcdf(test_stat(i,:),p-1,n-p);
+                P(i,:) = 1-fcdf(test_stat(i,:),p-1,n-p);
             end
         else
             %Get reduced model

@@ -75,7 +75,9 @@ net_index=importdata(net_index);
 [index,re_net_index,re_net]=lc_ReorganizeNetForYeo17NetAtlas(net,net_index);
 
 % plot: insert separate line between each network
-lc_InsertSepLineToNet(re_net, re_net_index, 0.4, is_legend, legends, legend_fontsize);
+% TODO linewidth
+linewidth = 0.6;
+lc_InsertSepLineToNet(re_net, re_net_index, linewidth, is_legend, legends, legend_fontsize);
 % axis square
 end
 
@@ -114,7 +116,7 @@ function lc_line(sepIndex, n_node, linewidth)
 % nNode: node¸öÊý
 n_net = length(sepIndex);
 for i=1:n_net
-    if (i == 1) || (i == n_net)
+    if (i == 1)  % || (i == n_net)
         % Y
         line([sepIndex(i), sepIndex(i)],[0, n_node],'color','k','LineWidth',linewidth);
         % X

@@ -84,11 +84,12 @@ classdef circularGraph_lc < handle
             [row,col,v] = find(adjacencyMatrix);
             
             % Calculate line widths based on values of s (stored in v).
-            minLineWidth  = 1.5;
+            minLineWidth  = 0.1;
             lineWidthCoef = 1.5;
-            lineWidth = v./abs(max(v)); %¼Óabs,±£Ö¤Õý¸ººÅµÄÒ»ÖÂÐÔ
+            lineWidth = v./abs(max(v)); % Â¼Ã“abs,Â±Â£Ã–Â¤Ã•Ã½Â¸ÂºÂºÃ…ÂµÃ„Ã’Â»Ã–Ã‚ÃÃ”
+            is_pos_neg = v./(max(v));
             if sum(abs(lineWidth)) == numel(lineWidth) % all lines are the same width.
-                % ±£Ö¤Õý¸ººÅµÄÒ»ÖÂÐÔ
+                % Â±Â£Ã–Â¤Ã•Ã½Â¸ÂºÂºÃ…ÂµÃ„Ã’Â»Ã–Ã‚ÃÃ”
                 for i=1:numel(lineWidth)
                     if lineWidth(i)>0
                         lineWidth(i)=minLineWidth;
@@ -158,13 +159,13 @@ classdef circularGraph_lc < handle
                         else
                             theta = linspace(thetaLim(1),thetaLim(2)).';
                         end
-                        if lineWidth(i)>0 % Positive value
+                        if is_pos_neg(i)>0 % Positive value
                             this.Node(row(i)).Connection(end+1) = line(...
                                 r*cos(theta)+x0,...
                                 r*sin(theta)+y0,...
                                 'LineStyle', '-',...
                                 'LineWidth', lineWidth(i),...
-                                'Color', [0.9 0 0],...
+                                'Color', [0.6 0.2 0.2],...
                                 'PickableParts','none');
                         else % negative value
                             this.Node(row(i)).Connection(end+1) = line(...

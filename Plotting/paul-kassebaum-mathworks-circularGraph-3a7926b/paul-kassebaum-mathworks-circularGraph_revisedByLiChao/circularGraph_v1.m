@@ -87,6 +87,7 @@ classdef circularGraph_v1 < handle
             minLineWidth  = 1.5;
             lineWidthCoef = 1.5;
             lineWidth = v./abs(max(v)); %加abs,保证正负号的一致性
+            lineWidth
             if sum(abs(lineWidth)) == numel(lineWidth) % all lines are the same width.
                 % 保证正负号的一致性
                 for i=1:numel(lineWidth)

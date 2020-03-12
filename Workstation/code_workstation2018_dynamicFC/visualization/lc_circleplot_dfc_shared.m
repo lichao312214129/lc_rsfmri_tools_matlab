@@ -20,7 +20,7 @@ ha = tight_subplot(3,4,[0.05 0.01],[0.01 0.01],[0.01 0.01]);
 axes(ha(1)); 
 net_path='F:\¿Ë≥¨\Workstation_dynamic_fc\Data\Dynamic\state1\tvalue_posthoc_fdr.mat';
 mask_path='F:\¿Ë≥¨\Workstation_dynamic_fc\Data\Dynamic\state1\result1\shared_1and2_fdr.mat';
-lc_circleplot(net_path,mask_path,how_disp,if_binary,which_group,if_save_subfigure,save_name,net_index_path,node_name_path)
+lc_circleplot(net_path, mask_path, how_disp, if_binary, which_group, if_save_subfigure, save_name, net_index_path, node_name_path)
 
 axes(ha(2)); 
 net_path='F:\¿Ë≥¨\Workstation_dynamic_fc\Data\Dynamic\state1\tvalue_posthoc_fdr.mat';

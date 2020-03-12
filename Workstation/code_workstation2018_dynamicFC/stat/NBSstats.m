@@ -84,7 +84,7 @@ J=N*(N-1)/2;
 
 %Index of upper triangular elements of connectivity matrix
 ind_upper=zeros(J,1); 
-ind_upper=find(triu(ones(N,N),1)); 
+ind_upper=find(tril(ones(N,N),-1)); 
 
 %Determine whether test statistics have been precomputed and determine
 %index of edges exceeding the primary threshold
@@ -238,7 +238,7 @@ for i=1:length(sz_links)
         ind=find(adj==i);
         con_mat{n_cnt}=spalloc(N,N,length(ind)*2);
         con_mat{n_cnt}(ind)=1; 
-        con_mat{n_cnt}=triu(con_mat{n_cnt},1);
+        con_mat{n_cnt}=tril(con_mat{n_cnt},-1);
         pval(n_cnt)=tmp;
     end
 end
