@@ -76,12 +76,13 @@ net_index=importdata(net_index);
 
 % plot: insert separate line between each network
 % TODO linewidth
-linewidth = 0.6;
-lc_InsertSepLineToNet(re_net, re_net_index, linewidth, is_legend, legends, legend_fontsize);
+linewidth = 0.5;
+linecolor = 'k';
+lc_InsertSepLineToNet(re_net, re_net_index, linewidth, linecolor, is_legend, legends, legend_fontsize);
 % axis square
 end
 
-function lc_InsertSepLineToNet(net, re_net_index, linewidth, is_legend, legends, legend_fontsize)
+function lc_InsertSepLineToNet(net, re_net_index, linewidth, linecolor, is_legend, legends, legend_fontsize)
 % 此代码的功能：在一个网络矩阵种插入网络分割线，以及bar
 % 此分割线将不同的脑网络分开
 % 不同颜色的区域，代表一个不同的网络
@@ -99,44 +100,79 @@ if size(net,1)~=size(net,2)
 end
 
 %%
+
+%% Gen new sep line and new network
 n_node = length(net);
-imagesc(net);
-% insert separate line
-lc_line(location_of_sep, n_node, linewidth);
+% New sep
+num_sep = numel(location_of_sep);
+location_of_sep_new = location_of_sep;
+for i =  2 : num_sep
+    location_of_sep_new(i:end) = location_of_sep_new(i:end) + 1;
+end
+% New network
+net_insert_line = zeros(n_node + num_sep, n_node + num_sep);
+for i = 1:num_sep-1
+    % Rows iteration
+    start_point =  location_of_sep_new(i) + 1;
+    end_point = location_of_sep_new(i+1) - 1;
+    start_point_old =  location_of_sep(i) + 1;
+    end_point_old = location_of_sep(i+1);
+    % Columns iteration
+    for j = 1 : num_sep - 1
+        start_point_j =  location_of_sep_new(j) + 1;
+        end_point_j = location_of_sep_new(j+1) - 1;
+        start_point_old_j =  location_of_sep(j) + 1;
+        end_point_old_j = location_of_sep(j+1);
+        net_insert_line(start_point : end_point, start_point_j : end_point_j) = ...
+                    net(start_point_old : end_point_old, start_point_old_j : end_point_old_j);
+    end
+end
+imagesc(net_insert_line); hold on;
+x = repmat(location_of_sep_new', num_sep ,1);
+y = repmat(location_of_sep_new,1, num_sep);
+z = zeros(size(x));
+mesh(x,y,z,...
+    'EdgeColor',linecolor,...
+    'FaceAlpha',0,...
+    'LineWidth',linewidth);
+view(2);
+grid off
+% lc_line(location_of_sep, n_node, linewidth, linecolor);
 hold on;
 % bar region
-extend = n_node / 10;
-xlim([0, n_node + extend]);
-ylim([0, n_node + extend]);
-lc_bar_region_of_each_network(location_of_sep, n_node, extend, is_legend, legends, legend_fontsize);
+n_node_new = length(net_insert_line);
+extend = n_node_new / 10;
+xlim([0, n_node_new + extend]);
+ylim([0, n_node_new + extend]);
+lc_bar_region_of_each_network(location_of_sep_new, n_node_new, extend, is_legend, legends, legend_fontsize);
 axis off
 end
 
-function lc_line(sepIndex, n_node, linewidth)
+function lc_line(location_of_sep, n_node, linewidth, linecolor)
 % nNode: node个数
-n_net = length(sepIndex);
+n_net = length(location_of_sep);
 for i=1:n_net
     if (i == 1)  % || (i == n_net)
         % Y
-        line([sepIndex(i), sepIndex(i)],[0, n_node],'color','k','LineWidth',linewidth);
+        line([location_of_sep(i), location_of_sep(i)],[0, n_node],'color',linecolor,'LineWidth',linewidth);
         % X
-        line([0, n_node],[sepIndex(i), sepIndex(i)],'color','k','LineWidth',linewidth)
+        line([0, n_node],[location_of_sep(i), location_of_sep(i)],'color',linecolor,'LineWidth',linewidth)
     else
         % Y
-        line([sepIndex(i) + 0.5, sepIndex(i) + 0.5],[0, n_node],'color','k','LineWidth',linewidth);
+        line([location_of_sep(i) + 0.5, location_of_sep(i) + 0.5],[0, n_node],'color',linecolor,'LineWidth',linewidth);
         % X
-        line([0, n_node],[sepIndex(i) + 0.5, sepIndex(i) + 0.5],'color','k','LineWidth',linewidth)
+        line([0, n_node],[location_of_sep(i) + 0.5, location_of_sep(i) + 0.5],'color',linecolor,'LineWidth',linewidth)
     end
     
 end
 end
 
 function lc_bar_region_of_each_network(location_of_sep, n_node, extend, is_legend, legends, legend_fontsize)
-% TO plot bar with sevral regions, each region with a unique color
+% To plot bar with sevral regions, each region with a unique color
 % representting a network.
 n_net = length(location_of_sep);
 randseed(1);
-color = jet(n_net) / 1.1;
+color = jet(n_net) / 1.2;
 barwidth = abs((n_node + extend / 2) - (n_node+extend));
 extend_of_legends = extend + 4 ;
 h = zeros(n_net - 1, 1);

@@ -37,19 +37,20 @@ end
 mycmp = importdata(mycolormap);
 imagesc(meanFC);colormap(mycmp);hold on;
 data = meanFC;
+% data = rand(50,50);
+imagesc(data);hold on;
 [m,n] = size(data);
 [x,y] = meshgrid(0:n,0:m);
-sx = x(1:end,1:end)+0.5;
-sy = y(1:end,1:end)+0.5;
-data = data(:);
+sx = x(1:end,1:end)+0.;
+sy = y(1:end,1:end)+0.;
 z = zeros(size(x));
 mesh(sx,sy,z,...
     'EdgeColor',[0,0,0],...
     'FaceAlpha',0,...
-    'LineWidth',1);
+    'LineWidth',2);
 view(2);
 axis square;
-caxis([-2 2]);
+% caxis([-2 2]);
 colorbar
 axis off
 % print(gcf,'-dtiff', '-r1200',[name,'.tiff'])
