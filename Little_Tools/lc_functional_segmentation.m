@@ -1,28 +1,35 @@
-function lc_functional_segmentation(atalas_file, target_file, network_index_atlas, data_dir, target_region_id, out_name)
+function lc_functional_segmentation(atalas_file, target_file, network_index_atlas, data_dir, target_region_id, criterion, out_name)
 % GOAL: This function is used to segment one region into several sub-regions
 % according to its function connectivity with other regions.
 % Inputs:
 % -------
 %   atalas_file: the atlas file
+%   exclude_region_file: region need to exclude
 %   target_file: the data needed segmentation
 %   target_region_id: region index of target regions that needed to be segmented.
-%   network_index: network index of each region in atlas.
+%   network_index_atlas: network index of each region in atlas.
 %   data_dir: directory of all 4D files.
+%   criterion: using which type coefficient to identify the max
+%   correlation. ( 'all_coef', 'pos_coef', 'neg_coef')
 %   out_name: output name of the segmented file.
 %% --------------------------------------------------
 %% Step 0 is setting inputs and loading.
 % Inputs
 if nargin < 1
     atalas_file = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\Reslice_HarvardOxford-cort-maxprob-thr25-2mm.nii';
+    exclude_mask_file = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\your_file.nii';
     target_file = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\Reslice_HarvardOxford-sub-maxprob-thr25-2mm_1.nii';
     target_region_id = [4,15];
     network_index_atlas = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\network_index.txt';
-    data_dir = 'D:\WorkStation_2018\WorkStation_CNN_Schizo\Data\workstation_rest_ucla\FunImg\FunImgARWSFC';
+    data_dir = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\signals';
+    criterion = 'all_coef';  % 'pos_coef', 'neg_coef'
     out_name = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\segmentation1.nii';
 end
 
 % Load
 [atalas, header_atalas] = y_Read(atalas_file);
+exclude_mask = y_Read(exclude_mask_file); 
+atalas = atalas .* (exclude_mask == 0);
 network_index_atlas = load(network_index_atlas);
 [dim1, dim2, dim3] = size(atalas);
 
@@ -106,11 +113,36 @@ end
 coef = coef_all ./ n_sub;
  
 % Step 5 is to segment the target region into several sub-regions.
-coef_max = max(abs(coef));
-segmentation = zeros(1,size(signals_of_target_in_the_region,2));
-for j = 1: size(signals_of_target_in_the_region,2)
-    segmentation(j) = find(abs(coef(:,j)) == coef_max(j));
+if strcmp(criterion, 'all_coef')
+    coef_max = max(abs(coef));
+    segmentation = zeros(1,size(signals_of_target_in_the_region,2));
+    for j = 1: size(signals_of_target_in_the_region,2)
+        seg = find(abs(coef(:,j)) == coef_max(j));
+        seg = seg(1);
+        segmentation(j) = find(abs(coef(:,j)) == coef_max(j));
+    end
+    
+elseif strcmp(criterion, 'pos_coef')
+    pos_coef = coef;
+    pos_coef(pos_coef < 0) = 0;
+    coef_max = max(abs(pos_coef));
+    segmentation = zeros(1,size(signals_of_target_in_the_region,2));
+    for j = 1: size(signals_of_target_in_the_region,2)
+        seg = find(abs(pos_coef(:,j)) == coef_max(j));
+        seg = seg(1);
+        segmentation(j) = seg;
+    end
+
+elseif strcmp(criterion, 'neg_coef')
+    neg_coef = coef;
+    neg_coef(neg_coef > 0) = 0;
+    coef_max = max(abs(neg_coef));
+    segmentation = zeros(1,size(signals_of_target_in_the_region,2));
+    for j = 1: size(signals_of_target_in_the_region,2)
+        segmentation(j) = find(abs(neg_coef(:,j)) == coef_max(j));
+    end
 end
+
 % clear atalas  atalas_combined atalas_combined_all average_signals_other_regions coef coef_all
 
 % Step 6 is to save the sub-regions.
