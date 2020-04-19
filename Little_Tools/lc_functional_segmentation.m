@@ -17,7 +17,7 @@ function lc_functional_segmentation(atalas_file, target_file, network_index_atla
 % Inputs
 if nargin < 1
     atalas_file = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\Reslice_HarvardOxford-cort-maxprob-thr25-2mm.nii';
-    exclude_mask_file = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\your_file.nii';
+    exclude_mask_file = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\Reslice_HarvardOxford-sub-maxprob-thr25-2mm_1.nii';
     target_file = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\Reslice_HarvardOxford-sub-maxprob-thr25-2mm_1.nii';
     target_region_id = [4,15];
     network_index_atlas = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\network_index.txt';
@@ -105,11 +105,11 @@ for i = 1:n_sub
         coef(j,:) = partialcorr(signals_of_target_in_the_region, average_signals_other_regions(:,j), cov, 'Type','Pearson');
     end
     
-    % Step 4 is to average the partial correlations across all participants (sum then be devided by nsub).
+    % Step 4_1: update the partial correlations across all participants (sum).
     coef_all = coef_all + coef;
 end
 
-% Step 4:continue
+% Step 4 is to average the partial correlations across all participants (sum then be devided by nsub).
 coef = coef_all ./ n_sub;
  
 % Step 5 is to segment the target region into several sub-regions.
