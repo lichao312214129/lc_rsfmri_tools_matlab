@@ -1,8 +1,9 @@
-function lc_functional_segmentation(atalas_file, target_file, network_index_atlas, data_dir, target_region_id, criterion, out_name)
+function lc_functional_segmentation(varargin)
 % GOAL: This function is used to segment one region into several sub-regions
 % according to its function connectivity with other regions.
-% Inputs:
-% -------
+% NOTE: Function of Reading NIfTI file is revised from DPABI, if you used the function, please cite both DPABI and this function.
+% varargin have follow field:
+% ---------------------------
 %   atalas_file: the atlas file
 %   exclude_region_file: region need to exclude
 %   target_file: the data needed segmentation
@@ -12,24 +13,21 @@ function lc_functional_segmentation(atalas_file, target_file, network_index_atla
 %   criterion: using which type coefficient to identify the max
 %   correlation. ( 'all_coef', 'pos_coef', 'neg_coef')
 %   out_name: output name of the segmented file.
+% example:
+% --------
+%     lc_functional_segmentation('atalas_file', 'file/of/your/atalas_file.nii', 'exclude_region_file', '...', ...)
 %% --------------------------------------------------
 %% Step 0 is setting inputs and loading.
 % Inputs
-if nargin < 1
-    atalas_file = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\Reslice_HarvardOxford-cort-maxprob-thr25-2mm.nii';
-    exclude_mask_file = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\Reslice_HarvardOxford-sub-maxprob-thr25-2mm_1.nii';
-    target_file = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\Reslice_HarvardOxford-sub-maxprob-thr25-2mm_1.nii';
-    target_region_id = [4,15];
-    network_index_atlas = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\network_index.txt';
-    data_dir = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\signals';
-    criterion = 'all_coef';  % 'pos_coef', 'neg_coef'
-    out_name = 'D:\workstation_b\ZhangYue_Guangdongshengzhongyiyuan\segmentation1.nii';
-end
+ [atalas_file,target_file, target_region_id, exclude_mask_file, network_index_atlas, data_dir,...
+ criterion, out_name] = parse_inputs(varargin{:});
 
 % Load
 [atalas, header_atalas] = y_Read(atalas_file);
-exclude_mask = y_Read(exclude_mask_file); 
-atalas = atalas .* (exclude_mask == 0);
+if ~strcmp(exclude_mask_file, '')
+    exclude_mask = y_Read(exclude_mask_file); 
+    atalas = atalas .* (exclude_mask == 0);
+end
 network_index_atlas = load(network_index_atlas);
 [dim1, dim2, dim3] = size(atalas);
 
@@ -111,14 +109,14 @@ end
 
 % Step 4 is to average the partial correlations across all participants (sum then be devided by nsub).
 coef = coef_all ./ n_sub;
+coef(isnan(coef)) = 0;
+coef(isinf(coef)) = 1;
  
 % Step 5 is to segment the target region into several sub-regions.
 if strcmp(criterion, 'all_coef')
     coef_max = max(abs(coef));
     segmentation = zeros(1,size(signals_of_target_in_the_region,2));
     for j = 1: size(signals_of_target_in_the_region,2)
-        seg = find(abs(coef(:,j)) == coef_max(j));
-        seg = seg(1);
         segmentation(j) = find(abs(coef(:,j)) == coef_max(j));
     end
     
@@ -139,7 +137,9 @@ elseif strcmp(criterion, 'neg_coef')
     coef_max = max(abs(neg_coef));
     segmentation = zeros(1,size(signals_of_target_in_the_region,2));
     for j = 1: size(signals_of_target_in_the_region,2)
-        segmentation(j) = find(abs(neg_coef(:,j)) == coef_max(j));
+        seg = find(abs(neg_coef(:,j)) == coef_max(j));
+        seg = seg(1);
+        segmentation(j) = seg;
     end
 end
 
@@ -153,6 +153,40 @@ header = header_atalas;
 header.descrip = 'region segmentation';
 y_Write(segmentation, header, out_name);
 disp('Done!');
+end
+
+function [atalas_file,target_file, target_region_id,...
+         exclude_mask_file, network_index_atlas, data_dir,...
+         criterion, out_name] = parse_inputs(varargin)
+
+if mod(nargin,2)~=0
+    error('输入参数个数不对，应为成对出现');
+end
+
+atalas_file = '';
+exclude_mask_file = '';
+target_file = '';
+target_region_id = [];
+network_index_atlas = '';
+data_dir = '';
+criterion = 'all_coef';  % 'pos_coef', 'neg_coef'
+out_name = pwd;
+
+arg_name = {'atalas_file', 'exclude_mask_file','target_file',...
+          'network_index_atlas', 'data_dir', 'target_region_id',...
+          'criterion', 'out_name'};
+      
+n_var = length(varargin);
+for i = 1:2:n_var
+    [isin, loc] = ismember(varargin{i}, arg_name);  
+    if ~ isin
+        error('%s is not a valid input!\n', varargin{i});
+    end
+    break
+    cmd = [varargin{i}, '=', '''', varargin{i+1}, ''''];
+    eval(cmd);
+end
+
 end
 
 function [ROISignals] = y_ExtractROISignal_copy(AllVolume, ROIDef, OutputName, MaskData, IsMultipleLabel, IsNeedDetrend, Band, TR, TemporalMask, ScrubbingMethod, ScrubbingTiming, Header, CUTNUMBER)             

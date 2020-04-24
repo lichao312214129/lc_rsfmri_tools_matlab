@@ -98,7 +98,9 @@ fdr_corrected_h = zeros(1, length(p_values)); % preallocate
 sorted_p = sort(p_values); % Sort p-values from smallest to largest
 
 % Find critical k value
+fdr_value = ones(1, n_total_comparisons);
 for benhoch_step = 1:n_total_comparisons
+    fdr_value(benhoch_step) = (benhoch_step / n_total_comparisons) * alpha_level;
     if sorted_p(benhoch_step) <= (benhoch_step / n_total_comparisons) * alpha_level
         benhoch_critical_alpha = sorted_p(benhoch_step);
     end
@@ -115,3 +117,4 @@ fdr_corrected_h(p_values <= benhoch_critical_alpha) = 1;
 %% Copy output into Results structure
 Results.corrected_h = fdr_corrected_h;
 Results.critical_alpha = benhoch_critical_alpha;
+Results.fdr_value = fdr_value;
