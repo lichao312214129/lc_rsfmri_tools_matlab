@@ -6,7 +6,7 @@ function lc_dfc_roiwise_gift(all_subjects_path, outputdir, ...
 % Used to calculate roi-wise dynamic fc using sliding-window method.
 % Inputs:
 %   input_params have the following fields:
-%       all_subjects_path: all subjects' files (wich abslute path). Each subject's file indicates a group of time series with (number of time series) * (number of nodes)
+%       all_subjects_path: all subjects' files (abslute path). Each subject's file indicates a group of time series with (number of time series) * (number of nodes)
 % 	    outputdir: directiory for saving results.
 % 	    TR = 2: Time of Repeat.
 % 	    volume: How many frames.

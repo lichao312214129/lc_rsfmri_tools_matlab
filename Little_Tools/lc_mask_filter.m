@@ -60,6 +60,7 @@ function lc_mask_filter_OpeningFcn(hObject, eventdata, handles, varargin)
 %     'save_folder','D:\WorkStation_2018\WorkStation_2018_11_machineLearning_Psychosi_ALFF\Data'...
 %             };
 % Choose default command line output for lc_mask_filter
+handles.opt.how_extract = '保留mask内的值';  % initial value
 handles.output = hObject;
 
 % Update handles structure
@@ -104,7 +105,7 @@ function mask_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 [mask_name,mask_path]=uigetfile('*.nii;*.img');
-handles.opt.mask_data=y_Read(fullfile(mask_path,mask_name));
+handles.opt.mask_data=y_Read(fullfile(mask_path,mask_name)) ~= 0;
 % Update handles structure
 guidata(hObject, handles)
 
