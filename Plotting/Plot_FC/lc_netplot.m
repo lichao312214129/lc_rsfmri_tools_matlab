@@ -1,27 +1,50 @@
-function lc_netplot(net, if_add_mask, mask, how_disp, if_binary, which_group, net_index, is_legend, legends, legend_fontsize)
+function lc_netplot(varargin)
+% LC_NETPLOT
 % PURPOSE: plot functional connectivity network using grid format. 
 % NOTO: This function will automatically sort network according to net_index.
 % Parameters:
 % -----------
-%   net: path str | .mat matrix
-%        Functional connectivity network that needs to be plotted.
-%   if_add_mask: int, 0 or 1
-%        If add mask to net for filtering.
-%   mask: path str | .mat matrix
-%        Mask that used to filter the net.
-%   how_disp: str:: 'only_neg', 'only_pos' or 'all'
-%        how display the network
-%   if_binary: int, 0 or 1
-%        If binary the network.
-%   which_group: int
-%        If the network .mat file has multiple 2D matrix, then choose which one to display.
-%   net_index: path str | .mat vector
-%        network index, each node has a net_index indicating its network index.
-%   is_legend: int
-%       If show legend.
-%   legends: cell
-%       legends of each network.
-%% -----------------------------------------------------------------
+%   REQUIRED:
+%       [--net, -n]: path str | .mat matrix
+%           Functional connectivity network that needs to be plotted.
+%       [--net_index, -ni]: path str | .mat vector
+%           network index, each node has a net_index indicating its network index
+%   OPTIONAL:
+%      [--if_add_mask, -iam]: int, 0 or 1
+%           If add mask to net for filtering.
+%      [--mask, -m]: path str | .mat matrix
+%           Mask that used to filter the net.
+%      [--how_disp, -hd]: str:: 'only_neg', 'only_pos' or 'all'
+%           how display the network
+%      [--if_binary, -ib]: int, 0 or 1
+%           If binary the network.
+%      [--which_group, -wg]: int
+%           If the network .mat file has multiple 2D matrix, then choose which one to display.
+%      [--linewidth, -lw]: float 
+%           separation line width
+%      [--linecolor, -lc]: color string 
+%           separation line color
+%      [--is_legend, -il]: int
+%          If show legend.
+%      [--legends, -lg]: cell
+%          legends of each network.
+%      [--legend_fontsize, -lgf]: float
+%          fontsize of the legends
+%   
+% EXAMPLE:
+% lc_netplot('-n', 'tvalue_medication.mat', '-ni', 'netIndex.mat')
+% AUTHOR: Li Chao
+% EMAIL: lichao19870617@gmail.com, lichao19870617@163.com
+% If you used this code, please cite the code
+
+if nargin == 0
+    help lc_netplot
+    return;
+end
+
+[net, if_add_mask, mask, how_disp, if_binary, which_group, net_index, linewidth, linecolor, is_legend, legends, legend_fontsize] = ...
+            parseInputs(varargin{:});
+
 % net
 if isa(net, 'char')
     net=importdata(net);
@@ -71,15 +94,83 @@ if if_add_mask
 end
 
 % sort the matrix according to network index
-net_index=importdata(net_index);
+if ischar(net_index)
+    net_index=importdata(net_index);
+elseif ismatrix(net_index)
+end
 [index,re_net_index,re_net]=lc_ReorganizeNetForYeo17NetAtlas(net,net_index);
 
 % plot: insert separate line between each network
-% TODO linewidth
+lc_InsertSepLineToNet(re_net, re_net_index, linewidth, linecolor, is_legend, legends, legend_fontsize);
+end
+
+
+function [net, if_add_mask, mask, how_disp, if_binary, which_group, net_index, linewidth, linecolor, is_legend, legends, legend_fontsize] = ...
+            parseInputs(varargin)
+% Varargin parser
+
+% Initialize
+if_add_mask = 0;
+mask = '';
+how_disp='all';
+if_binary=0;
+which_group=1;
 linewidth = 0.5;
 linecolor = 'k';
-lc_InsertSepLineToNet(re_net, re_net_index, linewidth, linecolor, is_legend, legends, legend_fontsize);
-% axis square
+is_legend = 0;
+legends = '';
+legend_fontsize = 10;
+
+if( sum(or(strcmpi(varargin,'--net'),strcmpi(varargin,'-n')))==1)
+    net = varargin{find(or(strcmpi(varargin,'--net'),strcmp(varargin,'-n')))+1};
+else
+    error('Please specify net!');
+end
+
+if( sum(or(strcmpi(varargin,'--if_add_mask'),strcmpi(varargin,'-iam')))==1)
+    if_add_mask = varargin{find(or(strcmpi(varargin,'--if_add_mask'),strcmp(varargin,'-iam')))+1};
+end
+
+if( sum(or(strcmpi(varargin,'--mask'),strcmpi(varargin,'-m')))==1)
+    mask = varargin{find(or(strcmpi(varargin,'--mask'),strcmp(varargin,'-m')))+1};
+end
+
+if( sum(or(strcmpi(varargin,'--how_disp'),strcmpi(varargin,'-hd')))==1)
+    how_disp = varargin{find(or(strcmpi(varargin,'--how_disp'),strcmp(varargin,'-hd')))+1};
+end
+
+if( sum(or(strcmpi(varargin,'--if_binary'),strcmpi(varargin,'-ib')))==1)
+    if_binary = varargin{find(or(strcmpi(varargin,'--if_binary'),strcmp(varargin,'-ib')))+1};
+end
+
+if( sum(or(strcmpi(varargin,'--which_group'),strcmpi(varargin,'-wg')))==1)
+    which_group = varargin{find(or(strcmpi(varargin,'--which_group'),strcmp(varargin,'-wg')))+1};
+end
+
+if( sum(or(strcmpi(varargin,'--net_index'),strcmpi(varargin,'-ni')))==1)
+    net_index = varargin{find(or(strcmpi(varargin,'--net_index'),strcmp(varargin,'-ni')))+1};
+end
+
+if( sum(or(strcmpi(varargin,'--linewidth'),strcmpi(varargin,'-lw')))==1)
+    linewidth = varargin{find(or(strcmpi(varargin,'--linewidth'),strcmp(varargin,'-lw')))+1};
+end
+
+if( sum(or(strcmpi(varargin,'--linecolor'),strcmpi(varargin,'-lc')))==1)
+    linecolor = varargin{find(or(strcmpi(varargin,'--linecolor'),strcmp(varargin,'-lc')))+1};
+end
+
+if( sum(or(strcmpi(varargin,'--is_legend'),strcmpi(varargin,'-il')))==1)
+    is_legend = varargin{find(or(strcmpi(varargin,'--is_legend'),strcmp(varargin,'-il')))+1};
+end
+
+if( sum(or(strcmpi(varargin,'--legends'),strcmpi(varargin,'-lg')))==1)
+   legends = varargin{find(or(strcmpi(varargin,'--legends'),strcmp(varargin,'-lg')))+1};
+end
+
+if( sum(or(strcmpi(varargin,'--legend_fontsize'),strcmpi(varargin,'-lgf')))==1)
+   legend_fontsize = varargin{find(or(strcmpi(varargin,'--legend_fontsize'),strcmp(varargin,'-lgf')))+1};
+end
+
 end
 
 function lc_InsertSepLineToNet(net, re_net_index, linewidth, linecolor, is_legend, legends, legend_fontsize)
@@ -130,6 +221,8 @@ end
 imagesc(net_insert_line); hold on;
 x = repmat(location_of_sep_new', num_sep ,1);
 y = repmat(location_of_sep_new,1, num_sep);
+x(:,end) = x(:,end) + 1.5;
+y(end,:) = y(end, :) + 1.5;
 z = zeros(size(x));
 mesh(x,y,z,...
     'EdgeColor',linecolor,...
@@ -148,24 +241,30 @@ lc_bar_region_of_each_network(location_of_sep_new, n_node_new, extend, is_legend
 axis off
 end
 
-function lc_line(location_of_sep, n_node, linewidth, linecolor)
-% nNode: node个数
-n_net = length(location_of_sep);
-for i=1:n_net
-    if (i == 1)  % || (i == n_net)
-        % Y
-        line([location_of_sep(i), location_of_sep(i)],[0, n_node],'color',linecolor,'LineWidth',linewidth);
-        % X
-        line([0, n_node],[location_of_sep(i), location_of_sep(i)],'color',linecolor,'LineWidth',linewidth)
-    else
-        % Y
-        line([location_of_sep(i) + 0.5, location_of_sep(i) + 0.5],[0, n_node],'color',linecolor,'LineWidth',linewidth);
-        % X
-        line([0, n_node],[location_of_sep(i) + 0.5, location_of_sep(i) + 0.5],'color',linecolor,'LineWidth',linewidth)
-    end
-    
-end
-end
+% function lc_line(location_of_sep, n_node, linewidth, linecolor)
+% % nNode: node个数
+% n_net = length(location_of_sep);
+% for i=1:n_net
+%     if (i == 1)  
+%         % Y
+%         line([location_of_sep(i), location_of_sep(i)],[0, n_node],'color',linecolor,'LineWidth',linewidth);
+%         % X
+%         line([0, n_node],[location_of_sep(i), location_of_sep(i)],'color',linecolor,'LineWidth',linewidth);
+%     elseif (i == n_net)
+%         % Y
+%         line([location_of_sep(i) + 0.5, location_of_sep(i) + 0.5],[0, n_node],'color',linecolor,'LineWidth',linewidth);
+%         % X
+%         line([0, n_node],[location_of_sep(i) + 0.5, location_of_sep(i) + 0.5],'color',linecolor,'LineWidth',linewidth);
+%         
+%     else
+%         % Y
+%         line([location_of_sep(i) + 0.5, location_of_sep(i) + 0.5],[0, n_node],'color',linecolor,'LineWidth',linewidth);
+%         % X
+%         line([0, n_node],[location_of_sep(i) + 0.5, location_of_sep(i) + 0.5],'color',linecolor,'LineWidth',linewidth);
+%     end
+%     
+% end
+% end
 
 function lc_bar_region_of_each_network(location_of_sep, n_node, extend, is_legend, legends, legend_fontsize)
 % To plot bar with sevral regions, each region with a unique color
