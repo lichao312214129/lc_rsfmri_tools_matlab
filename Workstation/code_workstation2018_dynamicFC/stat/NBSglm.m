@@ -96,7 +96,7 @@ end
 test_stat=zeros(GLM.perms+1,M);
 P=zeros(GLM.perms+1,M);
 for i=1:GLM.perms+1
-    fprintf('%d/%d', i, GLM.perms+1);
+    fprintf('%d/%d\n', i, GLM.perms+1);
     y_perm=zeros(n,M);
     %Permute
     if i==1
@@ -160,10 +160,10 @@ for i=1:GLM.perms+1
         resid=y_perm-GLM.X*b_perm;
         mse=sum(resid.^2)/(n-p);
         se=sqrt(mse*(GLM.contrast*inv(GLM.X'*GLM.X)*GLM.contrast'));
-        test_stat(i,:)=(GLM.contrast*b_perm)./se;
+        test_stat(i,:)=(GLM.contrast*b_perm)./se;  % bj/Sbj, df=n-m-1
         % Added by Li Chao
         if nargout >= 2
-            P(i,:) = 2*(1-tcdf(abs(test_stat(i,:)),n-p));  % The reason why I multiplied it by 2 is that I applied two-tailed test.
+            P(i,:) = 2*(1-tcdf(abs(test_stat(i,:)),n-p-1));  % df=n-m-1; The reason why I multiplied it by 2 is that I applied two-tailed test.
         end
     elseif strcmp(GLM.test,'ftest')
         sse=zeros(1,M);
@@ -222,7 +222,7 @@ for i=1:GLM.perms+1
             % added by Li Chao
             if nargout >= 2
                 P(i,:) =1-fcdf(test_stat(i,:),v,n-p);
-            end
+            end                  
         end
     end
     try uiwaitbar(H,i/(GLM.perms+1)); catch; end
