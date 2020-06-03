@@ -1,1 +1,2 @@
-This repository for our paper: "Classification of schizophrenia spectrum disorder using machine learning and functional connectivity: reconsidering the clinical application" was removed to https://github.com/lichao312214129/SSD_classification.  
+### Classification of schizophrenia spectrum disorder using machine learning and functional connectivity: reconsidering the clinical application
+This repository was removed to https://github.com/lichao312214129/SSD_classification.  
