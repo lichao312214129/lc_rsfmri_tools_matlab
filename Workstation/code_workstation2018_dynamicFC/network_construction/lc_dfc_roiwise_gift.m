@@ -1,7 +1,8 @@
-function lc_dfc_roiwise_gift(all_subjects_path, outputdir, ...
-                             TR, volume, numroi, ...
-                             window_length, window_step, window_alpha,...
-                             numOfSess, doDespike, tc_filter, method, num_repetitions, prefix)
+function lc_dfc_roiwise_gift()
+% function lc_dfc_roiwise_gift(all_subjects_path, outputdir, ...
+%                              TR, volume, numroi, ...
+%                              window_length, window_step, window_alpha,...
+%                              numOfSess, doDespike, tc_filter, method, num_repetitions, prefix)
 % Modified from GIFT. Users must cite the GIFT software.
 % Used to calculate roi-wise dynamic fc using sliding-window method.
 % Inputs:
@@ -29,32 +30,32 @@ function lc_dfc_roiwise_gift(all_subjects_path, outputdir, ...
 
 %% ----------------------------------input---------------------------------
 % ROI signals
-% all_subjects_dir = uigetdir(pwd, 'select directory that containing all subjects'' data');
-% all_subjects_struct = dir(all_subjects_dir);
-% folder = {all_subjects_struct.folder};
-% file_name = {all_subjects_struct.file_name}';
-% file_name = file_name(3:end);
-% all_subjects_path = cell(length(name),1);
-% for i =1:length(name)
-%     all_subjects_path {i}=fullfile(folder{i},name{i});
-% end
+all_subjects_dir = uigetdir(pwd, 'select directory that containing all subjects'' data');
+all_subjects_struct = dir(all_subjects_dir);
+file_name = {all_subjects_struct.name}';
+file_name = file_name(3:end);
+all_subjects_path = cell(length(file_name),1);
+n_subj = length(file_name);
+for i =1:n_subj
+    all_subjects_path{i} = fullfile(all_subjects_dir,file_name{i});
+end
 
-% % Out directory saving results
-% outputdir = uigetdir(pwd, 'select directory that saving results');
+% Out directory saving results
+outputdir = uigetdir(pwd, 'select directory that saving results');
 
-% % Other inputs
-% TR = 2;
-% volume = 190;
-% numroi = 114;
-% window_length = 17;
-% window_step = 1;
-% window_alpha = 3;  % gaussian window alpha
-% numOfSess = 1;
-% doDespike = 'no';
-% tc_filter = 0;
-% method = 'L1';
-% num_repetitions = 10;
-% prefix = '';
+% Other inputs
+TR = 2;
+volume = 190;
+numroi = 114;
+window_length = 20;
+window_step = 1;
+window_alpha = 3;  % gaussian window alpha
+numOfSess = 1;
+doDespike = 'no';
+tc_filter = 0;
+method = 'L1';
+num_repetitions = 10;
+prefix = '';
 %% -------------------------------------------------------------------
 
 %% Make result directory
@@ -88,7 +89,7 @@ for nSub = 1:numOfSub
     % Loop over sessions
     for nSess = 1:numOfSess
         dataSetCount = dataSetCount + 1;
-        results_file = [prefix, name{nSub}];
+        results_file = [prefix, file_name{nSub}];
         FNCdyn = zeros(Nwin, numroi*(numroi - 1)/2);
         Lambdas = zeros(num_repetitions, length(initial_lambdas));
         disp(['Computing dynamic FNC on subject ', num2str(nSub), ' session ', num2str(nSess)]);
@@ -283,6 +284,19 @@ for ii = 1:nmodels
     % log likelihood
     theta_ii = squeeze(theta(:,:,ii));
     L(ii) = -log(det(theta_ii)) + trace(theta_ii*obs_cov);
+end
+
+function tc = icatb_zscore(tc)
+%% Convert data to z-scores
+%
+
+if isvector (tc)
+    tc = detrend(tc, 0) / std(tc);
+    return;
+end
+
+for n = 1:size(tc, 2)
+    tc(:, n) = detrend(tc(:, n), 0) ./ std(tc(:, n));
 end
 
 function [wList, thetaList] = computeGlasso(tc, initial_lambdas, useMEX)

@@ -138,3 +138,5 @@ for i = 2:1:10
     box off
 end
 print(gcf,'-dtiff', '-r600','D:\WorkStation_2018\WorkStation_dynamicFC_V3\M.S\schizophrenia bulletin\RevisedVersion\Figure\Si_simu.tiff')
+
+

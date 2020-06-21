@@ -50,11 +50,11 @@ if nargin < 3
 end
 
 if nargin < 2
-    out_dir = uigetdir(pwd, 'Select the folder containing results');
+    out_dir = uigetdir(pwd, 'Select the folder for containing results');
 end
 
 if nargin < 1
-    subj_folder = uigetdir(pwd, 'Select the folder containing subjects'' network');
+    subj_folder = uigetdir(pwd, 'Select the folder containing subjects'' DFC network');
     subj_path_struct = dir(fullfile(subj_folder,'*.mat'));  
     subj_name = {subj_path_struct.name}';
     subj_path = fullfile(subj_folder, subj_name);
@@ -80,7 +80,7 @@ fclose(fid);
 
 % pre-allocating space to speed up
 n_subj = size(subj_path,1);
-file_name = fullfile(subj_folder,subj_path(1).name);
+file_name = subj_path{1};
 dynamic_mats = importdata(file_name);
 n_node = size(dynamic_mats,1);
 n_window = length(dynamic_mats);
@@ -92,7 +92,7 @@ whole_mat = zeros(n_feature, n_window, n_subj);
 % Load dfc
 for i = 1:n_subj
     fprintf('Loading %dth dynamic matrix...\n',i);
-    file_name = fullfile(subj_folder, subj_path(i).name);
+    file_name = subj_path{i};
     dynamic_mats = importdata(file_name);
     % only extract the upper triangular matrix, and not include the diagonal
     for imat = 1:n_window
@@ -155,20 +155,65 @@ disp('Running icatb_optimal_clusters function...');
 stream = RandStream('mlfg6331_64');
 options = statset('UseParallel',1,'UseSubstreams',1,'Streams',stream);
 
+% Identify best k using silhoutte
+disp('Identify best k using silhoutte...');
 eva_silhoutte = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'silhoutte');  % For main results
 silhouette_values = eva_silhoutte{1}.values;
 k_optimal = eva_silhoutte{1}.K;
 save(fullfile(out_dir, 'silhouette_values.mat'), 'silhouette_values');
 
-% eva_elbow = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'elbow');  % For validation
-% elbow_values = eva_elbow{1}.values;
-% save(fullfile(out_dir, 'elbow_values.mat'), 'elbow_values');
-% subplot(1,2,1);
+% Identify best k using elbow
+disp('Identify best k using elbow...');
+eva_elbow = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'elbow');  % For validation
+elbow_values = eva_elbow{1}.values;
+save(fullfile(out_dir, 'elbow_values.mat'), 'elbow_values');
+
+% Identify best k using gap
+disp('Identify best k using gap...');
+eva_gap = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'gap');  % For validation
+gap_values = eva_gap{1}.values;
+save(fullfile(out_dir, 'gap_values.mat'), 'gap_values');
+
+% Plot silhouette and elbow values
+localmaxima_mat = [randn(100,20); randn(100,20)-ones(100,20)*5; randn(100,20)-ones(100,20)*10; randn(100,20)-ones(100,20)*15; randn(100,20)-ones(100,20)*20];
+
+subplot(1,3,1);
 plot(silhouette_values,'-o','linewidth',2);
+set(gca,'linewidth',2);
+set(gca,'fontsize',10);
+xticklabels(2:1:10);
+set(gca,'XTick',1:1:9);
+xTL=2:1:10;
+set(gca,'XTickLabels',xTL);
+xlim([-0.1,10])
+box off
 title('Silhouette values');
-% subplot(1,2,2);
-% plot(elbow_values);
-% title('Elbow values');
+
+subplot(1,3,2);
+plot(elbow_values,'-o','linewidth',2);
+set(gca,'linewidth',2);
+set(gca,'fontsize',10);
+xticklabels(2:1:10);
+set(gca,'XTick',1:1:9);
+xTL=2:1:10;
+set(gca,'XTickLabels',xTL);
+xlim([-0.1,10])
+box off
+title('Silhouette values');
+title('Elbow values');
+
+subplot(1,3,3);
+plot(gap_values,'-o','linewidth',2);
+set(gca,'linewidth',2);
+set(gca,'fontsize',10);
+xticklabels(2:1:10);
+set(gca,'XTick',1:1:9);
+xTL=2:1:10;
+set(gca,'XTickLabels',xTL);
+xlim([-0.1,10])
+box off
+title('Silhouette values');
+title('Gap values');
 
 % disp('Running MATLAB default evalclusters.m function...');
 % try
