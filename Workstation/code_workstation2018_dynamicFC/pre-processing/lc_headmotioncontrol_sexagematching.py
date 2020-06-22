@@ -10,12 +10,12 @@ import pandas as pd
 import numpy as np
 import scipy.stats as stats
 
-from lc_chisqure import lc_chisqure
+from eslearn.statistical_analysis.lc_chisqure import lc_chisqure
 
 # input
 all_subjects = r'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\headmotion\all_ID_851.xlsx'
 included_subjects = r'D:\WorkStation_2018\WorkStation_dynamicFC_V1\Data\headmotion\included_subjects_from851database_ID.xlsx' # survived from headmotion control
-all_demographicdata = r'D:\WorkStation_2018\WorkStation_CNN_Schizo\Scale\10-24大表.xlsx'
+all_demographicdata = r'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\10-24大表.xlsx'
 
 # load
 all_subjects = pd.read_excel(all_subjects, header=None)
@@ -49,6 +49,17 @@ sex_SZ = included_demographicdata_SZ['性别'].dropna()
 sex_BD = included_demographicdata_BD['性别'].dropna()
 sex_MDD = included_demographicdata_MDD['性别'].dropna()
 
+# The first comparsion
+f, p = stats.f_oneway(age_HC, age_SZ, age_BD, age_MDD)
+
+obs = [np.sum(sex_HC == 1), np.sum(sex_SZ == 1), np.sum(sex_BD == 1), np.sum(sex_MDD == 1)]
+tt = [sex_HC.shape[0], sex_SZ.shape[0], sex_BD.shape[0], sex_MDD.shape[0]]
+chivalue, chip = lc_chisqure(obs, tt)
+
+# Age among groups are not matched, so I cheack mean age of each group
+print(age_HC.mean(), age_SZ.mean(), age_BD.mean(), age_MDD.mean())
+
+
 # age and sex matching
 # age
 sortind_sz = list(age_SZ.sort_values().index)
@@ -56,13 +67,19 @@ sortind_mdd = list(age_MDD.sort_values().index)
 sortind_bd = list(age_BD.sort_values().index)
 sortind_hc = list(age_HC.sort_values().index)
 
-sz = age_SZ[sortind_sz[3:]]
-bd = age_BD[sortind_bd[0:100]]
-mdd = age_MDD[sortind_mdd[0:150]]
-hc = age_HC[sortind_hc[0:210]]
+# sz = age_SZ[sortind_sz[3:]]
+# bd = age_BD[sortind_bd[0:100]]
+# mdd = age_MDD[sortind_mdd[0:150]]
+# hc = age_HC[sortind_hc[0:210]]
 
-print(f'{np.mean(sz)},{np.mean(bd)},{np.mean(mdd)},{np.mean(hc)}')
-f, p = stats.f_oneway(sz, bd, mdd, hc)
+hc = age_HC[sortind_hc[0:210]]
+sz = age_SZ[sortind_sz[:]]
+bd = age_BD[sortind_bd[0:]]
+mdd = age_MDD[sortind_mdd[0:]]
+
+
+print(f'{np.mean(hc)}, {np.mean(sz)},{np.mean(bd)},{np.mean(mdd)}')
+f, p = stats.f_oneway(hc, sz, bd, mdd)
 print(f'p={p}')
 
 # sex
