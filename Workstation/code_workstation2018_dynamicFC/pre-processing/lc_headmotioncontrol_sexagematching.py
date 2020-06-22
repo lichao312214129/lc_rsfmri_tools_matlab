@@ -5,7 +5,6 @@ Used to extract subjects' ID after headmotion control as well as age and sex mat
 """
 import os
 import sys
-sys.path.append(r'D:\My_Codes\LC_Machine_Learning\lc_rsfmri_tools\lc_rsfmri_tools_python\Statistics')
 import pandas as pd
 import numpy as np
 import scipy.stats as stats
