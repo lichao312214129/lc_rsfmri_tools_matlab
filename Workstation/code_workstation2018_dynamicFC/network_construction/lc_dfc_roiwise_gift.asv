@@ -92,7 +92,7 @@ for nSub = 1:numOfSub
         results_file = [prefix, file_name{nSub}];
         FNCdyn = zeros(Nwin, numroi*(numroi - 1)/2);
         Lambdas = zeros(num_repetitions, length(initial_lambdas));
-        disp(['Computing dynamic FNC on subject ', file_name{nSub}, ': ', num2str(nSub), ' session ', num2str(nSess)]);
+        disp(['Computing dynamic FNC on subject ', num2str(nSub), ' session ', num2str(nSess)]);
         
         if (strcmpi(doDespike, 'yes') && (tc_filter > 0))
             disp('Despiking and filtering timecourses ...');
@@ -125,7 +125,7 @@ for nSub = 1:numOfSub
         end
         
         if strcmpi(method, 'L1')
-            useMEX = 1;
+            useMEX = 0;
             try
                 GraphicalLassoPath([1, 0; 0, 1], 0.1);
                 useMEX = 1;
@@ -161,7 +161,7 @@ for nSub = 1:numOfSub
             % now actually compute the covariance matrix
             fprintf('\tWorking on estimating covariance matrix for each time window...\n')
             for ii = 1:Nwin
-                fprintf('\tWorking on window %d of %d\t', ii, Nwin)
+                %fprintf('\tWorking on window %d of %d\n', ii, Nwin)
                 [wList, thetaList] = computeGlasso(icatb_zscore(squeeze(tcwin(ii, :, :))), blambda, useMEX);
                 a = icatb_corrcov(wList);
                 a = a - eye(numroi);

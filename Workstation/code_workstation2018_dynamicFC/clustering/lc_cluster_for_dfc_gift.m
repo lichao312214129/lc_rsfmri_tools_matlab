@@ -174,9 +174,7 @@ eva_gap = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'gap');  % 
 gap_values = eva_gap{1}.values;
 save(fullfile(out_dir, 'gap_values.mat'), 'gap_values');
 
-% Plot silhouette and elbow values
-localmaxima_mat = [randn(100,20); randn(100,20)-ones(100,20)*5; randn(100,20)-ones(100,20)*10; randn(100,20)-ones(100,20)*15; randn(100,20)-ones(100,20)*20];
-
+% Plot silhouette, elbow values and gap values
 subplot(1,3,1);
 plot(silhouette_values,'-o','linewidth',2);
 set(gca,'linewidth',2);
@@ -199,7 +197,6 @@ xTL=2:1:10;
 set(gca,'XTickLabels',xTL);
 xlim([-0.1,10])
 box off
-title('Silhouette values');
 title('Elbow values');
 
 subplot(1,3,3);
@@ -259,33 +256,6 @@ for i = 1 : k_optimal
     square_median_mat(eye(n_node) == 1) = 1;
     save(fullfile(out_dir,['group_centroids_',num2str(i), '.mat']), 'square_median_mat');
 end
-
-%% -----------------------------------------------------------------
-% fprintf('Using dimensional latent method (Fractor analysis) to extract dfc states...\n');
-% whole_mat_pca = zeros(n_feature*n_subj,n_window);
-% loc_start = 1;
-% loc_end = n_feature;
-% for i = 1:n_subj
-%     whole_mat_pca(loc_start:loc_end,:) = whole_mat(:,:,i);
-%     loc_start = loc_start + n_feature;
-%     loc_end = loc_start + n_feature - 1;
-% end
-% [Lambda,~,~,~,fractors] = factoran(whole_mat_pca, k_optimal, 'scores','regression');  % Factoran
-% % Contribut = 100*sum(Lambda.^2)/173;
-% % CumCont = cumsum(Contribut);
-% C1 = fractors;
-% % Save the centroid of each state of the whole group
-% fprintf('Getting and saving the Fractors...\n')
-% for i = 1 : k_optimal
-%     C1_reshaped = reshape(C1(:,i), n_feature, n_subj)';
-%     median_mat = median( C1_reshaped);
-%     square_median_mat = eye(n_node);
-%     square_median_mat(mask_of_up_mat) = median_mat;
-%     square_median_mat = square_median_mat + square_median_mat';
-%     square_median_mat(eye(n_node) == 1) = 1;
-%     save(fullfile(out_dir,['frator_',num2str(i), '.mat']), 'square_median_mat');
-% end
-% fprintf('Fractor analysis done!...\n')
 
 fprintf('------------All Done!------------\n');
 toc
