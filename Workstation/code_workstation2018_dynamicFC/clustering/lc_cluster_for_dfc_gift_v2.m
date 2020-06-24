@@ -6,33 +6,32 @@ function lc_cluster_for_dfc_gift_v2(subj_path, out_dir, krange, distance_measure
 % 	between windows and computational demands (Allen et al., 2014).
 % 	The K-means clustering was performed to all exemplars and repeated N (nreplicates) times
 % 	with random initial cluster centroid positions to escape local minima. 
-% 	The optimal number of clusters was estimated using methods: gap, silhoutte (used in our paper), bic, aic and dunns 
-% 	(implemented using icatb_optimal_clusters.m function in GIFT software)
+% 	The optimal number of clusters was estimated using Davies-Bouldin method recommended by Victor M. Vergara <Determining the Number of States in Dynamic Functional Connectivity
+%   Using Cluster Validity Indexes>.
 % 	2: These sets of initial group centroids using the optimal number of clusters were used as starting points
 %	to cluster all data into the optimal number of clusters.
-
 % How to get subjects exemplars?
-% 	First, wo compute variance of dynamic connectivity across all pairs at each window. 
-% 	Second, we select windows corresponding to local maxima in this variance time course.
-
-% input :
+% 	1. wo compute variance of dynamic connectivity across all pairs at each window. 
+% 	2. we select windows corresponding to local maxima in this variance time course.
+% 
+% INPUTS:
 %   subj_path: subject's dFC files' path (matlab .mat or .txt file type with dimension of n_node*n_node*n_window)
-%   krange: The search window of k, such as  2:1:20;
+%   out_dir: directory to save results
+%   krange: The search window of k, such as  2:1:10;
 %   distance_measure: distance measure, such as 'cityblock', 'sqeuclidean', 'cosine', 'correlation', 'hamming'.
 %   nreplicates: repeated nreplicates times with random initial cluster centroid positions to escape local minima
-%   out_dir: directory to save results
-% output:
-    % Saving meta informations: idx, C, sumd, D
-    % Saving median network for each state
-    
-% NOTE: We tend to use icatb_optimal_clusters.m function in GIFT software to identify the optimal number of clusters
-% Thanks to GIFT software
+% OUTPUTS:
+%   Saving meta informations: idx, C, sumd, D
+%   Saving median network for each state
+% 
 % Author: Li Chao
 % Email:lichao19870617@gmail.com OR lichao19870617@163.com
-% Add(2020/1/2): 
-%   1. I added elbow criterion.
-%   2. Function will save criterion values.
+% Updated (2020/06/24): 
+% Identify best k using Davies-Bouldin method.
+% This method is recommended by Victor M. Vergara 
+% <Determining the Number of States in Dynamic Functional Connectivity Using Cluster Validity Indexes>
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 tic
 %% ----------------------------------input---------------------------------
 if nargin < 5
@@ -167,11 +166,11 @@ daviesbouldin_values = daviesbouldin.CriterionValues;
 save(fullfile(out_dir, 'daviesbouldin_values.mat'), 'daviesbouldin_values');
 
 % Identify best k using silhoutte
-disp('Identify best k using silhoutte...');
-eva_silhoutte = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'silhoutte');  % For main results
-silhouette_values = eva_silhoutte{1}.values;
-k_optimal_silhouette = eva_silhoutte{1}.K;
-save(fullfile(out_dir, 'silhouette_values.mat'), 'silhouette_values');
+% disp('Identify best k using silhoutte...');
+% eva_silhoutte = icatb_optimal_clusters(localmaxima_mat, krange, 'method' , 'silhoutte');  % For main results
+% silhouette_values = eva_silhoutte{1}.values;
+% k_optimal_silhouette = eva_silhoutte{1}.K;
+% save(fullfile(out_dir, 'silhouette_values.mat'), 'silhouette_values');
 
 % Identify best k using gap
 % disp('Identify best k using gap stat...');
@@ -181,74 +180,74 @@ save(fullfile(out_dir, 'silhouette_values.mat'), 'silhouette_values');
 % save(fullfile(out_dir, 'gap_values.mat'), 'gap_values');
 
 % Get centroid
-fprintf('Clustering subject exemplars to %d (optimal k) clusters for getting start centroid...\n', k_optimal_silhouette);
-[~, centroid_optimal_silhouette, ~, ~] = kmeans(localmaxima_mat, k_optimal_silhouette, 'Distance', distance_measure, 'Options', options, 'emptyaction','singleton','Start', 'plus','replicate',nreplicates, 'Display','off');
-if k_optimal_silhouette ~= k_optimal_daviesbouldin
-    [~, centroid_optimal_daviesbouldin, ~, ~] = kmeans(localmaxima_mat, k_optimal_daviesbouldin, 'Distance', distance_measure, 'Options', options, 'emptyaction','singleton','Start', 'plus','replicate',nreplicates, 'Display','off');
-end
+fprintf('Clustering subject exemplars to %d (optimal k) clusters for getting start centroid...\n', k_optimal_daviesbouldin);
+[~, centroid_optimal_daviesbouldin, ~, ~] = kmeans(localmaxima_mat, k_optimal_daviesbouldin, 'Distance', distance_measure, 'Options', options, 'emptyaction','singleton','Start', 'plus','replicate',nreplicates, 'Display','off');
+% [~, centroid_optimal_silhouette, ~, ~] = kmeans(localmaxima_mat, k_optimal_silhouette, 'Distance', distance_measure, 'Options', options, 'emptyaction','singleton','Start', 'plus','replicate',nreplicates, 'Display','off');
+% if k_optimal_silhouette ~= k_optimal_daviesbouldin
+% end
 clear localmaxima_mat;
 
-%% kmeans clustering to all dfc using the optimal centroid identified by using the subject exemplars to the optimal number of clusters (silhoutte)
-fprintf('Clustering all dfc to %d (optimal k) clusters using centroid derived from subject exemplar...\n', k_optimal_silhouette);
+% %% kmeans clustering to all dfc using the optimal centroid identified by using the subject exemplars to the optimal number of clusters (silhoutte)
+% fprintf('Clustering all dfc to %d (optimal k) clusters using centroid derived from subject exemplar...\n', k_optimal_silhouette);
+% fprintf('This step may cost many memory and take a long time!\n');
+% [idx, C, sumd, D] = kmeans(whole_mat_reshaped, k_optimal_silhouette, 'Distance', distance_measure,'Replicates', 1, 'Options', options, 'Start', centroid_optimal_silhouette);
+% fprintf('Kmeans clustering to all subjects finished!\n')
+% fprintf('------------------------------------------------\n')
+
+% % Saving meta info
+% fprintf('saving meta info...\n');
+% out_dir_silhoutte = fullfile(out_dir, 'silhoutte');
+% if ~exist(fullfile(out_dir_silhoutte), 'dir')
+%     mkdir(fullfile(out_dir_silhoutte));
+% end
+% save(fullfile(out_dir_silhoutte,'idx.mat'),'idx');
+% save(fullfile(out_dir_silhoutte,'C.mat'),'C');
+% save(fullfile(out_dir_silhoutte,'sumd.mat'),'sumd');
+% save(fullfile(out_dir_silhoutte,'D.mat'),'D');
+
+% % Save the centroid of each state of the whole group
+% fprintf('Getting and saving the median network of each state of the whole group...\n')
+% for i = 1 : k_optimal_silhouette
+%     median_mat = C(i,:);
+%     square_median_mat = eye(n_node);
+%     square_median_mat(mask_of_up_mat) = median_mat;
+%     square_median_mat = square_median_mat + square_median_mat';
+%     square_median_mat(eye(n_node) == 1) = 1;
+%     save(fullfile(out_dir_silhoutte, ['group_centroids_',num2str(i), '.mat']), 'square_median_mat');
+% end
+% clear idx C sumd D square_median_mat median_mat
+
+%% kmeans clustering to all dfc using the optimal centroid identified by using the subject exemplars to the optimal number of clusters (daviesbouldin)
+% if k_optimal_silhouette ~= k_optimal_daviesbouldin
+fprintf('Clustering all dfc to %d (optimal k) clusters using centroid derived from subject exemplar...\n', k_optimal_daviesbouldin);
 fprintf('This step may cost many memory and take a long time!\n');
-[idx, C, sumd, D] = kmeans(whole_mat_reshaped, k_optimal_silhouette, 'Distance', distance_measure,'Replicates', 1, 'Options', options, 'Start', centroid_optimal_silhouette);
+[idx, C, sumd, D] = kmeans(whole_mat_reshaped, k_optimal_daviesbouldin, 'Distance', distance_measure,'Replicates', 1, 'Options', options, 'Start', centroid_optimal_daviesbouldin);
 fprintf('Kmeans clustering to all subjects finished!\n')
 fprintf('------------------------------------------------\n')
 
 % Saving meta info
-fprintf('saving meta info...\n');
-out_dir_silhoutte = fullfile(out_dir, 'silhoutte');
-if ~exist(fullfile(out_dir_silhoutte), 'dir')
-    mkdir(fullfile(out_dir_silhoutte));
+% out_dir = fullfile(out_dir, 'daviesbouldin');
+if ~exist(out_dir, 'dir')
+    mkdir(out_dir);
 end
-save(fullfile(out_dir_silhoutte,'idx.mat'),'idx');
-save(fullfile(out_dir_silhoutte,'C.mat'),'C');
-save(fullfile(out_dir_silhoutte,'sumd.mat'),'sumd');
-save(fullfile(out_dir_silhoutte,'D.mat'),'D');
+
+fprintf('saving meta info...\n');
+save(fullfile(out_dir,'idx.mat'),'idx');
+save(fullfile(out_dir,'C.mat'),'C');
+save(fullfile(out_dir,'sumd.mat'),'sumd');
+save(fullfile(out_dir,'D.mat'),'D');
 
 % Save the centroid of each state of the whole group
 fprintf('Getting and saving the median network of each state of the whole group...\n')
-for i = 1 : k_optimal_silhouette
+for i = 1 : k_optimal_daviesbouldin
     median_mat = C(i,:);
     square_median_mat = eye(n_node);
     square_median_mat(mask_of_up_mat) = median_mat;
     square_median_mat = square_median_mat + square_median_mat';
     square_median_mat(eye(n_node) == 1) = 1;
-    save(fullfile(out_dir_silhoutte, ['group_centroids_',num2str(i), '.mat']), 'square_median_mat');
+    save(fullfile(out_dir,['group_centroids_',num2str(i), '.mat']), 'square_median_mat');
 end
-clear idx C sumd D square_median_mat median_mat
-
-%% kmeans clustering to all dfc using the optimal centroid identified by using the subject exemplars to the optimal number of clusters (daviesbouldin)
-if k_optimal_silhouette ~= k_optimal_daviesbouldin
-    fprintf('Clustering all dfc to %d (optimal k) clusters using centroid derived from subject exemplar...\n', k_optimal_daviesbouldin);
-    fprintf('This step may cost many memory and take a long time!\n');
-    [idx, C, sumd, D] = kmeans(whole_mat_reshaped, k_optimal_daviesbouldin, 'Distance', distance_measure,'Replicates', 1, 'Options', options, 'Start', centroid_optimal_daviesbouldin);
-    fprintf('Kmeans clustering to all subjects finished!\n')
-    fprintf('------------------------------------------------\n')
-
-    % Saving meta info
-    out_dir_daviesbouldin = fullfile(out_dir, 'daviesbouldin');
-    if ~exist(fullfile(out_dir_daviesbouldin), 'dir')
-        mkdir(fullfile(out_dir_daviesbouldin));
-    end
-
-    fprintf('saving meta info...\n');
-    save(fullfile(out_dir_daviesbouldin,'idx.mat'),'idx');
-    save(fullfile(out_dir_daviesbouldin,'C.mat'),'C');
-    save(fullfile(out_dir_daviesbouldin,'sumd.mat'),'sumd');
-    save(fullfile(out_dir_daviesbouldin,'D.mat'),'D');
-
-    % Save the centroid of each state of the whole group
-    fprintf('Getting and saving the median network of each state of the whole group...\n')
-    for i = 1 : k_optimal_daviesbouldin
-        median_mat = C(i,:);
-        square_median_mat = eye(n_node);
-        square_median_mat(mask_of_up_mat) = median_mat;
-        square_median_mat = square_median_mat + square_median_mat';
-        square_median_mat(eye(n_node) == 1) = 1;
-        save(fullfile(out_dir_daviesbouldin,['group_centroids_',num2str(i), '.mat']), 'square_median_mat');
-    end
-end
+% end
 
 %%==================================================================
 fprintf('------------All Done!------------\n');
