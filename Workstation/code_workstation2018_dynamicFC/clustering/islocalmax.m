@@ -1,4 +1,4 @@
-function [tf, P] = islocalmax_matlab(A, isMaxSearch, varargin)
+function [tf, P] = islocalmax(A, isMaxSearch, varargin)
 %ISLOCALEXTREMA Mark local minimum or maximum values in an array.
 %
 %   FOR INTERNAL USE ONLY -- This feature is intentionally undocumented.
@@ -62,16 +62,16 @@ function [tf, P] = isLocalExtremaTabular(A, dataVars, maxNumExt, minSep,...
     if ~all(dvValid)
         if any(varfun(@(x) isnumeric(x) && ~isreal(x), A, ...
             'InputVariables', dataVars, 'OutputFormat', 'uniform'))
-            error(message('MATLAB:isLocalExtrema:ComplexInputArray'));
+            error(message("MATLAB:isLocalExtrema:ComplexInputArray"));
         end
-        error(message('MATLAB:isLocalExtrema:NonNumericTableVar'));
+        error(message("MATLAB:isLocalExtrema:NonNumericTableVar"));
     end
     
     % All variables must be column vectors or empties.
     varsAreColumns = varfun(@(x) iscolumn(x) || isempty(x), A, ...
         'InputVariables', dataVars, 'OutputFormat', 'uniform');
     if ~all(varsAreColumns)
-        error(message('MATLAB:isLocalExtrema:NonVectorTableVariable'));
+        error(message("MATLAB:isLocalExtrema:NonVectorTableVariable"));
     end
     
     % The data can be processed as one large array if all of the variables
@@ -589,8 +589,8 @@ function [dim, maxNumExtrema, minSep, minProm, flatType, x, dataVars] = ...
         error(message('MATLAB:isLocalExtrema:NameValuePairs'));
     end
 
-    nameOptions = [ 'MaxNumExtrema', 'MinSeparation', 'MinProminence', ...
-        'FlatSelection', 'SamplePoints', 'DataVariables'];
+    nameOptions = [ "MaxNumExtrema", "MinSeparation", "MinProminence", ...
+        "FlatSelection", "SamplePoints", "DataVariables"];
     for i = 1:2:numRemainingArguments
         if ~((ischar(varargin{argIdx}) && isrow(varargin{argIdx})) || ...
              (isstring(varargin{argIdx}) && isscalar(varargin{argIdx})))
@@ -630,7 +630,7 @@ function [dim, maxNumExtrema, minSep, minProm, flatType, x, dataVars] = ...
                 error(message('MATLAB:isLocalExtrema:MinProminenceInvalid'));
             end
         elseif optionMatches(4) % FlatSelection
-            flatOptions = [ 'all', 'first', 'center', 'last'];
+            flatOptions = [ "all", "first", "center", "last"];
             opt = varargin{argIdx+1};
             if ~((ischar(opt) && isrow(opt)) || ...
                  (isstring(opt) && isscalar(opt)))
