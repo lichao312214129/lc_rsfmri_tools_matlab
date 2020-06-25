@@ -61,9 +61,9 @@ if strcmp(how_disp,'only_pos')
 elseif strcmp(how_disp,'only_neg')
     net(net>0)=0;
 elseif strcmp(how_disp,'all')
-    disp('show both postive and negative')
+%     disp('show both postive and negative')
 else
-    disp('Did not specify show positive or negative!')
+%     disp('Did not specify show positive or negative!')
     return
 end
 
