@@ -1,65 +1,130 @@
-function lc_dfc_roiwise_gift()
-% function lc_dfc_roiwise_gift(all_subjects_path, outputdir, ...
-%                              TR, volume, numroi, ...
-%                              window_length, window_step, window_alpha,...
-%                              numOfSess, doDespike, tc_filter, method, num_repetitions, prefix)
-% Modified from GIFT. Users must cite the GIFT software.
+function lc_dfc_roiwise_gift(varargin)
 % Used to calculate roi-wise dynamic fc using sliding-window method.
-% Inputs:
-%   input_params have the following fields:
-%       all_subjects_path: all subjects' files (abslute path). Each subject's file indicates a group of time series with (number of time series) * (number of nodes)
-% 	    outputdir: directiory for saving results.
-% 	    TR = 2: Time of Repeat.
-% 	    volume: How many frames.
-% 	    numroi: How many ROI/Node.
-%       window_step: sliding-window step.
-%       window_length: sliding-window length.
-%       window_type: e.g., Gaussian window.
-%       window_alpha: Gaussian window alpha, e.g., 3TRs.
-% 	    numOfSess: number of sessions.
-% 	    doDespike: if despiking.
-% 	    tc_filter: if filter.
-% 	    method: Using L1 regularisation or not.
-% 	    num_repetitions: number of repetitions of random centroid.
-% 	    prefix: Results name prefix.
-% output
+% INPUTS:
+%       [----all_signals_dir, -asd]: all signals' files (absolute path). Each signal file indicates a group of time series with (number of time series) * (number of nodes)
+% 	    [--output_dir, -od]: directiory for saving results.
+%       [--window_length, -wl]: sliding-window length.
+%       [--window_step, -ws]: sliding-window step.
+% 	    [--volume, -v]: How many frames.
+% 	    [--numroi, -nroi]: How many ROI/Node.
+%       [--window_type, -wt]: sliding-window type. Currently, only support Gaussian window.
+%       [--window_alpha, -wa]: Gaussian window alpha, e.g., 3TRs.
+% 	    [--numOfSess, -ns]: Number of sessions. Currently, only support 1 session.
+% 	    [--doDespike, -dds]: if despiking.
+% 	    [--tc_filter, -tf]: Filter the time series. If choose to filter, the high frequencies cut-off 0.15 HZ will be used according with GIFT software.
+% 	    [--TR, -t]: Time of Repeat.
+% 	    [--method, -m]: Using L1 regularisation or not.
+% 	    [--num_repetitions, -nrep]: number of repetitions of random centroid.
+% 	    [--prefix, -p]: Results name prefix.
+% OUTPUTS
 %   zDynamicFC: dynamic FC matrix with Fisher r-to-z transformed; size=N*N*W, 
 % 	N is the number of ROIs, W is the number of sliding-window
+% 
+% EXAMPLE:
+% lc_dfc_roiwise_gift('-wl', 50,'-ws', 1);
+% 
+% This function is based on GIFT software. Users must cite the GIFT software.
 % Author:  Li Chao
 % Email:lichao19870617@gmail.com OR lichao19870617@163.com
 
-%% ----------------------------------input---------------------------------
-% ROI signals
-all_subjects_dir = uigetdir(pwd, 'select directory that containing all subjects'' data');
-all_subjects_struct = dir(all_subjects_dir);
+%% ---------------------------VARARGIN PARSER-------------------------------
+if( sum(or(strcmpi(varargin,'--all_signals_dir'),strcmpi(varargin,'-asd')))==1)
+    all_signals_dir = varargin{find(or(strcmpi(varargin,'--all_signals_dir'),strcmp(varargin,'-asd')))+1};
+else
+    all_signals_dir = uigetdir(pwd, 'Select directory that containing all signals'' file');
+end
+all_subjects_struct = dir(all_signals_dir);
 file_name = {all_subjects_struct.name}';
 file_name = file_name(3:end);
-all_subjects_path = cell(length(file_name),1);
+all_signals_file = cell(length(file_name),1);
 n_subj = length(file_name);
 for i =1:n_subj
-    all_subjects_path{i} = fullfile(all_subjects_dir,file_name{i});
+    all_signals_file{i} = fullfile(all_signals_dir,file_name{i});
 end
 
-% Out directory saving results
-outputdir = uigetdir(pwd, 'select directory that saving results');
+if( sum(or(strcmpi(varargin,'--output_dir'),strcmpi(varargin,'-od')))==1)
+    output_dir = varargin{find(or(strcmpi(varargin,'--output_dir'),strcmp(varargin,'-od')))+1};
+else
+    output_dir = uigetdir(pwd, 'Select directory for saving results');
+end
 
-% Other inputs
-TR = 2;  
-volume = 232;  % 190
-numroi = 160;  % 114
-window_length = 50;
-window_step = 1;
-window_alpha = 3;  % gaussian window alpha
-numOfSess = 1;
-doDespike = 'no';
-tc_filter = 0;
-method = 'L1';
-num_repetitions = 10;
-prefix = '';
-%% -------------------------------------------------------------------
+
+if( sum(or(strcmpi(varargin,'--volume'),strcmpi(varargin,'-v')))==1)
+    volume = varargin{find(or(strcmpi(varargin,'--volume'),strcmp(varargin,'-v')))+1};
+else
+    [volume, numroi] = size(importdata(all_signals_file{1}));
+end
+
+if( sum(or(strcmpi(varargin,'--numroi'),strcmpi(varargin,'-nroi')))==1)
+    numroi = varargin{find(or(strcmpi(varargin,'--numroi'),strcmp(varargin,'-nroi')))+1};
+else
+    [volume, numroi] = size(importdata(all_signals_file{1}));
+end
+
+if( sum(or(strcmpi(varargin,'--window_length'),strcmpi(varargin,'-wl')))==1)
+    window_length = varargin{find(or(strcmpi(varargin,'--window_length'),strcmp(varargin,'-wl')))+1};
+else
+    window_length = input('Enter window_length:');
+end
+
+if( sum(or(strcmpi(varargin,'--window_step'),strcmpi(varargin,'-ws')))==1)
+    window_step = varargin{find(or(strcmpi(varargin,'--window_step'),strcmp(varargin,'-ws')))+1};
+else
+    window_step = input('Enter window_step:');
+end
+
+if( sum(or(strcmpi(varargin,'--window_alpha'),strcmpi(varargin,'-wa')))==1)
+    window_alpha = varargin{find(or(strcmpi(varargin,'--window_alpha'),strcmp(varargin,'-wa')))+1};
+else
+    window_alpha = 3;
+end
+
+if( sum(or(strcmpi(varargin,'--numOfSess'),strcmpi(varargin,'-ns')))==1)
+    numOfSess = varargin{find(or(strcmpi(varargin,'--numOfSess'),strcmp(varargin,'-ns')))+1};
+else
+    numOfSess = 1;
+end
+
+if( sum(or(strcmpi(varargin,'--doDespike'),strcmpi(varargin,'-dds')))==1)
+    doDespike = varargin{find(or(strcmpi(varargin,'--doDespike'),strcmp(varargin,'-dds')))+1};
+else
+    doDespike = 'no';
+end
+
+if( sum(or(strcmpi(varargin,'--tc_filter'),strcmpi(varargin,'-tf')))==1)
+    tc_filter = varargin{find(or(strcmpi(varargin,'--tc_filter'),strcmp(varargin,'-tf')))+1};
+else
+    tc_filter = 0;
+end
+
+if( sum(or(strcmpi(varargin,'--TR'),strcmpi(varargin,'-t')))==1)
+    TR = varargin{find(or(strcmpi(varargin,'--TR'),strcmp(varargin,'-t')))+1};
+else
+    TR = [];
+end
+
+if( sum(or(strcmpi(varargin,'--method'),strcmpi(varargin,'-m')))==1)
+    method = varargin{find(or(strcmpi(varargin,'--method'),strcmp(varargin,'-m')))+1};
+else
+    method = 'L1';
+end
+
+if( sum(or(strcmpi(varargin,'--num_repetitions'),strcmpi(varargin,'-nrep')))==1)
+    num_repetitions = varargin{find(or(strcmpi(varargin,'--num_repetitions'),strcmp(varargin,'-nrep')))+1};
+else
+    num_repetitions = 10;
+end
+
+if( sum(or(strcmpi(varargin,'--prefix'),strcmpi(varargin,'-p')))==1)
+    prefix = varargin{find(or(strcmpi(varargin,'--prefix'),strcmp(varargin,'-p')))+1};
+else
+    prefix = '';
+end
+
+%% ---------------------------END VARARGIN PARSER-------------------------------
 
 %% Make result directory
-result_dir_of_dynamic = fullfile(outputdir, strcat('zDynamicFC_WindowLength',num2str(window_length),'_WindowStep',num2str(window_step)));
+result_dir_of_dynamic = fullfile(output_dir, strcat('zDynamicFC_WindowLength',num2str(window_length),'_WindowStep',num2str(window_step)));
 if ~exist(result_dir_of_dynamic, 'dir')
     mkdir(result_dir_of_dynamic);
 end
@@ -67,10 +132,10 @@ end
 %% ----------------------------Run------------------------------------
 % Load timeseries
 tic;
-numOfSub = length(all_subjects_path);
+numOfSub = length(all_signals_file);
 tc = zeros(numOfSub, numOfSess, volume, numroi);
 for i = 1:numOfSub
-   tc(i, 1,:,:) = importdata(all_subjects_path{i});
+   tc(i, 1,:,:) = importdata(all_signals_file{i});
 end
 
 % Make sliding window
@@ -161,7 +226,7 @@ for nSub = 1:numOfSub
             % now actually compute the covariance matrix
             fprintf('\tWorking on estimating covariance matrix for each time window...\n')
             for ii = 1:Nwin
-                fprintf('\tWorking on window %d of %d\t', ii, Nwin)
+%                 fprintf('\tWorking on window %d of %d\t', ii, Nwin)
                 [wList, thetaList] = computeGlasso(icatb_zscore(squeeze(tcwin(ii, :, :))), blambda, useMEX);
                 a = icatb_corrcov(wList);
                 a = a - eye(numroi);
@@ -237,7 +302,6 @@ ind = triu(temp,1) == 1;
 mat(ind) = vec;
 mat = mat + mat';
 
-
 function [vec, ind] = lc_mat2vec(mat)
 % vec = mat2vec(mat)
 % returns the lower triangle of mat
@@ -251,7 +315,6 @@ temp = ones(n);
 %% find the indices of the upper triangle of the matrix
 ind = triu(temp, 1) == 1;
 vec = mat(ind);
-
 
 function c = icatb_compute_sliding_window(nT, win_alpha, wsize)
 % Compute sliding window
