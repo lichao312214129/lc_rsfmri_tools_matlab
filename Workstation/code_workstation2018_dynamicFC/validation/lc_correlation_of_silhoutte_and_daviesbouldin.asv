@@ -32,11 +32,11 @@ count = 1;
 for i = 1:8
     subplot(2,4,i)
     if (i==1)
-        lc_netplot('-n', c1, '-ni', net_index_path,'-il',1, '-lg', legends, '-lgf', 9);
+        lc_netplot('-n', c1, '-ni', net_index_path,'-il',1, '-lg', legends, '-lgf', 8, '-lcs', 'Rb');
     elseif (i==5)
-        lc_netplot('-n', c2, '-ni', net_index_path,'-il',1, '-lg', legends, '-lgf', 9);
+        lc_netplot('-n', c2, '-ni', net_index_path,'-il',1, '-lg', legends, '-lgf', 8);
     else
-        lc_netplot('-n', c_db{i}, '-ni', net_index_path,'-il',1, '-lg', legends, '-lgf', 9);
+        lc_netplot('-n', c_db{i}, '-ni', net_index_path,'-il',1, '-lg', legends, '-lgf', 8);
     end
 %     colormap(brewermap([],'YlGnBu'))
     colormap(cmp_net0point5_pospoint8)
