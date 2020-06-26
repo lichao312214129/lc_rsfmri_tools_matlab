@@ -29,11 +29,8 @@ function lc_cluster_for_dfc_gift_v3(subj_path, out_dir, krange, distance_measure
 % Thanks to GIFT software
 % Author: Li Chao
 % Email:lichao19870617@gmail.com OR lichao19870617@163.com
-% Add(2020/1/2): 
-%   1. I added elbow criterion.
-%   2. Function will save criterion values.
-%   3. Besides kmeans, I added fractional analysis to get brain states.
-
+% Updated (2020/06/26): 
+% Using both Davies-Bouldin and Silhouettes methods to identify the best k (optimal centroids).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tic
 %% ----------------------------------input---------------------------------
