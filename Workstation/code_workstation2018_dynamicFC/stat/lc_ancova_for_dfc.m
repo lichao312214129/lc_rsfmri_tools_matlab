@@ -1,110 +1,168 @@
-function  lc_ancova_for_dfc(data_dir, sub_info, parm_of_sub_info, contrast, correction_threshold, is_save)
-% Perform ANCOVA + FDR correction for temporal properties of dynamic functional connectivity.
-% input:
-% 	data_dir: data directory of dynamic functional connectivity.
-%
-%   parm_of_sub_info: parameters of subject information, including the following fields:
-%                                                       parm_of_sub_info.id = 1; which column is subject unique index.
-%                                                       parm_of_sub_info.group_label = 2; which column is group label.
-%                                                       parm_of_sub_info.covariates = [3,4,6]; which column(s) is(are) covariate(s).
-%
-% 	sub_info: file containing subject information, including unique index, group label and covariates.
-% 	correction_threshold: currently, there is only FDR correction (e.g., correction_threshold = 0.05).
-% 	is_save: save flag.
-% output:f, h and p values.
+function  lc_ancova_for_dfc(varargin)
+% Perform ANCOVA + FDR correction for functional connectivity matrix.
+% INPUTS:
+% 	    [--data_dir, -dd]: data directory of dynamic functional connectivity.
+% 	    [--demographics_file,-dmf]: File of demographics of participants, demographics includes unique index, group label and covariates.
+%       [--contrast, -ctr]: contrast of GLM, refer to NBS for details. E.g., contrast = [1 1 1 1 0 0 0 0];
+%       [--suffix_fc, -sfc]: suffix of functional connectivity, default is '.mat'.
+%       [--column_id, -cid]: which column is subject unique index, default is 1.
+%       [--column_group_label, -cgl]:which column is group label, default is 2.
+%       [--columns_covariates, -ccov]: which column(s) is(are) covariate(s), default is [3:end]
+%       [--correction_method, -cm]: Multiple correction method (FDR, FWE, None; default is FDR).
+% 	    [--correction_threshold, -ct]: Multiple correction threshold (e.g., correction_threshold = 0.05), default is 0.05.
+% 	    [--is_save, -is]: If save results, default is 1.
+%       [--output_directory, -od]: directiory for saving results, default is current directory.
+%       [--output_name, -on]: prefix of output name, default is ''.
+% 
+% OUTPUTS:F-values, h and p-values.
+% EXAMPLE:
+%   lc_ancova_for_dfc('-dd', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength20__silhoutte_and_davies-bouldin\daviesbouldin\individual_state2', ...
+%   '-dmf', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\covariates_737.xlsx', ...
+%   '-ctr', [1 1 1 1 0 0 0],...
+%   '-cid', 1, '-cgl', 2, '-ccov', [3,4,6],...
+%   '-od', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength20__silhoutte_and_davies-bouldin\daviesbouldin', ...
+%   '-on', 'state2_nomed');
+
 % NOTE. Make sure the order of the dependent variables matches the order of the covariances
 % Thanks to NBS software.
-% -----------------------------------------------------------------------------------------------------
-%% Inputs
-if nargin < 1
-    % your dfc network size
-    n_row = 114;
-    n_col = 114;
 
-    % save results
-    is_save = 1;
-    save_name = ['dfc_ANCOVA_results_fdr','.mat'];
-    save_path =  uigetdir(pwd,'select saving folder');
-    if ~exist(save_path,'dir')
-        mkdir(save_path);
-    end
-    
-    % Test type and Contrast
-    test_type = 'ftest';
-    contrast = [1 1 1 1 0 0 0 ];
-    test_info = 'ANCOVA-FDR-thrd0.05';
-
-    % multiple correction
-    correction_threshold = 0.05;
-    correction_method = 'fdr';
-    
-    % Covariates
-    parm_of_sub_info.id = 1;
-    parm_of_sub_info.group_label = 2;
-    parm_of_sub_info.covariates = [3,4,5];
-
-    [sub_info_file, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of cov files',pwd,'MultiSelect', 'off');
-    [~, ~, suffix] = fileparts(sub_info_file);
-    if strcmp(suffix, '.txt')
-        sub_info = importdata(fullfile(path, sub_info_file));
-        sub_info = sub_info.data;
-    elseif strcmp(suffix, '.xlsx')
-        [sub_info, ~, ~] = xlsread(fullfile(path, sub_info_file));
-    else
-        disp('Unspport file type');
-        return;
-    end
-    group_label = sub_info(:, parm_of_sub_info.group_label);
-    
-    % TMP
-    uni_groups = unique(group_label);
-    n_groups = numel(unique(group_label));
-    group_design = zeros(size(group_label,1), n_groups);
-    for i =  1:n_groups
-        group_design(:,i) = ismember(group_label, uni_groups(i));
-    end
-    
-    % dependent variable, Y
-    fprintf('Loading data...\n');
+%% ---------------------------VARARGIN PARSER-------------------------------
+if( sum(or(strcmpi(varargin,'--data_dir'),strcmpi(varargin,'-dd')))==1)
+    data_dir = varargin{find(or(strcmpi(varargin,'--data_dir'),strcmp(varargin,'-dd')))+1};
+else
     data_dir = uigetdir(pwd,'select data_dir of .mat files');
-    suffix = '*.mat';
-    subj = dir(fullfile(data_dir,suffix));
-    subj = {subj.name}';
-    subj_path = fullfile(data_dir,subj);
-    n_subj = length(subj);
-    for i = 1:n_subj
-        onemat = importdata(subj_path{i});
-        if i == 1
-            mask = triu(ones(size(onemat,1)),1) == 1;
-            all_subj_fc = zeros(n_subj,sum(mask(:)));
-        end
-        onemat = onemat(mask);
-        all_subj_fc(i,:)=onemat;
-    end
-    fprintf('Loaded data\n');
-    
-    % match Y and X
-    % Y and X must have the unique ID.
-    % In this case, uID of Y is subj, uID of X is the first co of sub_info (covariances file is a .xlsx format).
-    ms = regexp( subj, '(?<=\w+)[1-9][0-9]*', 'match' );
-    nms = length(ms);
-    subjid = zeros(nms,1);
-    for i = 1:nms
-        tmp = ms{i}{1};
-        subjid(i) = str2double(tmp);
-    end
-
-   [Lia,Locb] = ismember(subjid, sub_info(:,parm_of_sub_info.id));
-   Locb_matched = Locb(Lia);
-   cov_matched = sub_info(Locb_matched,:);
-   group_design_matched = group_design(Locb_matched,:);
-   design_matrix = cat(2, group_design_matched, cov_matched(:, parm_of_sub_info.covariates));
-   
-   % Exclude NaN
-   loc_nan = sum(isnan(design_matrix),2) > 0;
-   design_matrix(loc_nan, :) = [];
-   all_subj_fc(loc_nan, :) = [];
 end
+
+if( sum(or(strcmpi(varargin,'--suffix_fc'),strcmpi(varargin,'-sfc')))==1)
+    suffix_fc = varargin{find(or(strcmpi(varargin,'--suffix_fc'),strcmp(varargin,'-sfc')))+1};
+else
+    suffix_fc = '*.mat';
+end
+
+if( sum(or(strcmpi(varargin,'--demographics_file'),strcmpi(varargin,'-dmf')))==1)
+    demographics_file = varargin{find(or(strcmpi(varargin,'--demographics_file'),strcmp(varargin,'-dmf')))+1};
+else
+    [demographics_file, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of demographics files', pwd,'MultiSelect', 'off');
+end
+
+if( sum(or(strcmpi(varargin,'--contrast'),strcmpi(varargin,'-ctr')))==1)
+    contrast = varargin{find(or(strcmpi(varargin,'--contrast'),strcmp(varargin,'-ctr')))+1};
+else
+    contrast = input('Enter contrast:');
+end
+
+if(sum(or(strcmpi(varargin,'--colnum_id'),strcmpi(varargin,'-cid')))==1)
+    colnum_id = varargin{find(or(strcmpi(varargin,'--colnum_id'),strcmp(varargin,'-cid')))+1};
+else
+    colnum_id = 1;
+end
+
+if( sum(or(strcmpi(varargin,'--column_group_label'),strcmpi(varargin,'-cgl')))==1)
+    column_group_label = varargin{find(or(strcmpi(varargin,'--column_group_label'),strcmp(varargin,'-cgl')))+1};
+else
+    column_group_label = 2;
+end
+
+if( sum(or(strcmpi(varargin,'--columns_covariates'),strcmpi(varargin,'-ccov')))==1)
+    columns_covariates = varargin{find(or(strcmpi(varargin,'--columns_covariates'),strcmp(varargin,'-ccov')))+1};
+else
+    columns_covariates = input('Enter columns_covariates:');
+end
+
+
+if( sum(or(strcmpi(varargin,'--correction_method'),strcmpi(varargin,'-cm')))==1)
+    correction_method = varargin{find(or(strcmpi(varargin,'--correction_method'),strcmp(varargin,'-cm')))+1};
+else
+    correction_method = 'FDR';
+end
+
+if( sum(or(strcmpi(varargin,'--correction_threshold'),strcmpi(varargin,'-ct')))==1)
+    correction_threshold = varargin{find(or(strcmpi(varargin,'--correction_threshold'),strcmp(varargin,'-ct')))+1};
+else
+    correction_threshold = 0.05;
+end
+
+if( sum(or(strcmpi(varargin,'--is_save'),strcmpi(varargin,'-is')))==1)
+    is_save = varargin{find(or(strcmpi(varargin,'--is_save'),strcmp(varargin,'-is')))+1};
+else
+    is_save = 1;
+end
+
+if( sum(or(strcmpi(varargin,'--output_directory'),strcmpi(varargin,'-od')))==1)
+    output_directory = varargin{find(or(strcmpi(varargin,'--output_directory'),strcmp(varargin,'-od')))+1};
+else
+    output_directory = uigetdir(pwd, 'Select directory for saving results');
+end
+
+if( sum(or(strcmpi(varargin,'--output_name'),strcmpi(varargin,'-on')))==1)
+    output_name = varargin{find(or(strcmpi(varargin,'--output_name'),strcmp(varargin,'-on')))+1};
+else
+    output_name = uigetdir(pwd, 'Select directory for saving results');
+end
+
+test_info = ['ANCOVA-', correction_method, '-threshold_', num2str(correction_threshold)];
+%% ---------------------------END VARARGIN PARSER-------------------------------
+
+%% Prepare
+% Covariates
+[~, ~, suffix] = fileparts(demographics_file);
+if strcmp(suffix, '.txt')
+    demographics = importdata(demographics_file);
+    demographics = demographics.data;
+elseif strcmp(suffix, '.xlsx')
+    [demographics, ~, ~] = xlsread(demographics_file);
+else
+    disp('Unspport file type');
+    return;
+end
+group_label = demographics(:, column_group_label);
+
+% TMP
+uni_groups = unique(group_label);
+n_groups = numel(unique(group_label));
+group_design = zeros(size(group_label,1), n_groups);
+for i =  1:n_groups
+    group_design(:,i) = ismember(group_label, uni_groups(i));
+end
+
+% dependent variable, Y
+fprintf('Loading FC...\n');
+subj = dir(fullfile(data_dir,suffix_fc));
+subj = {subj.name}';
+subj_path = fullfile(data_dir,subj);
+n_subj = length(subj);
+for i = 1:n_subj
+    onemat = importdata(subj_path{i});
+    if i == 1
+        mask = triu(ones(size(onemat,1)),1) == 1;
+        all_subj_fc = zeros(n_subj,sum(mask(:)));
+    end
+    onemat = onemat(mask);
+    all_subj_fc(i,:)=onemat;
+end
+fprintf('Loaded data\n');
+
+% match Y and X
+% Y and X must have the unique ID.
+% In this case, uID of Y is subj, uID of X is the first co of demographics (covariances file is a .xlsx format).
+ms = regexp( subj, '(?<=\w+)[1-9][0-9]*', 'match' );
+nms = length(ms);
+subjid = zeros(nms,1);
+for i = 1:nms
+    tmp = ms{i}{1};
+    subjid(i) = str2double(tmp);
+end
+
+[Lia,Locb] = ismember(subjid, demographics(:,colnum_id));
+Locb_matched = Locb(Lia);
+cov_matched = demographics(Locb_matched,:);
+group_design_matched = group_design(Locb_matched,:);
+design_matrix = cat(2, group_design_matched, cov_matched(:, columns_covariates));
+
+% Exclude NaN
+loc_nan = sum(isnan(design_matrix),2) > 0;
+design_matrix(loc_nan, :) = [];
+all_subj_fc(loc_nan, :) = [];
 
 %% ancova using GLM from NBS
 perms = 0;
@@ -112,13 +170,13 @@ GLM.perms = perms;
 GLM.X = design_matrix;
 GLM.y = all_subj_fc;
 GLM.contrast = contrast;
-GLM.test = test_type;
+GLM.test = 'ftest';
 [test_stat,pvalues]=NBSglm(GLM);
 
 %% Multiple comparison correction
-if strcmp(correction_method, 'fdr')
+if strcmp(correction_method, 'FDR')
     results = multcomp_fdr_bh(pvalues, 'alpha', correction_threshold);
-elseif strcmp(correction_method, 'fwe')
+elseif strcmp(correction_method, 'FWE')
     results = multcomp_bonferroni(pvalues, 'alpha', correction_threshold);
 else
     fprintf('Please indicate the correct correction method!\n');
@@ -126,22 +184,24 @@ end
 h_corrected = results.corrected_h;
 
 %% to original space (2d matrix)
-Fvalues = zeros(n_row,n_col);
+Fvalues = zeros(size(mask));
 Fvalues(mask) = test_stat;
 Fvalues = Fvalues+Fvalues';
 
-Pvalues = zeros(n_row,n_col);
+Pvalues =  zeros(size(mask));
 Pvalues(mask) = pvalues;
 Pvalues = Pvalues+Pvalues';
 
-H = zeros(n_row,n_col);
+H =  zeros(size(mask));
 H(mask) = h_corrected;
 H = H+H';
 
 %% save
 if is_save
     disp('save results...');
-    save (fullfile(save_path,['dfc_ANCOVA_results_',correction_method,'.mat']),'test_info','Fvalues','Pvalues','H');
+    timenow = strrep(num2str(fix(clock)),' ','');
+    output_name_all = strcat(output_name, '_ANCOVA_', correction_method, '_Corrected_', num2str(correction_threshold), '_', timenow, '.mat');
+    save (fullfile(output_directory,output_name_all),'test_info','Fvalues','Pvalues','H');
     disp('saved results');
 end
 fprintf('--------------------------All Done!--------------------------\n');
