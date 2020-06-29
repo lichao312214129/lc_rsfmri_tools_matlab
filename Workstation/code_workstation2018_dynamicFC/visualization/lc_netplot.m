@@ -204,7 +204,7 @@ n_node = length(net);
 % New sep
 num_sep = numel(location_of_sep);
 location_of_sep_new = location_of_sep;
-for i =  2 : num_sep
+for i =  1 : num_sep
     location_of_sep_new(i:end) = location_of_sep_new(i:end) + 1;
 end
 % New network
@@ -225,11 +225,12 @@ for i = 1:num_sep-1
                     net(start_point_old : end_point_old, start_point_old_j : end_point_old_j);
     end
 end
+
 imagesc(net_insert_line); hold on;
 x = repmat(location_of_sep_new', num_sep ,1);
 y = repmat(location_of_sep_new,1, num_sep);
-x(:,end) = x(:,end) + 1.5;
-y(end,:) = y(end, :) + 1.5;
+x(:,end) = x(:,end);
+y(end,:) = y(end, :);
 z = zeros(size(x));
 mesh(x,y,z,...
     'EdgeColor',linecolor,...
@@ -284,9 +285,10 @@ barwidth = abs((n_node + extend / 2) - (n_node+extend));
 extend_of_legends = extend + 4 ;
 h = zeros(n_net - 1, 1);
 for i = 1 : n_net-1
-    h(i) = fill([location_of_sep(i), location_of_sep(i+1), location_of_sep(i+1), location_of_sep(i)], [n_node + extend / 2, n_node + extend / 2, n_node+extend n_node + extend], color(i,:));
-    fill([ n_node + barwidth, n_node + barwidth, n_node + extend, n_node + extend], [location_of_sep(i), location_of_sep(i+1), location_of_sep(i+1), location_of_sep(i)], color(i,:))
-    if is_legend
+     if is_legend
+        h(i) = fill([location_of_sep(i), location_of_sep(i+1), location_of_sep(i+1), location_of_sep(i)], [n_node + extend / 2, n_node + extend / 2, n_node+extend n_node + extend], color(i,:));
+        fill([ n_node + barwidth, n_node + barwidth, n_node + extend, n_node + extend], [location_of_sep(i), location_of_sep(i+1), location_of_sep(i+1), location_of_sep(i)], color(i,:))
+   
         % Y axix
         text(n_node + extend_of_legends, (location_of_sep(i+1) - location_of_sep(i)) / 2 +  location_of_sep(i),...
             legends{i}, 'fontsize', legend_fontsize, 'rotation', 0);
