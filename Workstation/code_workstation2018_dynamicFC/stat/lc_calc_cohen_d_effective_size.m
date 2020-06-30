@@ -6,7 +6,9 @@ function cohen_d = lc_calc_cohen_d_effective_size(group1, group2)
 
 % OUTPUTS: float
 %     Cohen' d 
-    
+% Author: Li Chao
+% Email:lichao19870617@gmail.com
+
 diff = mean(group1) - mean(group2);
 
 n1 = length(group1);

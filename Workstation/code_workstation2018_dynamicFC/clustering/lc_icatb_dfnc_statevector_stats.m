@@ -1,6 +1,6 @@
 function [F, TM, MDT, NT] = lc_icatb_dfnc_statevector_stats(idx, k)
-% Copy from gift.
-% input£º
+% Slightly revised from GIFT software.
+% input:
 %   idx:state index, e.g., [1 1 1 3 3 5 3 2 4]
 %   k: number of states
 % 

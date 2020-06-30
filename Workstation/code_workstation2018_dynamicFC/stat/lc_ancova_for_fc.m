@@ -16,12 +16,12 @@ function  lc_ancova_for_fc(varargin)
 % 
 % OUTPUTS:F-values, h and p-values.
 % EXAMPLE:
-  % lc_ancova_for_fc('-dd', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength20__silhoutte_and_davies-bouldin\daviesbouldin\610\individual_state2', ...
+  % lc_ancova_for_fc('-dd', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\610\individual_state3', ...
   % '-dmf', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\covariates_737.xlsx', ...
   % '-ctr', [1 1 1 1 0 0 0],...
   % '-cid', 1, '-cgl', 2, '-ccov', [3,4,6],...
-  % '-od', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength20__silhoutte_and_davies-bouldin\daviesbouldin\610\results_state2', ...
-  % '-on', 'state2');
+  % '-od', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\610\results_state3', ...
+  % '-on', 'state3');
 
 % NOTE. Make sure the order of the dependent variables matches the order of the covariances
 % Thanks to NBS software.
@@ -92,6 +92,9 @@ if( sum(or(strcmpi(varargin,'--output_directory'),strcmpi(varargin,'-od')))==1)
     output_directory = varargin{find(or(strcmpi(varargin,'--output_directory'),strcmp(varargin,'-od')))+1};
 else
     output_directory = uigetdir(pwd, 'Select directory for saving results');
+end
+if ~exist(output_directory, 'dir')
+    mkdir(output_directory);
 end
 
 if( sum(or(strcmpi(varargin,'--output_name'),strcmpi(varargin,'-on')))==1)
@@ -201,6 +204,7 @@ if is_save
     disp('save results...');
     timenow = strrep(num2str(fix(clock)),' ','');
     output_name_all = strcat(output_name, '_ANCOVA_', correction_method, '_Corrected_', num2str(correction_threshold), '.mat');
+    
     save (fullfile(output_directory,output_name_all),'test_info','Fvalues','Pvalues','H');
     disp('saved results');
 end
