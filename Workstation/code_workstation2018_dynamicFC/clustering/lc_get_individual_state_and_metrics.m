@@ -71,7 +71,7 @@ else
 end
 
 % Get dfc files' path
-dfc_file=dir(fullfile([dir_of_dFC,'\*.mat']));
+dfc_file=dir(fullfile([dir_of_dFC,filesep, '*.mat']));
 dFCName={dfc_file.name}';
 dfc_file=fullfile(dir_of_dFC,dFCName);
 
