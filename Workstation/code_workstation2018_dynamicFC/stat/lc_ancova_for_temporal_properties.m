@@ -10,9 +10,11 @@ function  [fvalue_ancova, pvalue_ancova, h_ancova_corrected] = ...
 % NOTE. Make sure the order of the dependent variables matches the order of the covariances
 %% Inputs
 if nargin < 1
-    n_state = 2;
+    n_state = 3;
+    colnum_id = 1;
+    columns_covariates = [3,4,6];
     % make folder to save results
-    is_save = 0;
+    is_save = 1;
     save_path =  uigetdir(pwd,'select saving folder');
     if ~exist(save_path,'dir')
         mkdir(save_path);
@@ -30,14 +32,16 @@ if nargin < 1
     for i =  1:4
         group_design(:,i) = ismember(group_label, i);
     end
-    design_matrix = cat(2, group_design, cov(:,[3,4,6]));
+    design_matrix = cat(2, group_design, cov(:,columns_covariates));
     
     % dependent variable, Y
-    directory = uigetdir(pwd,'select directory of .mat files');
+    directory = uigetdir(pwd,'select directory containing DFC metrics');
     suffix = '*.mat';
+
     % load fc
     fprintf('Loading temporal properties...\n');
     dependent_var = dir(fullfile(directory, suffix));
+    subj = {dependent_var.name}';
     dependent_var = fullfile(directory, {dependent_var.name})';
     n_sub = length(dependent_var);
     mean_dwelltime = zeros(n_sub, n_state);
@@ -50,6 +54,30 @@ if nargin < 1
         num_transitions(i) = data.NT;
     end
     fprintf('Loaded temporal properties\n');
+
+% match Y and X
+% Y and X must have the unique ID.
+% In this case, uID of Y is subj, uID of X is the first co of demographics (covariances file is a .xlsx format).
+ms = regexp( subj, '(?<=\w+)[1-9][0-9]*', 'match' );
+nms = length(ms);
+subjid = zeros(nms,1);
+for i = 1:nms
+    tmp = ms{i}{1};
+    subjid(i) = str2double(tmp);
+end
+
+[Lia,Locb] = ismember(subjid, cov(:,colnum_id));
+Locb_matched = Locb(Lia);
+cov_matched = cov(Locb_matched,:);
+group_design_matched = group_design(Locb_matched,:);
+design_matrix = cat(2, group_design_matched, cov_matched(:, columns_covariates));
+
+% Exclude NaN
+loc_nan = sum(isnan(design_matrix),2) > 0;
+design_matrix(loc_nan, :) = [];
+mean_dwelltime(loc_nan, :) = [];
+fractional_window(loc_nan, :) = [];
+num_transitions(loc_nan,:) = [];
 end
 
 %% ancova
@@ -73,7 +101,7 @@ h_corrected = results.corrected_h;
 %% save
 if is_save
     disp('save results...');
-    save (fullfile(save_path,['STATS_results_',correction_method,'.mat']),'y_name','test_stat','h_corrected','pvalues');
+    save (fullfile(save_path,['dfc_metrics_',correction_method,'.mat']),'y_name','test_stat','h_corrected','pvalues');
     disp('saved results');
 end
 fprintf('--------------------------All Done!--------------------------\n');
