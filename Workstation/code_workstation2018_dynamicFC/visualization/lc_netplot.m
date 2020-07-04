@@ -2,6 +2,8 @@ function lc_netplot(varargin)
 % LC_NETPLOT
 % PURPOSE: plot functional connectivity network using grid format. 
 % NOTO: This function will automatically sort network according to net_index.
+% This code used brewermap.
+% Thank brewermap.
 % Parameters:
 % -----------
 %   REQUIRED:
