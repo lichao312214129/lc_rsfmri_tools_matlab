@@ -33,16 +33,15 @@ function lc_netplot(varargin)
 %      [--legend_color_scheme, -lcs]: the legend color scheme (see BrewerMap for details)
 %   
 % EXAMPLE 1:
-% figure('Position',[100 100 300 300]);
+% figure('Position',[100 100 300 400]);
 % lc_netplot('-n', './toy_data/sub001.mat', '-ni',  './toy_data/netIndex.mat');
 % axis square  % 让图片变成方形，增加美观度
 % colormap(jet);  
-% cb = colorbar('horiz','position',[0.22 0.1 0.5 0.02]); % 显示colorbar
+% cb = colorbar('horiz','position',[0.25 0.2 0.5 0.02]); % 显示colorbar
 % caxis([-1,1]);  % 设置图片的显示范围，此处范围为-1 到 1.
 % ylabel(cb,'Functional connectivity (Z)', 'FontSize', 8);  % 设置colorbar的title
 % saveas(gcf,fullfile('toy_data', 'functional_connectivity.pdf'));  % 保存为pdf格式，保留高清的图片信息，后续可以用PS来保存为tiff
-% % matlab显示出来的图像，可能部分超出图片范围，但是没有关系。因为，保存的pdf图片是完整的。保存的图片请见./toy_data./functional_connectivity.pdf
-% 
+%
 % EXAMPLE 2:
 % % 用不同的颜色表示不同的网络，因为我用的是yeo 7网络模板，所以应该有七个legend。
 % legends = {'Visual', 'SomMot', 'DorsAttn', 'Sal/VentAttn', 'Limbic', 'Control', 'Default'};
@@ -54,9 +53,9 @@ function lc_netplot(varargin)
 % cb = colorbar('position',[0.1 0.2 0.02 0.5]); 
 % caxis([-1,1]);  % 设置图片的显示范围，此处范围为-1 到 1.
 % ylabel(cb,'Functional connectivity (Z)', 'FontSize', 10);  % 设置colorbar的title
-% saveas(gcf,fullfile('toy_data', 'functional_connectivity_add_network_legends.pdf'));  % 保存为pdf格式，保留高清的图片信息，后续可以用PS来保存为tiff
-% % matlab显示出来的图像，可能部分超出图片范围，但是没有关系。因为，保存的pdf图片是完整的。保存的图片请见./toy_data./functional_connectivity_add_network_legends.pdf
-% 
+% saveas(gcf,fullfile('toy_data', 'functional_connectivity.pdf'));  % 保存为pdf格式，保留高清的图片信息，后续可以用PS来保存为tiff
+% % matlab显示出来的图像，可能部分超出图片范围，但是没有关系。因为，保存的pdf图片是完整的。保存的图片请到./toy_data./functional_connectivity.pdf
+
 % AUTHOR: Li Chao
 % EMAIL: lichao19870617@gmail.com, lichao19870617@163.com
 % If you use this code, please cite it.
