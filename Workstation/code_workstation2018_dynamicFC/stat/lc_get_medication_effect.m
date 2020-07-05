@@ -1,4 +1,4 @@
-function  lc_ancova_for_fc(varargin)
+function  lc_get_medication_effect(varargin)
 % Perform ANCOVA + FDR correction for functional connectivity matrix.
 % INPUTS:
 % 	    [--data_dir, -dd]: data directory of dynamic functional connectivity.
@@ -16,16 +16,15 @@ function  lc_ancova_for_fc(varargin)
 % 
 % OUTPUTS:F-values, h and p-values.
 % EXAMPLE:
-  % lc_ancova_for_fc('-dd', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\737\individual_state3', ...
+  % lc_ancova_for_fc('-dd', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\610\individual_state3', ...
   % '-dmf', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\covariates_737.xlsx', ...
   % '-ctr', [1 1 1 1 0 0 0],...
   % '-cid', 1, '-cgl', 2, '-ccov', [3,4,6],...
-  % '-od', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\737\results_state3', ...
+  % '-od', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\610\results_state3', ...
   % '-on', 'state3');
 
 % NOTE. Make sure the order of the dependent variables matches the order of the covariances
 % Thanks to NBS software.
-% UPDATE: move the de-nan of demographics after match (2020-07-25)
 
 %% ---------------------------VARARGIN PARSER-------------------------------
 if( sum(or(strcmpi(varargin,'--data_dir'),strcmpi(varargin,'-dd')))==1)
@@ -44,8 +43,8 @@ if( sum(or(strcmpi(varargin,'--demographics_file'),strcmpi(varargin,'-dmf')))==1
     demographics_file = varargin{find(or(strcmpi(varargin,'--demographics_file'),strcmp(varargin,'-dmf')))+1};
 else
     [demographics_file, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'Select demographics file', pwd,'MultiSelect', 'off');
-    demographics_file = fullfile(path, demographics_file);
 end
+demographics_file = fullfile(path, demographics_file);
 
 if( sum(or(strcmpi(varargin,'--contrast'),strcmpi(varargin,'-ctr')))==1)
     contrast = varargin{find(or(strcmpi(varargin,'--contrast'),strcmp(varargin,'-ctr')))+1};
@@ -137,9 +136,8 @@ for i = 1:n_subj
 end
 fprintf('Loaded data\n');
 
-% match Y and demographics
-% Y and demographics must have the unique ID.
-% In this case, uID of Y is subj, uID of demographics is the first co of demographics (covariances file is a .xlsx format).
+% match Y and Demographics
+% Y and Demographics must have the unique ID that used to mathch them.
 ms = regexp( subj, '(?<=\w+)[1-9][0-9]*', 'match' );
 nms = length(ms);
 subjid = zeros(nms,1);
@@ -147,33 +145,38 @@ for i = 1:nms
     tmp = ms{i}{1};
     subjid(i) = str2double(tmp);
 end
-[Lia,Locb] = ismember(subjid, demographics(:,colnum_id));
-Locb_matched = Locb(Lia);
-demographics_matched = demographics(Locb_matched,:);
 
-% Exclude NaN in demographics
-loc_nan = sum(isnan(demographics_matched),2) > 0;
-Locb_matched = Locb_matched(loc_nan,:);
-demographics_matched(loc_nan, :) = [];
+[Lia,Locb] = ismember(subjid, demographics(:,1));
+Locb_matched = Locb(Lia);
+cov_matched = demographics(Locb_matched,:);
+
+% Exclude NaN
+loc_nan = sum(isnan(cov_matched),2) > 0;
+Locb_matched(loc_nan,:) = [];
+cov_matched(loc_nan, :) = [];
 all_subj_fc(loc_nan, :) = [];
 
-% Design matrix
-group_label = demographics_matched(:, column_group_label);
+% Group design
+group_label = cov_matched(:, 5);
 uni_groups = unique(group_label);
 n_groups = numel(unique(group_label));
 group_design = zeros(size(group_label,1), n_groups);
 for i =  1:n_groups
     group_design(:,i) = ismember(group_label, uni_groups(i));
 end
-design_matrix = cat(2, group_design, demographics_matched(:, columns_covariates));
+design_matrix = cat(2, group_design, cov_matched(:, [2 3 4 6]));
 
+%% Exclude HCs
+loc_hc = design_matrix(:,3) == 1;
+all_subj_fc(loc_hc,:) = [];
+design_matrix(loc_hc,:)= [];
 %% ancova using GLM from NBS
 perms = 0;
 GLM.perms = perms;
 GLM.X = design_matrix;
 GLM.y = all_subj_fc;
-GLM.contrast = contrast;
-GLM.test = 'ftest';
+GLM.contrast = [1 -1 0 0 0 0];
+GLM.test = 'ttest';
 [test_stat,pvalues]=NBSglm(GLM);
 
 %% Multiple comparison correction
@@ -187,9 +190,9 @@ end
 h_corrected = results.corrected_h;
 
 %% to original space (2d matrix)
-Fvalues = zeros(size(mask));
-Fvalues(mask) = test_stat;
-Fvalues = Fvalues+Fvalues';
+Tvalues = zeros(size(mask));
+Tvalues(mask) = test_stat;
+Tvalues = Tvalues+Tvalues';
 
 Pvalues =  zeros(size(mask));
 Pvalues(mask) = pvalues;
@@ -203,9 +206,9 @@ H = H+H';
 if is_save
     disp('save results...');
     timenow = strrep(num2str(fix(clock)),' ','');
-    output_name_all = strcat(output_name, '_ANCOVA_', correction_method, '_Corrected_', num2str(correction_threshold), '.mat');
+    output_name_all = strcat(output_name, '_Ttest2_', correction_method, '_Corrected_', num2str(correction_threshold), '.mat');
     
-    save (fullfile(output_directory,output_name_all),'test_info','Fvalues','Pvalues','H');
+    save (fullfile(output_directory,output_name_all),'test_info','Tvalues','Pvalues','H');
     disp('saved results');
 end
 fprintf('--------------------------All Done!--------------------------\n');
