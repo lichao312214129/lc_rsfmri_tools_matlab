@@ -119,12 +119,13 @@ if if_add_mask
     net=net.*mask;
 end
 
-% sort the matrix according to network index
+% Sort the matrix according to network index
 if ischar(net_index)
     net_index=importdata(net_index);
 end
 net_index = reshape(net_index,[],1);
-[index,re_net_index,re_net]=lc_ReorganizeNetForYeo17NetAtlas(net,net_index);
+[re_net_index,index] = sort(net_index);
+re_net = net(index,index);
 
 % plot: insert separate line between each network
 lc_InsertSepLineToNet(re_net, re_net_index, linewidth, linecolor, is_legend, legends, legend_fontsize, legend_color_scheme);
@@ -201,6 +202,27 @@ if( sum(or(strcmpi(varargin,'--legend_color_scheme'),strcmpi(varargin,'-lcs')))=
    legend_color_scheme = varargin{find(or(strcmpi(varargin,'--legend_color_scheme'),strcmp(varargin,'-lcs')))+1};
 end
 
+end
+
+function [index,sortedNetIndex,reorgNet]=lc_sort_network(net,netIndex)
+% 将Yeo17网络模板分离的脑网络的边，整合到相邻的网络内
+% input:
+%   net:一个对称的相关矩阵
+%   netIndex:网络中每个节点的网络index，例如Yeo的17网络模板对应由114个脑区，那么每个脑区对应到一个网络
+%   那么对应的那个网络的index即为此index
+% output:
+%   index:排序后的网络在原始网络中的index
+%   sortedNetIndex: 排序后网络的顺序
+%   reorgNet:排序后的网络
+%% fetch netIndex
+% 以后netIndex 时，直接load
+
+if nargin<2
+    netIndex=importdata('D:\My_Codes\Github_Related\Github_Code\Template_Yeo2011\netIndex.mat');
+end
+
+[sortedNetIndex,index]=sort(netIndex);
+reorgNet=net(index,index);
 end
 
 function lc_InsertSepLineToNet(net, re_net_index, linewidth, linecolor, is_legend, legends, legend_fontsize, legend_color_scheme)

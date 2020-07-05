@@ -30,7 +30,7 @@ function  lc_posthoc_for_fc(varargin)
 if( sum(or(strcmpi(varargin,'--data_dir'),strcmpi(varargin,'-dd')))==1)
     data_dir = varargin{find(or(strcmpi(varargin,'--data_dir'),strcmp(varargin,'-dd')))+1};
 else
-    data_dir = uigetdir(pwd,'select data_dir of .mat files');
+    data_dir = uigetdir(pwd,'select DFC files');
 end
 
 if( sum(or(strcmpi(varargin,'--suffix_fc'),strcmpi(varargin,'-sfc')))==1)
@@ -44,6 +44,7 @@ if( sum(or(strcmpi(varargin,'--demographics_file'),strcmpi(varargin,'-dmf')))==1
 else
     [demographics_file, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of demographics files', pwd,'MultiSelect', 'off');
 end
+demographics_file = fullfile(path, demographics_file);
 
 if( sum(or(strcmpi(varargin,'--contrast'),strcmpi(varargin,'-ctr')))==1)
     contrast = varargin{find(or(strcmpi(varargin,'--contrast'),strcmp(varargin,'-ctr')))+1};
@@ -54,7 +55,7 @@ end
 if( sum(or(strcmpi(varargin,'--H_matxix_of_anova'),strcmpi(varargin,'-hma')))==1)
     H_matxix_of_anova = varargin{find(or(strcmpi(varargin,'--H_matxix_of_anova'),strcmp(varargin,'-hma')))+1};
 else
-    [H_matxix_of_anova, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select H_matxix_of_anova', pwd,'MultiSelect', 'off');
+    [H_matxix_of_anova, path] = uigetfile({'*.mat'; '*.txt'; '*.*'},'select H_matxix_of_anova', pwd,'MultiSelect', 'off');
     H_matxix_of_anova = fullfile(path, H_matxix_of_anova);
 end
 H_matxix_of_anova = importdata(H_matxix_of_anova);
@@ -106,7 +107,7 @@ end
 if( sum(or(strcmpi(varargin,'--output_name'),strcmpi(varargin,'-on')))==1)
     output_name = varargin{find(or(strcmpi(varargin,'--output_name'),strcmp(varargin,'-on')))+1};
 else
-    output_name = uigetdir(pwd, 'Select directory for saving results');
+    output_name = input('Input prefix of output name:', 's');
 end
 
 test_info = ['Ttest2-', correction_method, '-threshold_', num2str(correction_threshold)];

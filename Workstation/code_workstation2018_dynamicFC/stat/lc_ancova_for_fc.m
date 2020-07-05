@@ -42,33 +42,33 @@ end
 if( sum(or(strcmpi(varargin,'--demographics_file'),strcmpi(varargin,'-dmf')))==1)
     demographics_file = varargin{find(or(strcmpi(varargin,'--demographics_file'),strcmp(varargin,'-dmf')))+1};
 else
-    [demographics_file, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of demographics files', pwd,'MultiSelect', 'off');
+    [demographics_file, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'Select demographics file', pwd,'MultiSelect', 'off');
 end
+demographics_file = fullfile(path, demographics_file);
 
 if( sum(or(strcmpi(varargin,'--contrast'),strcmpi(varargin,'-ctr')))==1)
     contrast = varargin{find(or(strcmpi(varargin,'--contrast'),strcmp(varargin,'-ctr')))+1};
 else
-    contrast = input('Enter contrast:');
+    contrast = input('Enter contrast (such as [1 1 1 1 0 0 0]):');
 end
 
 if(sum(or(strcmpi(varargin,'--colnum_id'),strcmpi(varargin,'-cid')))==1)
     colnum_id = varargin{find(or(strcmpi(varargin,'--colnum_id'),strcmp(varargin,'-cid')))+1};
 else
-    colnum_id = 1;
+    colnum_id = input('Input the column of subject id, such as 1:');
 end
 
 if( sum(or(strcmpi(varargin,'--column_group_label'),strcmpi(varargin,'-cgl')))==1)
     column_group_label = varargin{find(or(strcmpi(varargin,'--column_group_label'),strcmp(varargin,'-cgl')))+1};
 else
-    column_group_label = 2;
+    column_group_label = input('Input the column of group label, such as 2:');
 end
 
 if( sum(or(strcmpi(varargin,'--columns_covariates'),strcmpi(varargin,'-ccov')))==1)
     columns_covariates = varargin{find(or(strcmpi(varargin,'--columns_covariates'),strcmp(varargin,'-ccov')))+1};
 else
-    columns_covariates = input('Enter columns_covariates:');
+    columns_covariates = input('Enter columns_covariates, such as [3 4 5]:');
 end
-
 
 if( sum(or(strcmpi(varargin,'--correction_method'),strcmpi(varargin,'-cm')))==1)
     correction_method = varargin{find(or(strcmpi(varargin,'--correction_method'),strcmp(varargin,'-cm')))+1};
@@ -100,7 +100,7 @@ end
 if( sum(or(strcmpi(varargin,'--output_name'),strcmpi(varargin,'-on')))==1)
     output_name = varargin{find(or(strcmpi(varargin,'--output_name'),strcmp(varargin,'-on')))+1};
 else
-    output_name = uigetdir(pwd, 'Select directory for saving results');
+    output_name = input('Input prefix of output name:', 's');
 end
 
 test_info = ['ANCOVA-', correction_method, '-threshold_', num2str(correction_threshold)];
