@@ -9,9 +9,9 @@ function [shared_1and2and3,shared_1and2,shared_1and3,shared_2and3,...
 
 if nargin<1
     % input
-    posthoc_szvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\737\results_state3\state3_3vs1_FDR0.05.mat';
-    posthoc_mddvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\737\results_state3\state3_2vs1_FDR0.05.mat';
-    posthoc_bdvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\737\results_state3\state3_4vs1_FDR0.05.mat';
+    posthoc_szvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength20__silhoutte_and_davies-bouldin\daviesbouldin\610\results_state3\state3_3vs1_FDR0.05.mat';
+    posthoc_mddvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength20__silhoutte_and_davies-bouldin\daviesbouldin\610\results_state3\state3_2vs1_FDR0.05.mat';
+    posthoc_bdvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength20__silhoutte_and_davies-bouldin\daviesbouldin\610\results_state3\state3_4vs1_FDR0.05.mat';
     posthoc_szvshc = load(posthoc_szvshc);
     posthoc_mddvshc = load(posthoc_mddvshc);
     posthoc_bdvshc = load(posthoc_bdvshc);
@@ -20,7 +20,7 @@ if nargin<1
 
     correction_method='fdr';
     if_save=1;
-    save_path='D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\737\results_state3\';
+    save_path='D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength20__silhoutte_and_davies-bouldin\daviesbouldin\610\results_state3\';
 end
 
 % make directory to save results

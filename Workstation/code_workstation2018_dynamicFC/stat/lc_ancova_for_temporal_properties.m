@@ -15,7 +15,8 @@ if nargin < 1
     columns_covariates = [3,4,6];
     % make folder to save results
     is_save = 1;
-    save_path =  uigetdir(pwd,'select saving folder');
+%     save_path =  uigetdir(pwd,'select saving folder');
+    save_path = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\610';
     if ~exist(save_path,'dir')
         mkdir(save_path);
     end
@@ -25,8 +26,9 @@ if nargin < 1
     correction_method = 'fdr';
     
     % covariance
-    [file_name, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of cov files',pwd,'MultiSelect', 'off');
-    cov = xlsread(fullfile(path, file_name));
+%     [file_name, path] = uigetfile({'*.xlsx'; '*.txt'; '*.*'},'select path of cov files',pwd,'MultiSelect', 'off');
+%     cov = xlsread(fullfile(path, file_name));
+    cov = xlsread('D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\covariates_737.xlsx');
     group_label = cov(:,2);
     group_design = zeros(size(cov,1),4);
     for i =  1:4
@@ -35,11 +37,13 @@ if nargin < 1
     design_matrix = cat(2, group_design, cov(:,columns_covariates));
     
     % dependent variable, Y
-    directory = uigetdir(pwd,'select directory containing DFC metrics');
+%     directory = uigetdir(pwd,'select directory containing DFC metrics');
     suffix = '*.mat';
-
-    % load fc
-    fprintf('Loading temporal properties...\n');
+% 
+%     % load fc
+%     fprintf('Loading temporal properties...\n');
+%     dependent_var = dir(fullfile(directory, suffix));
+    directory = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\610\metrics';
     dependent_var = dir(fullfile(directory, suffix));
     subj = {dependent_var.name}';
     dependent_var = fullfile(directory, {dependent_var.name})';
@@ -88,6 +92,7 @@ y_name = 'mean_dwelltime, fractional_window, num_transitions';
 GLM.contrast = [1 1 1 1 0 0 0 ];
 GLM.test = 'ftest';
 [test_stat,pvalues]=NBSglm(GLM);
+
 %% Multiple comparison correction
 if strcmp(correction_method, 'fdr')
     results = multcomp_fdr_bh(pvalues, 'alpha', correction_threshold);
@@ -97,6 +102,54 @@ else
     fprintf('Please indicate the correct correction method!\n');
 end
 h_corrected = results.corrected_h;
+
+%% Ttest2 for significance
+loc_hc = group_design_matched(:,1)==1;
+loc_sz = group_design_matched(:,3)==1;
+loc_bd = group_design_matched(:,4)==1;
+loc_mdd = group_design_matched(:,2)==1;
+
+md_hc_s1 = fractional_window(loc_hc,1);
+md_sz_s1 = fractional_window(loc_sz,1);
+md_bd_s1 = fractional_window(loc_bd,1);
+md_mdd_s1 = fractional_window(loc_mdd,1);
+
+md_hc_s2 = fractional_window(loc_hc,2);
+md_sz_s2 = fractional_window(loc_sz,2);
+md_bd_s2 = fractional_window(loc_bd,2);
+md_mdd_s2 = fractional_window(loc_mdd,2);
+
+[h,p1] = ttest2(md_hc_s1, md_sz_s1);
+[h,p2] = ttest2(md_hc_s1, md_bd_s1);
+[h,p3] = ttest2(md_hc_s1, md_mdd_s1);
+[h,p4] = ttest2(md_sz_s1, md_bd_s1);
+[h,p5] = ttest2(md_sz_s1, md_mdd_s1);
+[h,p6] = ttest2(md_bd_s1, md_mdd_s1);
+results_posthoc = multcomp_fdr_bh([p1,p2,p3,p4,p5,p6], 'alpha', correction_threshold);
+
+%% corr
+fractional_window_hc = fractional_window(loc_hc,:);
+cov_matched_hc = cov_matched(loc_hc,:);
+
+fractional_window_sz = fractional_window(loc_sz,:);
+cov_matched_sz = cov_matched(loc_sz,:);
+
+fractional_window_bd = fractional_window(loc_bd,:);
+cov_matched_bd = cov_matched(loc_bd,:);
+
+fractional_window_mdd = fractional_window(loc_mdd,:);
+cov_matched_mdd = cov_matched(loc_mdd,:);
+
+for i = 1:3
+    for j = 7:15
+        [r(i,j), p(i,j)] = corr(fractional_window_mdd(:,i), cov_matched_mdd(:,j), 'rows' ,'complete');
+%         fprintf('r=%.4f\t', r)
+%         fprintf('p=%.4f\n',p)
+    end
+end
+%% 
+save(fullfile(save_path, 'temporal_propertities.mat'),'mean_dwelltime', 'fractional_window', 'num_transitions', 'group_design_matched')
+
 
 %% save
 if is_save
