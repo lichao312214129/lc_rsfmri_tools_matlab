@@ -1,7 +1,7 @@
 %% This script is used to visualize statistical results of transdiagnostic dynamic functional connectivity (including group mean functional connectivitync).
 
 %% INPUTS
-results_root = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength20__silhoutte_and_davies-bouldin\daviesbouldin\610';
+results_root = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\610';
 cmap_fc = 'D:\My_Codes\lc_rsfmri_tools_matlab\Workstation\code_workstation2018_dynamicFC\visualization\cmp_net0point5_pospoint8';
 cmap_fvalues = 'D:\My_Codes\lc_rsfmri_tools_matlab\Workstation\code_workstation2018_dynamicFC\visualization\cmp_fvalues';
 cmap_posthoc_tvalues = 'D:\My_Codes\lc_rsfmri_tools_matlab\Workstation\code_workstation2018_dynamicFC\visualization\cmp_posthoc_tvalues';
@@ -200,7 +200,7 @@ axis square
 
 % Fvalues
 axes(ax(13))
-lc_netplot('-n', anova_state1.Fvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', anova_state1.Fvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1,'-m',anova_state1.H, '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_fvalues);
 caxis([0,12])
@@ -208,7 +208,7 @@ title('State 1', 'FontSize', 6)
 axis square
 
 axes(ax(14))
-lc_netplot('-n', anova_state2.Fvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', anova_state2.Fvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1,'-m',anova_state2.H, '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_fvalues);
 caxis([0 12])
@@ -216,7 +216,7 @@ title('State 2', 'FontSize', 6)
 axis square
 
 axes(ax(15))
-lc_netplot('-n', anova_state3.Fvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', anova_state3.Fvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1,'-m',anova_state3.H, '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_fvalues);
 caxis([0 12])
