@@ -22,6 +22,8 @@ function lc_netplot(varargin)
 %           If binary the network.
 %      [--which_group, -wg]: int
 %           If the network .mat file has multiple 2D matrix, then choose which one to display.
+%      [--thred_for_gen_new_net, -thred]: int
+%           The threshold for generating new net for plot (insert zeros into network), default=100
 %      [--linewidth, -lw]: float 
 %           separation line width
 %      [--linecolor, -lc]: color string 
@@ -68,7 +70,7 @@ if nargin == 0
     return;
 end
 
-[net, if_add_mask, mask, how_disp, if_binary, which_group, net_index, linewidth, linecolor, is_legend, legends, legend_fontsize, legend_color_scheme] = ...
+[net, if_add_mask, mask, how_disp, if_binary, which_group, thred_for_gen_new_net, net_index, linewidth, linecolor, is_legend, legends, legend_fontsize, legend_color_scheme] = ...
             parseInputs(varargin{:});
 
 % net
@@ -128,10 +130,10 @@ net_index = reshape(net_index,[],1);
 re_net = net(index,index);
 
 % plot: insert separate line between each network
-lc_InsertSepLineToNet(re_net, re_net_index, linewidth, linecolor, is_legend, legends, legend_fontsize, legend_color_scheme);
+lc_InsertSepLineToNet(re_net, re_net_index, thred_for_gen_new_net, linewidth, linecolor, is_legend, legends, legend_fontsize, legend_color_scheme);
 end
 
-function [net, if_add_mask, mask, how_disp, if_binary, which_group, net_index, linewidth, linecolor, is_legend, legends, legend_fontsize, legend_color_scheme] = ...
+function [net, if_add_mask, mask, how_disp, if_binary, which_group, thred_for_gen_new_net, net_index, linewidth, linecolor, is_legend, legends, legend_fontsize, legend_color_scheme] = ...
             parseInputs(varargin)
 % Varargin parser
 
@@ -141,6 +143,7 @@ mask = '';
 how_disp='all';
 if_binary=0;
 which_group=1;
+thred_for_gen_new_net = 100;
 linewidth = 0.5;
 linecolor = 'k';
 is_legend = 0;
@@ -172,6 +175,10 @@ end
 
 if( sum(or(strcmpi(varargin,'--which_group'),strcmpi(varargin,'-wg')))==1)
     which_group = varargin{find(or(strcmpi(varargin,'--which_group'),strcmp(varargin,'-wg')))+1};
+end
+
+if( sum(or(strcmpi(varargin,'--thred_for_gen_new_net'),strcmpi(varargin,'-thred')))==1)
+    thred_for_gen_new_net = varargin{find(or(strcmpi(varargin,'--thred_for_gen_new_net'),strcmp(varargin,'-thred')))+1};
 end
 
 if( sum(or(strcmpi(varargin,'--net_index'),strcmpi(varargin,'-ni')))==1)
@@ -225,7 +232,7 @@ end
 reorgNet=net(index,index);
 end
 
-function lc_InsertSepLineToNet(net, re_net_index, linewidth, linecolor, is_legend, legends, legend_fontsize, legend_color_scheme)
+function lc_InsertSepLineToNet(net, re_net_index, thred_for_gen_new_net, linewidth, linecolor, is_legend, legends, legend_fontsize, legend_color_scheme)
 % 此代码的功能：在一个网络矩阵种插入网络分割线，以及bar
 % 此分割线将不同的脑网络分开
 % 不同颜色的区域，代表一个不同的网络
@@ -249,33 +256,41 @@ n_node = length(net);
 % New sep
 num_sep = numel(location_of_sep);
 location_of_sep_new = location_of_sep;
-for i =  1 : num_sep
-    location_of_sep_new(i:end) = location_of_sep_new(i:end) + 1;
-end
-% New network
-net_insert_line = zeros(n_node + num_sep, n_node + num_sep);
-for i = 1:num_sep-1
-    % Rows iteration
-    start_point =  location_of_sep_new(i) + 1;
-    end_point = location_of_sep_new(i+1) - 1;
-    start_point_old =  location_of_sep(i) + 1;
-    end_point_old = location_of_sep(i+1);
-    % Columns iteration
-    for j = 1 : num_sep - 1
-        start_point_j =  location_of_sep_new(j) + 1;
-        end_point_j = location_of_sep_new(j+1) - 1;
-        start_point_old_j =  location_of_sep(j) + 1;
-        end_point_old_j = location_of_sep(j+1);
-        net_insert_line(start_point : end_point, start_point_j : end_point_j) = ...
-                    net(start_point_old : end_point_old, start_point_old_j : end_point_old_j);
+
+if length(net) > thred_for_gen_new_net  % Only greater than 50 node, than generate new network matrix
+    for i =  1 : num_sep
+        location_of_sep_new(i:end) = location_of_sep_new(i:end) + 1;
     end
+    % New network
+    net_insert_line = zeros(n_node + num_sep, n_node + num_sep);
+    for i = 1:num_sep-1
+        % Rows iteration
+        start_point =  location_of_sep_new(i) + 1;
+        end_point = location_of_sep_new(i+1) - 1;
+        start_point_old =  location_of_sep(i) + 1;
+        end_point_old = location_of_sep(i+1);
+        % Columns iteration
+        for j = 1 : num_sep - 1
+            start_point_j =  location_of_sep_new(j) + 1;
+            end_point_j = location_of_sep_new(j+1) - 1;
+            start_point_old_j =  location_of_sep(j) + 1;
+            end_point_old_j = location_of_sep(j+1);
+            net_insert_line(start_point : end_point, start_point_j : end_point_j) = ...
+                        net(start_point_old : end_point_old, start_point_old_j : end_point_old_j);
+        end
+    end
+else
+    net_insert_line = net;
 end
 
 imagesc(net_insert_line); hold on;
 x = repmat(location_of_sep_new', num_sep ,1);
 y = repmat(location_of_sep_new,1, num_sep);
-x(:,end) = x(:,end);
-y(end,:) = y(end, :);
+
+if length(net) <= thred_for_gen_new_net
+    x = x + 0.5;
+    y = y + 0.5;
+end
 z = zeros(size(x));
 mesh(x,y,z,...
     'EdgeColor',linecolor,...
