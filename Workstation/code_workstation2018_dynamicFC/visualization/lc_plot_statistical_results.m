@@ -74,7 +74,7 @@ distinct_bd_dysconnectivity_state2 = importdata(fullfile(results_root, 'results_
 distinct_bd_dysconnectivity_state3 = importdata(fullfile(results_root, 'results_state3', 'distinct_3_fdr.mat'));
 
 %% Plot states
-figure('Position',[50 50 500 200]);
+figure('Position',[50 50 500 400]);
 ax = tight_subplot(1,3,[0.05 0.1],[0.01 0.05],[0.01 0.01]);
 
 axes(ax(1)) 
@@ -103,8 +103,12 @@ caxis([-0.5,0.8])
 state_frequency = sprintf('%.2f', (sum(idx==3))/length(idx));
 title(['State 3', ' (', state_frequency ,')'], 'FontSize', 8, 'FontWeight', 'bold');
 axis square
+cb = colorbar('horiz','position',[0.35 0.15 0.28 0.02]); % œ‘ æcolorbar
+get(cb, 'YTick')
+set(cb, 'YTick', [-1 -0.5 0 0.5 1])
+set(cb,'YTickLabel',{'-9','0','0.5','1','2'})
+ylabel(cb,'Functional connectivity (Z)', 'FontSize', 10);  % …Ë÷√colorbarµƒtitle
 saveas(gcf,fullfile(results_root, 'states.pdf'))
-
 
 %% Plot group mean and F-values
 figure('Position',[100 100 300 500]);
@@ -200,7 +204,7 @@ axis square
 
 % Fvalues
 axes(ax(13))
-lc_netplot('-n', anova_state1.Fvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', anova_state1.Fvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1,'-m',anova_state1.H, '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_fvalues);
 caxis([0,12])
@@ -208,7 +212,7 @@ title('State 1', 'FontSize', 6)
 axis square
 
 axes(ax(14))
-lc_netplot('-n', anova_state2.Fvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', anova_state2.Fvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1,'-m',anova_state2.H, '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_fvalues);
 caxis([0 12])
@@ -216,14 +220,14 @@ title('State 2', 'FontSize', 6)
 axis square
 
 axes(ax(15))
-lc_netplot('-n', anova_state3.Fvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', anova_state3.Fvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1,'-m',anova_state3.H, '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_fvalues);
 caxis([0 12])
 title('State 3', 'FontSize', 6)
 axis square
 
-saveas(gcf,fullfile(results_root, 'group_mean_and_Fvalues.pdf'))
+saveas(gcf,fullfile(results_root, 'Fvalues.pdf'))
 
 %% Plot results of posthoc analysis (part1: patients VS healthy controls), and shared and unique dysconnectivity.
 figure('Position',[100 100 300 400]);
@@ -231,7 +235,7 @@ ax = tight_subplot(4,3,[0.05 0.01],[0.01 0.05],[0.01 0.01]);
 
 % SZ vs HC
 axes(ax(1))
-lc_netplot('-n', posthoc_szvshc_state1.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_szvshc_state1.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_szvshc_state1.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-5 5])
@@ -239,7 +243,7 @@ title('State 1', 'FontSize', 6)
 axis square
 
 axes(ax(2))
-lc_netplot('-n', posthoc_szvshc_state2.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_szvshc_state2.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_szvshc_state2.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-5 5])
@@ -247,7 +251,7 @@ title('State 2', 'FontSize', 6)
 axis square
 
 axes(ax(3))
-lc_netplot('-n', posthoc_szvshc_state3.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_szvshc_state3.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_szvshc_state3.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-5 5])
@@ -256,7 +260,7 @@ axis square
 
 % BD vs HC
 axes(ax(4))
-lc_netplot('-n', posthoc_bdvshc_state1.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_bdvshc_state1.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_bdvshc_state1.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-5 5])
@@ -264,7 +268,7 @@ title('State 1', 'FontSize', 6)
 axis square
 
 axes(ax(5))
-lc_netplot('-n', posthoc_bdvshc_state2.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_bdvshc_state2.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_bdvshc_state2.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-5 5])
@@ -272,7 +276,7 @@ title('State 2', 'FontSize', 6)
 axis square
 
 axes(ax(6))
-lc_netplot('-n', posthoc_bdvshc_state3.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_bdvshc_state3.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_bdvshc_state3.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-5 5])
@@ -281,7 +285,7 @@ axis square
 
 % MDD vs HC
 axes(ax(7))
-lc_netplot('-n', posthoc_mddvshc_state1.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_mddvshc_state1.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_mddvshc_state1.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-5 5])
@@ -289,7 +293,7 @@ title('State 1', 'FontSize', 6)
 axis square
 
 axes(ax(8))
-lc_netplot('-n', posthoc_mddvshc_state2.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_mddvshc_state2.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_mddvshc_state2.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-5 5])
@@ -297,7 +301,7 @@ title('State 2', 'FontSize', 6)
 axis square
 
 axes(ax(9))
-lc_netplot('-n', posthoc_mddvshc_state3.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_mddvshc_state3.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_mddvshc_state3.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-5 5])
@@ -421,7 +425,7 @@ ax = tight_subplot(3,3,[0.05 0.01],[0.01 0.05],[0.01 0.01]);
 
 % SZ vs BD
 axes(ax(1))
-lc_netplot('-n', -posthoc_bdvssz_state1.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', -posthoc_bdvssz_state1.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_bdvssz_state1.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-4 4])
@@ -429,7 +433,7 @@ title('State 1', 'FontSize', 6)
 axis square
 
 axes(ax(2))
-lc_netplot('-n', -posthoc_bdvssz_state2.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', -posthoc_bdvssz_state2.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_bdvssz_state2.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-4 4])
@@ -437,7 +441,7 @@ title('State 2', 'FontSize', 6)
 axis square
 
 axes(ax(3))
-lc_netplot('-n', -posthoc_bdvssz_state3.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', -posthoc_bdvssz_state3.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_bdvssz_state3.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-4 4])
@@ -446,7 +450,7 @@ axis square
 
 % SZ vs MDD
 axes(ax(4))
-lc_netplot('-n', posthoc_szvsmdd_state1.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_szvsmdd_state1.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_szvsmdd_state1.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-4 4])
@@ -454,7 +458,7 @@ title('State 1', 'FontSize', 6)
 axis square
 
 axes(ax(5))
-lc_netplot('-n', posthoc_szvsmdd_state2.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_szvsmdd_state2.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_szvsmdd_state2.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-4 4])
@@ -462,7 +466,7 @@ title('State 2', 'FontSize', 6)
 axis square
 
 axes(ax(6))
-lc_netplot('-n', posthoc_szvsmdd_state3.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_szvsmdd_state3.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_szvsmdd_state3.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-4 4])
@@ -471,7 +475,7 @@ axis square
 
 % BD vs MDD
 axes(ax(7))
-lc_netplot('-n', posthoc_bdvsmdd_state1.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_bdvsmdd_state1.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_bdvsmdd_state1.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-4 4])
@@ -479,7 +483,7 @@ title('State 1', 'FontSize', 6)
 axis square
 
 axes(ax(8))
-lc_netplot('-n', posthoc_bdvsmdd_state2.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_bdvsmdd_state2.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_bdvsmdd_state2.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-4 4])
@@ -487,7 +491,7 @@ title('State 2', 'FontSize', 6)
 axis square
 
 axes(ax(9))
-lc_netplot('-n', posthoc_bdvsmdd_state3.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 0, '-lw', 0.2);
+lc_netplot('-n', posthoc_bdvsmdd_state3.Tvalues, '-ni', net_index_path,'-il',0, '-lg', legends, '-lgf', 7, '-iam', 1, '-m',posthoc_bdvsmdd_state3.H_posthoc,  '-lw', 0.2);
 fig = gca;
 colormap(fig,cmp_posthoc_tvalues);
 caxis([-4 4])

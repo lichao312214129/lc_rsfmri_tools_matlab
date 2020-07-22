@@ -16,12 +16,12 @@ function  lc_ancova_for_fc(varargin)
 % 
 % OUTPUTS:F-values, h and p-values.
 % EXAMPLE:
-  % lc_ancova_for_fc('-dd', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength20__silhoutte_and_davies-bouldin\daviesbouldin\610\individual_state3', ...
+  % lc_ancova_for_fc('-dd', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\sfc', ...
   % '-dmf', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\covariates_737.xlsx', ...
   % '-ctr', [1 1 1 1 0 0 0],...
   % '-cid', 1, '-cgl', 2, '-ccov', [3,4,6],...
-  % '-od', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength20__silhoutte_and_davies-bouldin\daviesbouldin\610\results_state3', ...
-  % '-on', 'state3');
+  % '-od', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_sfc_hbm', ...
+  % '-on', 'static');
 
 % NOTE. Make sure the order of the dependent variables matches the order of the covariances
 % Thanks to NBS software.
@@ -54,9 +54,9 @@ else
 end
 
 if(sum(or(strcmpi(varargin,'--colnum_id'),strcmpi(varargin,'-cid')))==1)
-    colnum_id = varargin{find(or(strcmpi(varargin,'--colnum_id'),strcmp(varargin,'-cid')))+1};
+    column_id = varargin{find(or(strcmpi(varargin,'--colnum_id'),strcmp(varargin,'-cid')))+1};
 else
-    colnum_id = input('Input the column of subject id, such as 1:');
+    column_id = input('Input the column of subject id, such as 1:');
 end
 
 if( sum(or(strcmpi(varargin,'--column_group_label'),strcmpi(varargin,'-cgl')))==1)
@@ -147,14 +147,15 @@ for i = 1:nms
     tmp = ms{i}{1};
     subjid(i) = str2double(tmp);
 end
-[Lia,Locb] = ismember(subjid, demographics(:,colnum_id));
+[Lia,Locb] = ismember(subjid, demographics(:,column_id));
 Locb_matched = Locb(Lia);
 demographics_matched = demographics(Locb_matched,:);
 
-% Exclude NaN in demographics
-loc_nan = sum(isnan(demographics_matched),2) > 0;
-Locb_matched = Locb_matched(loc_nan,:);
-demographics_matched(loc_nan, :) = [];
+% Exclude NaN in interested demographics
+demographics_matched_for_denan =  demographics_matched(:, cat(2,column_id, column_group_label, columns_covariates));
+loc_nan = sum(isnan(demographics_matched_for_denan),2) > 0;
+Locb_nan = Locb_matched(loc_nan,:);
+demographics_matched(Locb_nan, :) = [];
 all_subj_fc(loc_nan, :) = [];
 
 % Design matrix

@@ -10,8 +10,8 @@ function pvalues = lc_permutation_test_for_number_of_edges_in_networks(real_netw
 % Output:
 %       pvalues: The p values of each interest network.
 %% ==========================================================================
-real_network = H;
-net_index_of_nodes = 'D:\My_Codes\LC_Machine_Learning\lc_rsfmri_tools\lc_rsfmri_tools_matlab\Workstation\code_workstation2018_dynamicFC\visualization\netIndex.mat';
+real_network = shared_1and2and3;
+net_index_of_nodes = 'D:\My_Codes\lc_rsfmri_tools_matlab\Workstation\code_workstation2018_dynamicFC\visualization\netIndex.mat';
 
 %%
 net_index_of_nodes = importdata(net_index_of_nodes);
@@ -48,9 +48,11 @@ end
 
 % Show
 p=1-pvalues;
-p(p<0.95) = 0;
-imagesc(p);
-mycmp = importdata('mycmp.mat');
+% p(p<0.95) = 0;
+matrixplot(x,'DisplayOpt','off','FigShap','d');
+colormap(jet)
+saveas(gcf,fullfile('permutation.pdf')); 
+
 % colormap(mycmp);
 
 function [Arand] = gretna_gen_random_network1(A)

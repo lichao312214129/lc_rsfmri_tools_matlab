@@ -11,7 +11,6 @@ eva_elbow2 = icatb_optimal_clusters(X, krange, 'method' , 'elbow');  % For valid
 silhouette_values2 = eva_silhoutte2{1}.values;
 k_optimal2 = eva_silhoutte2{1}.K;
 elbow_values2 = eva_elbow2{1}.values;
-
 % 3
 rng default  % For reproducibility
 X = [randn(1000,2); randn(1000,2)-ones(1000,2)*5; randn(1000,2)-ones(1000,2)*10];
@@ -20,7 +19,6 @@ eva_elbow3 = icatb_optimal_clusters(X, krange, 'method' , 'elbow');  % For valid
 silhouette_values3 = eva_silhoutte3{1}.values;
 k_optimal3 = eva_silhoutte3{1}.K;
 elbow_values3 = eva_elbow3{1}.values;
-
 
 % 4
 rng default  % For reproducibility
