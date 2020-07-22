@@ -88,7 +88,7 @@ end
 GLM.perms = 0;
 GLM.X = design_matrix;
 GLM.y = [mean_dwelltime, fractional_window,num_transitions];
-y_name = {'Mean dwell time', 'Fractional of time', 'Number of transitions'};
+y_name = {'Mean dwell time', 'Fraction of time', 'Number of transitions'};
 GLM.contrast = [1 1 1 1 0 0 0 ];
 GLM.test = 'ftest';
 [test_stat,pvalues]=NBSglm(GLM);

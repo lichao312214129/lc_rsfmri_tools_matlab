@@ -1,37 +1,40 @@
 function [shared_1and2and3,shared_1and2,shared_1and3,shared_2and3,...
-          distinct_1,distinct_2,distinct_3]=...
-                lc_get_shared_and_distinct(h_mat,t_mat)
+          distinct_1,distinct_2,distinct_3]=lc_get_shared_and_distinct_v1(h_mat,t_mat)
+% Get the shared and distinct dysconnectivity across transdiagnostic patients.
 % 经过post-hoc之后，找到病人组（对于正常组来说）共同（且异常方向一致）以及每种疾病特有的（不包括异常方向特有）异常连接
-% SZ & BD & MDD、SZ & BD not MDD、SZ & MDD not BD、BD & MDD not SZ、SZ、BD、MDD
-% input
+% INPUTS:
 %   h_mat: 经过post-hoc 双样本t检验+FDR校正后的H矩阵（H==1,表示无统计学意义）
 %   t_mat: 经过post-hoc 双样本t检验的t值
-%%
+%
+
 if nargin<1
     % input
-    rootpath='D:\WorkStation_2018\WorkStation_dynamicFC\Data\zDynamic\state\allState17_4\state4_all';
-    state=4;
-    correction_method='fdr';
+    posthoc_szvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\610\results_state1\state1_3vs1_FDR0.05.mat';
+    posthoc_mddvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\610\results_state1\state1_2vs1_FDR0.05.mat';
+    posthoc_bdvshc = 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\610\results_state1\state1_4vs1_FDR0.05.mat';
+    posthoc_szvshc = load(posthoc_szvshc);
+    posthoc_mddvshc = load(posthoc_mddvshc);
+    posthoc_bdvshc = load(posthoc_bdvshc);
+    h_mat = cat(3,posthoc_szvshc.H_posthoc,posthoc_mddvshc.H_posthoc,posthoc_bdvshc.H_posthoc);
+    t_mat = cat(3,posthoc_szvshc.Tvalues,posthoc_mddvshc.Tvalues,posthoc_bdvshc.Tvalues);
 
-    h_posthoc_corrected=fullfile(rootpath,['state',num2str(state),'\result','\h_posthoc_',correction_method,'.mat']);
-    t_posthoc_corrected=fullfile(rootpath,['state',num2str(state),'\result','\tvalue_posthoc_',correction_method,'.mat']);
-    h_mat=importdata(h_posthoc_corrected);
-    t_mat=importdata(t_posthoc_corrected);
+    correction_method='fdr';
     if_save=1;
-    save_path=fullfile(rootpath,['state',num2str(state),'\result1']);
+    save_path='D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\windowlength17__silhoutte_and_davies-bouldin\daviesbouldin\610\results_state1\';
 end
 
-% 新建结果文件夹
+% make directory to save results
 mkdir(save_path)
 %% 求共同及特有的异常连接（本研究有3种疾病，因此共同包括3个以及2个疾病的共同）
 
 % 3者共同，且只选择异常方向一致的连接(mask与mask_sign的交集)
+h_mat = permute(h_mat,[3,2,1]);
+t_mat = permute(t_mat,[3,2,1]);
 sum_h_mat=squeeze(sum(h_mat));
 shared_1and2and3_ahad=sum_h_mat==3; 
 tvalue_sign_for_1and2and3=sign(t_mat);
 tvalue_sum=abs(squeeze(sum(tvalue_sign_for_1and2and3,1)));
-tvalue_sign_comparisonor=ones(size(tvalue_sum))*size(tvalue_sign_for_1and2and3,1);
-mask_net=tvalue_sum==tvalue_sign_comparisonor;
+mask_net=tvalue_sum==size(tvalue_sign_for_1and2and3,1);
 shared_1and2and3=shared_1and2and3_ahad.*mask_net~=0;
 
 % 2者共同，且只选择异常方向一致的连接(mask与mask_sign的交集)
