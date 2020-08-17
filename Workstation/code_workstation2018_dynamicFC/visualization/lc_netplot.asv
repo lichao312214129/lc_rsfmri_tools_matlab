@@ -317,26 +317,25 @@ n_net = length(location_of_sep);
 location_of_sep = location_of_sep + 0.5;
 randseed(1);
 color = brewermap(n_net, legend_color_scheme);
+barwidth = abs((n_node + extend / 2) - (n_node+extend));
 width_of_legends = extend/2;
 h = zeros(n_net - 1, 1);
 for i = 1 : n_net-1
      if is_legend
         % X axix
-        y1 = location_of_sep(end) + extend/2;
-        y2 = y1 + width_of_legends;
+        y1 = location_of_sep(end) + extend ;
+        y2 = location_of_sep(end) + width_of_legends;
         h(i) = fill([location_of_sep(i), location_of_sep(i+1), location_of_sep(i+1), location_of_sep(i)], [y1,y1,y2,y2], color(i,:));
         
         % Y axix
-        x1 = location_of_sep(end) + extend/2;
-        x2 = x1 + width_of_legends;
-        fill([x1,x1,x2,x2 ], [location_of_sep(i), location_of_sep(i+1), location_of_sep(i+1), location_of_sep(i)], color(i,:))
+        x = n_node + barwidth;
+        fill([x,x,x,x ], [location_of_sep(i), location_of_sep(i+1), location_of_sep(i+1), location_of_sep(i)], color(i,:))
    
         % Y axix
-        little_sep = extend/10;
-        text(y2 + little_sep, (location_of_sep(i+1) - location_of_sep(i)) / 2 +  location_of_sep(i),...
+        text(n_node + width_of_legends, (location_of_sep(i+1) - location_of_sep(i)) / 2 +  location_of_sep(i),...
             legends{i}, 'fontsize', legend_fontsize, 'rotation', 0);
          % X axix
-        text((location_of_sep(i+1) - location_of_sep(i)) / 2 +  location_of_sep(i), x2 + little_sep,...
+        text((location_of_sep(i+1) - location_of_sep(i)) / 2 +  location_of_sep(i), n_node + width_of_legends,...
             legends{i}, 'fontsize', legend_fontsize, 'rotation', -90);
     end
 end

@@ -1,4 +1,4 @@
-function [test_stat,P]=NBSglm(varargin)
+function [test_stat,P]=lc_NBSglm(varargin)
 %NBSglm  Permutation-based non-parametric inference using the general
 %linear model (GLM). Vectorial implementation, in the sense that a for loop
 %is not used for each seperate GLM.
