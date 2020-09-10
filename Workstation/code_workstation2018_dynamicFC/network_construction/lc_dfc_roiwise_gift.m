@@ -1,9 +1,9 @@
 function lc_dfc_roiwise_gift(varargin)
 % Used to calculate roi-wise dynamic fc using sliding-window method.
 % INPUTS:
-%       [----all_signals_dir, -asd]: all signals' files (absolute path). Each signal file indicates a group of time series with (number of time series) * (number of nodes)
+%       [--all_signals_dir, -asd]: all signals' files (absolute path). Each signal file indicates a group of time series with (number of time series) * (number of nodes)
 % 	    [--output_dir, -od]: directiory for saving results.
-%       [--window_length, -wl]: sliding-window length.
+%       [--window_size, -wl]: sliding-window length.
 %       [--window_step, -ws]: sliding-window step.
 % 	    [--volume, -v]: How many frames.
 % 	    [--numroi, -nroi]: How many ROI/Node.
@@ -13,7 +13,7 @@ function lc_dfc_roiwise_gift(varargin)
 % 	    [--doDespike, -dds]: if despiking.
 % 	    [--tc_filter, -tf]: Filter the time series. If choose to filter, the high frequencies cut-off 0.15 HZ will be used according with GIFT software.
 % 	    [--TR, -t]: Time of Repeat.
-% 	    [--method, -m]: Using L1 regularisation or not.
+% 	    [--method, -m]: Using L1 regularisation ('l1') or not ('none').
 % 	    [--num_repetitions, -nrep]: number of repetitions of random centroid.
 % 	    [--prefix, -p]: Results name prefix.
 % OUTPUTS
@@ -21,7 +21,7 @@ function lc_dfc_roiwise_gift(varargin)
 % 	N is the number of ROIs, W is the number of sliding-window
 % 
 % EXAMPLE:
-% lc_dfc_roiwise_gift('-wl', 50,'-ws', 1);
+% lc_dfc_roiwise_gift('-wl', 50,'-ws', 1, '-m', 'none');
 % 
 % This function is based on GIFT software. Users must cite the GIFT software.
 % Author:  Li Chao
@@ -61,10 +61,10 @@ else
     [volume, numroi] = size(importdata(all_signals_file{1}));
 end
 
-if( sum(or(strcmpi(varargin,'--window_length'),strcmpi(varargin,'-wl')))==1)
-    window_length = varargin{find(or(strcmpi(varargin,'--window_length'),strcmp(varargin,'-wl')))+1};
+if( sum(or(strcmpi(varargin,'--window_size'),strcmpi(varargin,'-wl')))==1)
+    window_size = varargin{find(or(strcmpi(varargin,'--window_size'),strcmp(varargin,'-wl')))+1};
 else
-    window_length = input('Enter window_length:');
+    window_size = input('Enter window_size:');
 end
 
 if( sum(or(strcmpi(varargin,'--window_step'),strcmpi(varargin,'-ws')))==1)
@@ -124,7 +124,7 @@ end
 %% ---------------------------END VARARGIN PARSER-------------------------------
 
 %% Make result directory
-result_dir_of_dynamic = fullfile(output_dir, strcat('zDynamicFC_WindowLength',num2str(window_length),'_WindowStep',num2str(window_step)));
+result_dir_of_dynamic = fullfile(output_dir, strcat('zDynamicFC_WindowLength',num2str(window_size),'_WindowStep',num2str(window_step)));
 if ~exist(result_dir_of_dynamic, 'dir')
     mkdir(result_dir_of_dynamic);
 end
@@ -139,9 +139,9 @@ for i = 1:numOfSub
 end
 
 % Make sliding window
-c = icatb_compute_sliding_window(volume, window_alpha, window_length);
+c = icatb_compute_sliding_window(volume, window_alpha, window_size);
 A = repmat(c, 1, numroi);
-Nwin = volume - window_length;
+Nwin = volume - window_size;
 
 % Initial_lambdas
 initial_lambdas = (0.1:.03:.40);
@@ -185,7 +185,7 @@ for nSub = 1:numOfSub
         % Apply circular shift to timecourses
         tcwin = zeros(Nwin, volume, numroi);
         for ii = 1:Nwin
-            Ashift = circshift(A, round(-volume/2) + round(window_length/2) + ii);
+            Ashift = circshift(A, round(-volume/2) + round(window_size/2) + ii);
             tcwin(ii, :, :) = squeeze(tc(nSub, nSess, :, :)).*Ashift;
         end
         

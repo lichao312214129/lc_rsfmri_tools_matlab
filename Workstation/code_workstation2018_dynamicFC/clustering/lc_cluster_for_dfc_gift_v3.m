@@ -15,13 +15,13 @@ function lc_cluster_for_dfc_gift_v3(subj_path, out_dir, krange, distance_measure
 % 	First, wo compute variance of dynamic connectivity across all pairs at each window. 
 % 	Second, we select windows corresponding to local maxima in this variance time course.
 
-% input :
+% INPUTS:
 %   subj_path: subject's dFC files' path (matlab .mat or .txt file type with dimension of n_node*n_node*n_window)
 %   krange: The search window of k, such as  2:1:20;
 %   distance_measure: distance measure, such as 'cityblock', 'sqeuclidean', 'cosine', 'correlation', 'hamming'.
 %   nreplicates: repeated nreplicates times with random initial cluster centroid positions to escape local minima
 %   out_dir: directory to save results
-% output:
+% OUTPUTS:
     % Saving meta informations: idx, C, sumd, D
     % Saving median network for each state
     
@@ -79,8 +79,7 @@ fclose(fid);
 n_subj = size(subj_path,1);
 file_name = subj_path{1};
 dynamic_mats = importdata(file_name);
-n_node = size(dynamic_mats,1);
-n_window = length(dynamic_mats);
+[n_node,n_node,n_window] = size(dynamic_mats);
 mask_of_up_mat = triu(ones(n_node, n_node),1)==1;  % mask of upper triangular matrix 
 n_feature = sum(mask_of_up_mat(:));
 mat_of_one_sub = zeros(n_feature, n_window);

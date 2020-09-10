@@ -79,8 +79,7 @@ fclose(fid);
 n_subj = size(subj_path,1);
 file_name = subj_path{1};
 dynamic_mats = importdata(file_name);
-n_node = size(dynamic_mats,1);
-n_window = length(dynamic_mats);
+[n_node, ~, n_window] = size(dynamic_mats);
 mask_of_up_mat = triu(ones(n_node, n_node),1)==1;  % mask of upper triangular matrix 
 n_feature = sum(mask_of_up_mat(:));
 mat_of_one_sub = zeros(n_feature, n_window);

@@ -1,0 +1,3 @@
+set(0,'defaultfigurecolor', 'w')
+<!-- set(gcf,'Color','white'); -->
+set(gcf, 'InvertHardCopy', 'off'); 

@@ -1,5 +1,5 @@
 function  lc_ancova_for_fc(varargin)
-% Perform ANCOVA + FDR correction for functional connectivity matrix.
+% Perform ANCOVA + multiple correction for functional connectivity matrix.
 % INPUTS:
 % 	    [--data_dir, -dd]: data directory of dynamic functional connectivity.
 % 	    [--demographics_file,-dmf]: File of demographics of participants, demographics includes unique index, group label and covariates.

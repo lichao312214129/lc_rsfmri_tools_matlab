@@ -1,9 +1,8 @@
-function  lc_posthoc_for_fc(varargin)
+function  lc_ttest2_for_fc(varargin)
 % Perform Posthoc ttest2 + FDR correction for functional connectivity.
 % INPUTS:
 %       [--data_dir, -dd]: data directory of dynamic functional connectivity.
 %       [--demographics_file,-dmf]: File of demographics of participants, demographics includes unique index, group label and covariates.
-%       [--H_matrix_of_anova, -hma]: H matrix of anova 4, The alternative hypothesis is that the data in x and y comes from populations with unequal means. The result h is 1 if the test rejects the null hypothesis at the 5% significance level, and 0 otherwise.
 %       [--suffix_fc, -sfc]: suffix of functional connectivity, default is '.mat'.
 %       [--column_id, -cid]: which column is subject unique index, default is 1.
 %       [--column_group_label, -cgl]:which column is group label, default is 2.
@@ -17,17 +16,21 @@ function  lc_posthoc_for_fc(varargin)
 % OUTPUTS:T-values, h and p-values.
 % 
 % EXAMPLE:
-%   lc_posthoc_for_fc('-dd', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\sfc', ...
-%   '-dmf', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\ID_Scale_Headmotion\covariates_737.xlsx', ...
-%   '-hma', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_sfc_hbm\static_ANCOVA_FDR_Corrected_0.05.mat',...
-%   '-cid', 1, '-cgl', 2,...
-%   '-od', 'D:\WorkStation_2018\WorkStation_dynamicFC_V3\Data\results\results_sfc_hbm', ...
-%   '-on', 'static');
+% lc_ttest2_for_fc('-dd', 'F:\The_first_training\dfnc_state1', ...
+% '-dmf', 'F:\The_first_training\cov\covariates.xlsx', ...
+% '-cid', 1, '-cgl', 2,'-ccov',[3,4],...
+% '-od', 'F:\The_first_training\statatistic_results_for_states', ...
+% '-on', 'state1');
 % 
 % NOTE. Make sure the order of the dependent variables matches the order of the covariances
 % Thanks to NBS software.
 
 %% ---------------------------VARARGIN PARSER-------------------------------
+if nargin == 0
+    help lc_ttest2_for_fc
+    return;
+end
+
 if( sum(or(strcmpi(varargin,'--data_dir'),strcmpi(varargin,'-dd')))==1)
     data_dir = varargin{find(or(strcmpi(varargin,'--data_dir'),strcmp(varargin,'-dd')))+1};
 else
@@ -47,21 +50,11 @@ else
     demographics_file = fullfile(path, demographics_file);
 end
 
-if( sum(or(strcmpi(varargin,'--contrast'),strcmpi(varargin,'-ctr')))==1)
-    contrast = varargin{find(or(strcmpi(varargin,'--contrast'),strcmp(varargin,'-ctr')))+1};
-else
-    contrast = input('Enter contrast:');
-end
-
-if( sum(or(strcmpi(varargin,'--H_matrix_of_anova'),strcmpi(varargin,'-hma')))==1)
-    H_matrix_of_anova = varargin{find(or(strcmpi(varargin,'--H_matrix_of_anova'),strcmp(varargin,'-hma')))+1};
-else
-    [H_matrix_of_anova, path] = uigetfile({'*.mat'; '*.txt'; '*.*'},'select H_matrix_of_anova', pwd,'MultiSelect', 'off');
-    H_matrix_of_anova = fullfile(path, H_matrix_of_anova);
-end
-H_matrix_of_anova = importdata(H_matrix_of_anova);
-H_matrix_of_anova = H_matrix_of_anova.H;
-H_matrix_of_anova = triu(H_matrix_of_anova,1) == 1;
+% if( sum(or(strcmpi(varargin,'--contrast'),strcmpi(varargin,'-ctr')))==1)
+%     contrast = varargin{find(or(strcmpi(varargin,'--contrast'),strcmp(varargin,'-ctr')))+1};
+% else
+%     contrast = input('Enter contrast:');
+% end
 
 if(sum(or(strcmpi(varargin,'--colnum_id'),strcmpi(varargin,'-cid')))==1)
     colnum_id = varargin{find(or(strcmpi(varargin,'--colnum_id'),strcmp(varargin,'-cid')))+1};
@@ -145,6 +138,9 @@ n_subj = length(subj);
 for i = 1:n_subj
     onemat = importdata(subj_path{i});
     if i == 1
+        H_matrix_of_anova = ones(size(onemat));
+        H_matrix_of_anova(~tril(ones(size(onemat)),-1)==1)=0;
+        H_matrix_of_anova = logical(H_matrix_of_anova);
         all_subj_fc = zeros(n_subj,sum(H_matrix_of_anova(:)));
         all_subj_fc_all = zeros(n_subj,numel(onemat));
     end
@@ -200,7 +196,7 @@ for i =1:(n_groups-1)
         contrast(i) = -1;
         contrast(j) = 1;
         GLM.contrast = contrast;
-        [test_stat(count,:),pvalues(count,:)]=NBSglm(GLM);
+        [test_stat(count,:),pvalues(count,:)]=lc_NBSglm(GLM);
         cohen_d(count,:) = lc_calc_cohen_d_effective_size(GLM.y(GLM.X(:,contrast==1)==1,:),GLM.y(GLM.X(:,contrast==-1)==1,:));
         count = count +1;
     end
