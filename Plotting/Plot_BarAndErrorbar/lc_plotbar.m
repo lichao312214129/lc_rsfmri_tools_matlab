@@ -15,19 +15,17 @@ function lc_plotbar(all_mean,error, opt)
 % error = [0.0398, 0.0424, 0.0196, 0.0312;...
 %     		0.0875, 0.0990, 0.1034, 0.0939;...
 %     		0.09, 0.0990, 0.1034, 0.0939];
-
 % all_mean = [0.9186, 0.9460, 0.9552, 0.9533;...
 % 			0.6090, 0.6663, 0.7170, 0.7165;...
-% 			0.6, 0.633, 0.5170, 0.6165];
-        
-% error1 = [error;...
-%     0.0875, 0.0990, 0.1034, 0.0939;...
-%     0.09, 0.0990, 0.1034, 0.0939];
-% 
-% all_mean1 = [all_mean;...
-%     0.6090, 0.6663, 0.7170, 0.7165;...
-%     0.6, 0.633, 0.5170, 0.6165];
-% lc_plotbar(all_mean', error')
+% 			0.6, 0.633, 0.5170, 0.6165]; 
+% lc_plotbar(all_mean, error)
+
+if nargin == 0
+    help lc_plotbar
+    return
+end
+
+opt.init__ = 1;
 if ~isfield (opt,'colormap')
     opt.colormap = 'gray';
 end
