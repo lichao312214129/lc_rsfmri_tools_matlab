@@ -149,7 +149,7 @@ linecolor = 'k';
 is_legend = 0;
 legends = '';
 legend_fontsize = 10;
-legend_color_scheme = 'Spectral';
+legend_color_scheme = 'BrBG';
 
 if( sum(or(strcmpi(varargin,'--net'),strcmpi(varargin,'-n')))==1)
     net = varargin{find(or(strcmpi(varargin,'--net'),strcmp(varargin,'-n')))+1};
