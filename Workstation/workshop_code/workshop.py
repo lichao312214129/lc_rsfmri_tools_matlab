@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Nov  6 20:26:50 2020
+#!/usr/bin/env python
+# coding: utf-8
 
-@author: lenovo
-"""
 
 import os
 import scipy.io as sio
@@ -13,28 +10,27 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from collections import Counter
 from sklearn.model_selection  import StratifiedShuffleSplit
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import RFECV
-from sklearn.svm import LinearSVC, SVC
+from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression, RidgeClassifier
-from sklearn.ensemble import StackingClassifier
 from sklearn import metrics
 from nilearn import plotting
-from pyecharts.charts import Graph, Page
+from pyecharts.charts import Graph
 from pyecharts import options as opts
-import time
 
-
-#%% =============================加载数据================================
-# 输入
+#%% ===========================输入===========================
 data_file = r"F:\workshop\demo_data\data"
 label_file = r"F:\workshop\demo_data\targets.xlsx"
 
+#%% ===========================读取特征和标签===========================
 # 读取保存数据的文件名
 files_name = os.listdir(data_file)
 files = [os.path.join(data_file, fn) for fn in files_name]  # 获取所有功能连接的文件地址
 label = pd.read_excel(label_file)
+# print(f"files={files}")
+print(label)
 
 # 加载第一个功能连接， 查看数据形式
 onefc = sio.loadmat(files[0])
@@ -43,14 +39,20 @@ print(f"数据类型为：{type(onefc)}")
 print(f"功能连接的keys为: {onefc.keys()}")
 # 第4个item是数据，我们查看数据的情况
 dd = onefc[list(onefc.keys())[3]]
+print(f"功能连接特征的原始形状为：{dd.shape}")
+plt.imshow(dd, cmap="jet")
+plt.colorbar()
 
 # 逐个读取每个被试的功能连接， 并将所有数据放入data
 # 因为功能连接是一个对称矩阵，即上三角和下三角是对称的，所以后续加载数据的时候，我们只保留上三角即可
 mask = np.ones(np.shape(dd))
 mask = np.triu(mask, 1)
 mask  = mask == 1
+plt.imshow(mask)
+plt.colorbar()
+plt.show()
 
-# 加载每个功能连接数据的上三角部分
+# 加载并提取每个功能连接数据的上三角部分
 data = []
 for file in files:
     dd = sio.loadmat(file)
@@ -58,8 +60,10 @@ for file in files:
     dd = dd[mask]  # 用mask筛选上三角矩阵
     data.append(dd)
 data = np.array(data)  # 将data转换为numpy.array
+print(f"###特征的形状：{data.shape}###")
+pd.DataFrame(data).head(5)
 
-# 将特征与标签对齐***
+#%% ===========================将每个被试特征与其标签对齐===========================
 # 1.第一步提取文件名中的被试名
 files_name = pd.Series(files_name)
 files_id = files_name.str.findall(".*sub.?\d*")
@@ -68,14 +72,14 @@ files_id = pd.DataFrame([fi[0] for fi in files_id])
 label_sorted = pd.merge(files_id, label, left_on=0, right_on="__ID__")
 label_sorted = label_sorted["__Targets__"].values
 
-# 为了后续演示，我故意在特征中随机设置1000个缺失值
+# 为了后续演示，我故意在特征中随机设置5000个缺失值
 n_sub = len(data)
 id_nan = np.random.permutation(data.size)[:5000]
 data = data.reshape([-1,1])
 data[id_nan,] = np.nan
-data = data.reshape(n_sub,-1)
+data = data.reshape(n_sub,-1)  
 
-#%% =============================划分数据集================================
+#%% =============================划分数据=============================
 np.random.seed(0)
 skf = StratifiedShuffleSplit(n_splits=1, test_size=0.4, random_state=666)
 skf_index = list(skf.split(data, label_sorted))
@@ -96,16 +100,12 @@ print(f"训练集中各个类别的数目为：{sorted(Counter(label_train).item
 print(f"验证集中各个类别的数目为：{sorted(Counter(label_validation).items())}")
 print(f"测试集中各个类别的数目为：{sorted(Counter(label_test).items())}")
 
-#%% =============================检查数据并做数据处理================================
+#%% =============================数据检查与处理=============================
 # 检查训练集中缺失值
-plt.figure()
 nan_value = np.sum(np.isnan(feature_train), axis=0)
-np.max(nan_value)  # 最大的缺失值
-plt.hist(nan_value)  # 缺失值分布
-plt.show()
+print(f"所有特征中，最多的缺失值数量为：{np.max(nan_value)}")  # 最大的缺失值
 
 # 缺失值不多，选择用均值填充缺失值
-# 如果某些列的缺失值较多，可以删除
 feature_train = pd.DataFrame(feature_train)
 feature_validation = pd.DataFrame(feature_validation)
 feature_test = pd.DataFrame(feature_test)
@@ -117,108 +117,83 @@ feature_validation.fillna(value=fill_value, inplace=True)
 feature_test.fillna(value=fill_value, inplace=True)
 
 # 检查训练集特征数值为0的样本比例
-plt.figure()
 zero_value = np.sum(feature_train==0, axis=0)
-zero_value_prop = zero_value / len(feature_train)
-np.max(zero_value_prop)  # 最大的缺失值
-plt.hist(zero_value_prop)  # 缺失值分布
-plt.show()
-
-# 检查三个数据集的特征均值的分布
-feature_train_mean = np.mean(feature_train, axis=0)
-feature_validation_mean = np.mean(feature_validation, axis=0)
-feature_test_mean = np.mean(feature_test, axis=0)
-plt.figure()
-sns.distplot(feature_train_mean, hist = False, kde_kws = {'color':'red', 'linestyle':'-'},
-             norm_hist = True, label = 'Training dataset')
-sns.distplot(feature_validation_mean, hist = False, kde_kws = {'color':'green', 'linestyle':'-'},
-             norm_hist = True, label = 'Validation dataset')
-sns.distplot(feature_test_mean, hist = False, kde_kws = {'color':'blue', 'linestyle':'-'},
-             norm_hist = True, label = 'Test dataset')
-plt.legend(["Training dataset", "Validation dataset", "Test dataset"])
-plt.show()
-
-# 检查三个数据集特征均值的相关性
-coef = np.corrcoef([feature_train_mean.T, feature_validation_mean.T, feature_test_mean.T])
-plt.figure(figsize=(6,5))
-sns.heatmap(coef, annot=True, cbar=False)
-plt.xticks([0.5,1.5,2.5],["Training dataset", "Validation dataset", "Test dataset"], rotation=45)
-plt.yticks([0.5,1.5,2.5],["Training dataset", "Validation dataset", "Test dataset"], rotation=0)
-plt.tight_layout()
+print(f"全为0的特征数量为: {np.max(zero_value)}")
 
 # 规范化数据
 scaler = StandardScaler()
 feature_train_ = scaler.fit_transform(feature_train)
-feature_validation_ = scaler.transform(feature_validation)
+feature_validation_ = scaler.transform(feature_validation)  # 对验证集和测试集在规范化时，要用训练集的参数
 feature_test_ = scaler.transform(feature_test)
+pd.DataFrame(feature_train).head(5)
 
-#%% =============================特征工程================================
+#%% =============================特征工程：降维 + 特征选择=============================
 # 降维
-st = time.time()
 pca = PCA(n_components=0.95, random_state=666)
 feature_train_ = pca.fit_transform(feature_train_)
-feature_validation_ = pca.transform(feature_validation_)
+feature_validation_ = pca.transform(feature_validation_)  # 使用训练集的参数给验证集和测试集做降维
 feature_test_ = pca.transform(feature_test_)
-et = time.time()
-print(f"Running time of pca is {et-st:.3f}")
+print(f"###降维后特征维度由{feature_train.shape[1]}变为{feature_train_.shape[1]}###")
+pd.DataFrame(feature_train_).head(5)
 
 # 递归特征消除筛选特征
-st = time.time()
-selector = RFECV(LinearSVC(random_state=666), step=0.2, cv=5, n_jobs=3)
+selector = RFECV(LinearSVC(random_state=666), step=5, cv=5, n_jobs=3)
 selector = selector.fit(feature_train_, label_train)
 feature_train_ = selector.transform(feature_train_)
+
+# 对验证集和测试集做特征选择，要用训练集的参数
 feature_validation_ = selector.transform(feature_validation_)
 feature_test_ = selector.transform(feature_test_)
-et = time.time()
-print(f"Running time of RFECV is {et-st:.3f}")
+print(f"###递归特征消除法选择特征后，特征维度为{feature_train_.shape[1]}###")
+print(f"被剔除的特征的编号为：\n{pd.DataFrame(np.where(1-selector.support_)).values}")
+pd.DataFrame(feature_train_).head(5)
 
-#%% =============================训练模型================================
-# 训练单一模型
-model = LinearSVC(C=1, random_state=666)
+#%% ============================训练模型============================
+# model = LinearSVC(C=1, random_state=666)
+model = RidgeClassifier(random_state=666)
 model.fit(feature_train_, label_train)
 
-# # 模型融合
-# clf1 = LogisticRegression(random_state=666)
-# clf2 = RidgeClassifier(random_state=666)
-# clf3 = LinearSVC(C=1, random_state=666)
-# clf4 = SVC(C=1, kernel="sigmoid")
-# clfs = [("lr", clf1), ("rr", clf2), ("svc", clf3), ("rsvc", clf4)]  
-# model = StackingClassifier(estimators=clfs, final_estimator=LogisticRegression(), n_jobs=2)
-# model.fit(feature_train_, label_train)
-
-#%% =============================训练验证================================
+#%% ============================模型验证============================
+# 最好使用外部验证集
 pred_train_label = model.predict(feature_train_)
 pred_val_label = model.predict(feature_validation_)
-pred_val_prob = model.decision_function(feature_validation_)
 
-#%% =============================模型评估================================
+
+# 模型验证，以及根据验证情况调参
 acc_train = metrics.accuracy_score(label_train, pred_train_label)
+f1score_train = metrics.f1_score(label_train, pred_train_label)
 acc_validation = metrics.accuracy_score(label_validation, pred_val_label)
-print(f"acc_train = {acc_train:.3f}\nacc_validation = {acc_validation:.3f}")
+f1score_validation = metrics.f1_score(label_validation, pred_val_label)
+print(f"acc_train = {acc_train:.3f}; f1score_train = {f1score_train}\nacc_validation = {acc_validation:.8f}; f1score_validaton = {f1score_validation}")
 
-#%% =============================最终的测试================================
+#%% ============================最终的测试============================
+# 最好使用外部测试集
 pred_test_label = model.predict(feature_test_)
 pred_test_prob = model.decision_function(feature_test_)
 acc_test = metrics.accuracy_score(label_test, pred_test_label)
-print(f"acc_test = {acc_test:.3f}\n")
+f1score_test = metrics.f1_score(label_test, pred_test_label)
+print(f"acc_test = {acc_test:.8f}; f1score_test = {f1score_test}\n")
 
-#%% =============================查看权重==================================
-
+#%% ============================结果可视化============================
 # 获取权重
 wei = model.coef_
 wei = (wei - wei.mean()) / wei.std()
+wei = selector.inverse_transform(wei)
 wei = pca.inverse_transform(wei)
 weight = np.zeros(mask.shape)
 weight[mask] = wei[0]
 weight = weight + weight.T
 
-# 只显示前5%的权重
-topperc = np.percentile(np.abs(weight), 99.5)
+# 只显示前0.2%的权重
+threshold = 99.8
+topperc = np.percentile(np.abs(weight), threshold)
 weight[np.abs(weight) < topperc] = 0
 
 # 获取MNI坐标
-coords_file = r"G:\BranAtalas\BrainnetomeAtlasViewer\BNA_subregions.xlsx"
+coords_file = r"F:\workshop\demo_data\BNA_subregions.xlsx"
 coords_info = pd.read_excel(coords_file)
+
+# 获取MNI坐标
 coords = np.hstack([coords_info["lh.MNI(X,Y,Z)"].values, coords_info["rh.MNI(X,Y,Z)"].values])
 label_idx = np.hstack([coords_info["Label ID.L"].values, coords_info["Label ID.R"].values])
 sort_idx = np.argsort(label_idx)
@@ -244,26 +219,28 @@ weight_filter = weight[id_mat[0], id_mat[1]]
 wei_node = np.hstack([node1, node2]).T
 wei_node = np.vstack([wei_node, np.hstack([weight_filter, weight_filter])]).T
 
-nodes = [{"name": nd, "symbolSize": np.sum(np.abs(np.float64(wei_node[:,1][np.in1d(wei_node[:,0], str(nd))])))*10} for nd in node]
+nodes = [{"name": nd, "symbolSize": np.sum(np.abs(np.float64(wei_node[:,1][np.in1d(wei_node[:,0], str(nd))])))*20} for nd in node]
 links = [{"source": str(nd1), "target": str(nd2)} for (nd1, nd2) in zip(node1, node2)]
 graph= (
         Graph()
-        .add("", nodes,links, repulsion=1000)
-        .set_global_opts(title_opts=opts.TitleOpts(title="前0.1%的权重"))
+        .add("", nodes, links, repulsion=100)
+        .set_global_opts(title_opts=opts.TitleOpts(title=f"前{100-threshold:.2f}%的权重"))
     )
-graph.render()
+graph.render_notebook()
 
 
-# 只显示靠前的权重
+
+# 矩阵显示
+plt.figure(figsize=(10,10))
 plt.imshow(weight, cmap="RdBu_r")
 plt.colorbar()
+plt.show()
 
-plotting.plot_connectome(weight, node_coords, annotate=True)
-
+# 脑图显示
+plotting.plot_connectome(weight, node_coords, node_size=0, annotate=True)
+plt.show()
 view = plotting.view_connectome(weight, node_coords)
-view.open_in_browser()
+view
 
 
-from chord import Chord
-names = [str(i) for i in range(246)]
-chrod_fig = Chord(weight, names, colors="d3.schemeSet2").to_html("chrod_fig.html")
+
