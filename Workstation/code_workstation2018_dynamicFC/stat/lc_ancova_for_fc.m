@@ -1,7 +1,7 @@
 function  lc_ancova_for_fc(varargin)
 % Perform ANCOVA + multiple correction for functional connectivity matrix.
 % INPUTS:
-% 	    [--data_dir, -dd]: data directory of dynamic functional connectivity.
+% 	    [--data_dir, -dd]: data directory of functional connectivity, each file is a .mat file containing FC data with n_node * n_node dimension.
 % 	    [--demographics_file,-dmf]: File of demographics of participants, demographics includes unique index, group label and covariates.
 %       [--contrast, -ctr]: contrast of GLM, refer to NBS for details. E.g., contrast = [1 1 1 1 0 0 0 0];
 %       [--suffix_fc, -sfc]: suffix of functional connectivity, default is '.mat'.
