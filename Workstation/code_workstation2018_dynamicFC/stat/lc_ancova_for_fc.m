@@ -2,10 +2,12 @@ function  lc_ancova_for_fc(varargin)
 % Perform ANCOVA + multiple correction for functional connectivity matrix.
 % INPUTS:
 % 	    [--data_dir, -dd]: data directory of functional connectivity, each file contains FC data with n_node * n_node dimension.
-% 	    [--demographics_file,-dmf]: File of demographics of participants, demographics includes unique index, group label and covariates.
+% 	    [--demographics_file,-dmf]: File (excel/csv) of demographics of participants, demographics includes subject ID, group label and covariates.
 %       [--contrast, -ctr]: contrast of GLM, refer to NBS for details. E.g., contrast = [1 1 1 1 0 0 0 0];
 %       [--suffix_fc, -sfc]: suffix of functional connectivity, default is '.mat'.
-%       [--column_id, -cid]: which column is subject unique index, default is 1.
+%       [--column_id, -cid]: which column is subject subject ID, default is 1.
+%                            NOTE:subject ID in this column must be number, e.g. 1,2 and else, and can not be like 001, 002, etc.
+%                            So, FC file name "sub-00x" is corresponding to subject ID x (int/float).
 %       [--column_group_label, -cgl]:which column is group label, default is 2.
 %       [--columns_covariates, -ccov]: which column(s) is(are) covariate(s), default is [3:end]
 %       [--correction_method, -cm]: Multiple correction method (FDR, FWE, None; default is FDR).
