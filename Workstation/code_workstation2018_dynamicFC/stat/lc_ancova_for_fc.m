@@ -3,7 +3,7 @@ function  lc_ancova_for_fc(varargin)
 % INPUTS:
 % 	    [--data_dir, -dd]: data directory of functional connectivity, each file contains FC data with n_node * n_node dimension.
 % 	    [--demographics_file,-dmf]: File (excel/csv) of demographics of participants, demographics includes subject ID, group label and covariates.
-%       [--contrast, -ctr]: contrast of GLM, refer to NBS for details. E.g., contrast = [1 1 1 1 0 0 0 0];
+%       [--contrast, -ctr]: contrast of GLM, refer to NBS for details. If you have 4 groups of subjects and 4 covariates, then contrast is [1 1 1 1 0 0 0 0];
 %       [--suffix_fc, -sfc]: suffix of functional connectivity, default is '.mat'.
 %       [--column_id, -cid]: which column is subject subject ID, default is 1.
 %                            NOTE:subject ID in this column must be number, e.g. 1,2 and else, and can not be like 001, 002, etc.
