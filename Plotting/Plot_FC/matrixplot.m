@@ -1,4 +1,4 @@
-function matrixplot(data,xstr,ystr,varargin)
+function matrixplot(data,varargin)
 %   根据实值矩阵绘制色块图，用丰富的颜色和形状形象的展示矩阵元素值的大小。
 %
 %   matrixplot(data) 绘制矩阵色块图，data为实值矩阵，每一个元素对应一个色块，色
@@ -57,14 +57,13 @@ function matrixplot(data,xstr,ystr,varargin)
 %         0.3,0.6,1,0.5,-0.3
 %         0.8,-0.7,0.5,1,0.7
 %        -0.5,0.2,-0.3,0.7,1];
-%   matrixplot(x, 'FigShap','d');
-%   matrixplot(x,'DisplayOpt','off','FigStyle','Tril','FigShap','d');
+%   matrixplot(x);
+%   matrixplot(x,'DisplayOpt','off');
 %   matrixplot(x,'FillStyle','nofill','TextColor','Auto');
-%   matrixplot(x,'TextColor',[0.7,0.7,0.7],'FigShap','d','FigSize','Auto','ColorBar','on');
-%   matrixplot(x,'TextColor','k','FigShap','d','FigSize','Full','ColorBar','on','FigStyle','Tril');
-%   XVarNames = {'xiezhh','heping','keda','tust','tianjin','tianjin','tianjin'};
-%   YVarNames = {'xiezhh','heping','keda','tust','tianjin','tianjin','tianjin'};
-%   matrixplot(x,'FigShap','e','TextColor',[0.7,0.7,0.],'FigSize','Auto','ColorBar','on','XVarNames',XVarNames,'YVarNames',XVarNames);
+%   matrixplot(x,'TextColor',[0.7,0.7,0.7],'FigShap','s','FigSize','Auto','ColorBar','on');
+%   matrixplot(x,'TextColor','k','FigShap','d','FigSize','Full','ColorBar','on','FigStyle','Triu');
+%   XVarNames = {'xiezhh','heping','keda','tust','tianjin'};
+%   matrixplot(x,'FigShap','e','FigSize','Auto','ColorBar','on','XVarNames',XVarNames,'YVarNames',XVarNames);
 %
 %   CopyRight：xiezhh（谢中华）,2013.01.24编写
 
@@ -122,21 +121,15 @@ else
 end
 
 % 绘图
-% figure('color','w',...
-%     'units','normalized',...
-%     'pos',[0.289165,0.154948,0.409956,0.68099]);
-
-% figure('color','w',...
-%     'units','normalized',...
-%     'pos',[0.1,0.1,10,10]);
-% axes('units','normalized','pos',[0.1,0.1,0.6,0.6]);
-
-% axes('units','normalized','pos',[0.1,0.022,0.89,0.85]);
+figure('color','w',...
+    'units','normalized',...
+    'pos',[0.289165,0.154948,0.409956,0.68099]);
+axes('units','normalized','pos',[0.1,0.022,0.89,0.85]);
 if strncmpi(GridOpt,'On',2)
     mesh(x,y,z,...
         'EdgeColor',[0.7,0.7,0.7],...
         'FaceAlpha',0,...
-        'LineWidth',0.5);   % 参考网格线
+        'LineWidth',1);   % 参考网格线
 end
 hold on;
 axis equal;
@@ -147,8 +140,7 @@ set(gca,'Xtick',(1:n)-0.5,...
     'XtickLabel',XVarNames,...
     'Ytick',(1:m)-0.5,...
     'YtickLabel',YVarNames,...
-    'XAxisLocation','bottom',...
-    'YAxisLocation','origin',...
+    'XAxisLocation','top',...
     'YDir','reverse',...
     'Xcolor',[0.7,0.7,0.7],...
     'Ycolor',[0.7,0.7,0.7],...
@@ -175,7 +167,7 @@ if strncmpi(DisplayOpt,'On',2)
             text(sx(i),sy(i),0.1,str(i,:),...
                 'FontUnits','normalized',...
                 'FontSize',scale,...
-                'fontweight','normal',...
+                'fontweight','bold',...
                 'HorizontalAlignment','center',...
                 'Color',TextColor(i,:));
         end
@@ -183,15 +175,14 @@ if strncmpi(DisplayOpt,'On',2)
         text(sx,sy,0.1*ones(size(sx)),str,...
             'FontUnits','normalized',...
             'FontSize',scale,...
-            'fontweight','normal',...
+            'fontweight','bold',...
             'HorizontalAlignment','center',...
             'Color',TextColor);
     end
 end
 
 % 设置X轴和Y轴刻度标签的缩进方式
-% Revised by Li Chao 2019-09-27
-MyTickLabel(gca,FigStyle,xstr,ystr);
+MyTickLabel(gca,FigStyle);
 
 % 添加颜色条
 if strncmpi(ColorBar,'On',2)
@@ -206,7 +197,7 @@ end
 % ---------------------------------------------------
 %  调整坐标轴刻度标签子函数
 % ---------------------------------------------------
-function MyTickLabel(ha,tag,xstr,ystr)
+function MyTickLabel(ha,tag)
 
 %   根据显示范围自动调整坐标轴刻度标签的函数
 %   ha   坐标系句柄值
@@ -214,13 +205,10 @@ function MyTickLabel(ha,tag,xstr,ystr)
 %        'Auto' --- 将x轴刻度标签旋转90度，y轴刻度标签不作调整
 %        'Tril' --- 将x轴刻度标签旋转90度，并依次缩进，y轴刻度标签不作调整
 %        'Triu' --- 将x轴刻度标签旋转90度，y轴刻度标签依次缩进
-%   xstr:xticklabels
-%   ystr:yticklabels
 %   Example:
 %   MyTickLabel(gca,'Tril');
 %
 %   CopyRight：xiezhh（谢中华）,2013.1编写
-% Revised by Li Chao 2019-09-27
 
 if ~ishandle(ha)
     warning('MATLAB:warning2','第一个输入参数应为坐标系句柄');
@@ -233,10 +221,10 @@ if ~strcmpi(get(ha,'type'),'axes')
 end
 
 axes(ha);
-% xstr = get(ha,'XTickLabel');
+xstr = get(ha,'XTickLabel');
 xtick = get(ha,'XTick');
 xl = xlim(ha);
-% ystr = get(ha,'YTickLabel');
+ystr = get(ha,'YTickLabel');
 ytick = get(ha,'YTick');
 yl = ylim(ha);
 set(ha,'XTickLabel',[],'YTickLabel',[]);
@@ -251,17 +239,14 @@ elseif strncmpi(tag,'Triu',4)
     x = x + (1:ny) - 1;
 end
 
-% Revised by Lichao: Fontsize
 text(xtick,y,xstr,...
     'rotation',90,...
     'Interpreter','none',...
-    'color','black',...
-    'Fontsize',6,...
+    'color','r',...
     'HorizontalAlignment','left');
 text(x,ytick,ystr,...
     'Interpreter','none',...
-    'color','black',...
-    'Fontsize',6,...
+    'color','r',...
     'HorizontalAlignment','right');
 end
 
@@ -410,9 +395,7 @@ r0 = repmat(r,[m,1]);
 Xp = [x;repmat(x,[m,1]) + r0.*cos(t0);x];
 Yp = [y;repmat(y,[m,1]) + r0.*sin(t0);y];
 Zp = repmat(z,[m+2,1]);
-% Revised by Lichao
-% patch(Xp,Yp,Zp,'FaceColor','flat','EdgeColor',[0,0,0]);
-patch(Xp,Yp,Zp,'FaceColor','flat','EdgeColor',[0,0,0], 'LineWidth', 0.1);
+patch(Xp,Yp,Zp,'FaceColor','flat','EdgeColor',[0,0,0]);
 
 % 绘制表盘圆周
 t = linspace(0,2*pi,30)';
@@ -423,9 +406,7 @@ Zp = repmat(z,[m,1]);
 Xp = [Xp;flipud(Xp)];
 Yp = [Yp;flipud(Yp)];
 Zp = [Zp;flipud(Zp)];
-% Revised by Lichao
-% patch(Xp,Yp,Zp,'FaceColor','flat','EdgeColor',[0,0,0]);
-patch(Xp,Yp,Zp,'FaceColor','flat','EdgeColor',[0,0,0], 'LineWidth', 0.2);
+patch(Xp,Yp,Zp,'FaceColor','flat','EdgeColor',[0,0,0]);
 end
 
 %--------------------------------------------------------------------------
